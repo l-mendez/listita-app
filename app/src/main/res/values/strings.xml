@@ -1,3 +1,84 @@
 <resources>
-    <string name="app_name">Listita App</string>
+    <string name="app_name">Listita</string>
+
+    <!-- Common -->
+    <string name="loading">Cargando…</string>
+    <string name="error">Error</string>
+    <string name="success">Éxito</string>
+    <string name="ok">Aceptar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="save">Guardar</string>
+    <string name="delete">Eliminar</string>
+    <string name="edit">Editar</string>
+    <string name="add">Agregar</string>
+    <string name="search">Buscar</string>
+    <string name="confirm">Confirmar</string>
+    <string name="yes">Sí</string>
+    <string name="no">No</string>
+
+    <!-- Auth -->
+    <string name="login">Iniciar Sesión</string>
+    <string name="register">Registrarse</string>
+    <string name="email">Correo Electrónico</string>
+    <string name="password">Contraseña</string>
+    <string name="name">Nombre</string>
+    <string name="surname">Apellido</string>
+    <string name="verify_account">Verificar Cuenta</string>
+    <string name="verification_code">Código de Verificación</string>
+    <string name="logout">Cerrar Sesión</string>
+    <string name="change_password">Cambiar Contraseña</string>
+    <string name="current_password">Contraseña Actual</string>
+    <string name="new_password">Nueva Contraseña</string>
+    <string name="confirm_password">Confirmar Contraseña</string>
+    <string name="forgot_password">¿Olvidaste tu contraseña?</string>
+
+    <!-- Navigation -->
+    <string name="shopping_lists">Listas de Compras</string>
+    <string name="products">Productos</string>
+    <string name="profile">Perfil</string>
+
+    <!-- Shopping Lists -->
+    <string name="create_list">Crear Lista</string>
+    <string name="list_name">Nombre de la Lista</string>
+    <string name="list_description">Descripción</string>
+    <string name="recurring_list">Lista Recurrente</string>
+    <string name="empty_lists">No tienes listas de compras</string>
+    <string name="add_item">Agregar Producto</string>
+    <string name="quantity">Cantidad</string>
+    <string name="unit">Unidad</string>
+    <string name="purchased">Comprado</string>
+    <string name="mark_purchased">Marcar como comprado</string>
+
+    <!-- Products -->
+    <string name="create_product">Crear Producto</string>
+    <string name="product_name">Nombre del Producto</string>
+    <string name="category">Categoría</string>
+    <string name="empty_products">No hay productos disponibles</string>
+    <string name="create_category">Crear Categoría</string>
+    <string name="category_name">Nombre de Categoría</string>
+
+    <!-- Profile -->
+    <string name="my_profile">Mi Perfil</string>
+    <string name="settings">Configuración</string>
+    <string name="edit_profile">Editar Perfil</string>
+
+    <!-- Validation -->
+    <string name="field_required">Este campo es requerido</string>
+    <string name="invalid_email">Correo electrónico inválido</string>
+    <string name="password_too_short">La contraseña debe tener al menos 6 caracteres</string>
+    <string name="passwords_dont_match">Las contraseñas no coinciden</string>
+
+    <!-- Messages -->
+    <string name="login_success">Inicio de sesión exitoso</string>
+    <string name="registration_success">Registro exitoso. Verifica tu correo.</string>
+    <string name="verification_success">Cuenta verificada exitosamente</string>
+    <string name="password_changed">Contraseña cambiada exitosamente</string>
+    <string name="list_created">Lista creada exitosamente</string>
+    <string name="list_deleted">Lista eliminada</string>
+    <string name="product_created">Producto creado exitosamente</string>
+    <string name="item_added">Producto agregado a la lista</string>
+    <string name="network_error">Error de conexión. Verifica tu red.</string>
+    <string name="confirm_delete_list">¿Eliminar esta lista?</string>
+    <string name="confirm_delete_product">¿Eliminar este producto?</string>
+    <string name="confirm_logout">¿Cerrar sesión?</string>
 </resources>
