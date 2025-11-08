@@ -14,6 +14,9 @@ data class Category(
     @Json(name = "metadata")
     val metadata: Map<String, Any>? = null,
 
+    @Json(name = "owner")
+    val owner: User? = null,
+
     @Json(name = "createdAt")
     val createdAt: String,
 

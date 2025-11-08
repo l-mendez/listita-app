@@ -41,7 +41,7 @@ interface ApiService {
     // ========== Category Endpoints ==========
 
     @GET("api/categories")
-    suspend fun getCategories(): Response<List<Category>>
+    suspend fun getCategories(): Response<PaginatedResponse<Category>>
 
     @POST("api/categories")
     suspend fun createCategory(@Body request: CreateCategoryRequest): Response<Category>
@@ -61,7 +61,7 @@ interface ApiService {
     // ========== Product Endpoints ==========
 
     @GET("api/products")
-    suspend fun getProducts(): Response<List<Product>>
+    suspend fun getProducts(): Response<PaginatedResponse<Product>>
 
     @POST("api/products")
     suspend fun createProduct(@Body request: CreateProductRequest): Response<Product>
@@ -80,70 +80,71 @@ interface ApiService {
 
     // ========== Shopping List Endpoints ==========
 
-    @GET("api/lists")
-    suspend fun getShoppingLists(): Response<List<ShoppingList>>
+    @GET("api/shopping-lists")
+    suspend fun getShoppingLists(): Response<PaginatedResponse<ShoppingList>>
 
-    @POST("api/lists")
+    @POST("api/shopping-lists")
     suspend fun createShoppingList(@Body request: CreateShoppingListRequest): Response<ShoppingList>
 
-    @GET("api/lists/{id}")
+    @GET("api/shopping-lists/{id}")
     suspend fun getShoppingListById(@Path("id") id: Long): Response<ShoppingList>
 
-    @PUT("api/lists/{id}")
+    @PUT("api/shopping-lists/{id}")
     suspend fun updateShoppingList(
         @Path("id") id: Long,
         @Body request: UpdateShoppingListRequest
     ): Response<ShoppingList>
 
-    @DELETE("api/lists/{id}")
+    @DELETE("api/shopping-lists/{id}")
     suspend fun deleteShoppingList(@Path("id") id: Long): Response<Unit>
 
-    @POST("api/lists/{id}/share")
+    @POST("api/shopping-lists/{id}/share")
     suspend fun shareShoppingList(
         @Path("id") id: Long,
         @Body request: ShareListRequest
     ): Response<Unit>
 
-    @GET("api/lists/{id}/shared-users")
+    @GET("api/shopping-lists/{id}/shared-users")
     suspend fun getSharedUsers(@Path("id") id: Long): Response<List<User>>
 
-    @DELETE("api/lists/{id}/share/{user_id}")
+    @DELETE("api/shopping-lists/{id}/share/{user_id}")
     suspend fun revokeShare(
         @Path("id") id: Long,
         @Path("user_id") userId: Long
     ): Response<Unit>
 
-    @POST("api/lists/{id}/purchase")
+    @POST("api/shopping-lists/{id}/purchase")
     suspend fun purchaseShoppingList(@Path("id") id: Long): Response<Unit>
 
-    @POST("api/lists/{id}/reset")
+    @POST("api/shopping-lists/{id}/reset")
     suspend fun resetShoppingList(@Path("id") id: Long): Response<Unit>
 
     // ========== List Item Endpoints ==========
 
-    @GET("api/lists/{id}/items")
-    suspend fun getListItems(@Path("id") listId: Long): Response<List<ListItem>>
+    @GET("api/shopping-lists/{id}/items")
+    suspend fun getListItems(@Path("id") listId: Long): Response<PaginatedResponse<ListItem>>
 
-    @POST("api/lists/{id}/items")
+    @POST("api/shopping-lists/{id}/items")
     suspend fun addListItem(
         @Path("id") listId: Long,
         @Body request: AddListItemRequest
-    ): Response<ListItem>
+    ): Response<AddListItemResponse>
 
-    @PUT("api/lists/{id}/items/{item_id}")
+    @PUT("api/shopping-lists/{id}/items/{item_id}")
     suspend fun updateListItem(
         @Path("id") listId: Long,
         @Path("item_id") itemId: Long,
         @Body request: UpdateListItemRequest
     ): Response<ListItem>
 
-    @PATCH("api/lists/{id}/items/{item_id}")
+    @PATCH("api/shopping-lists/{id}/items/{item_id}")
     suspend fun toggleItemPurchased(
         @Path("id") listId: Long,
-        @Path("item_id") itemId: Long
+        @Path("item_id") itemId: Long,
+        @Body request: ToggleItemPurchasedRequest
     ): Response<ListItem>
 
-    @DELETE("api/lists/{id}/items/{item_id}")
+    @DELETE("api/shopping-lists/{id}/items/{item_id}")
     suspend fun deleteListItem(
         @Path("id") listId: Long,
         @Path("item_id") itemId: Long

@@ -10,7 +10,7 @@ class ProductRepository(private val apiService: ApiService) {
     suspend fun getProducts(): Result<List<Product>> = try {
         val response = apiService.getProducts()
         if (response.isSuccessful && response.body() != null) {
-            Result.success(response.body()!!)
+            Result.success(response.body()!!.data)
         } else {
             Result.failure(Exception(response.message()))
         }
@@ -44,7 +44,7 @@ class ProductRepository(private val apiService: ApiService) {
     suspend fun getCategories(): Result<List<Category>> = try {
         val response = apiService.getCategories()
         if (response.isSuccessful && response.body() != null) {
-            Result.success(response.body()!!)
+            Result.success(response.body()!!.data)
         } else {
             Result.failure(Exception(response.message()))
         }

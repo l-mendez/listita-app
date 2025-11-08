@@ -21,7 +21,7 @@ data class ListItem(
     val lastPurchasedAt: String? = null,
 
     @Json(name = "product")
-    val product: Product,
+    val product: Product? = null,  // Nullable because product might be deleted
 
     @Json(name = "metadata")
     val metadata: Map<String, Any>? = null,

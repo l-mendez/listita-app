@@ -82,3 +82,17 @@ data class UpdateListItemRequest(
     @Json(name = "metadata")
     val metadata: Map<String, Any>? = null
 )
+
+// Add List Item Response (API returns wrapper)
+@JsonClass(generateAdapter = true)
+data class AddListItemResponse(
+    @Json(name = "item")
+    val item: com.example.listitaapp.data.model.ListItem
+)
+
+// Toggle Item Purchased Request
+@JsonClass(generateAdapter = true)
+data class ToggleItemPurchasedRequest(
+    @Json(name = "purchased")
+    val purchased: Boolean
+)

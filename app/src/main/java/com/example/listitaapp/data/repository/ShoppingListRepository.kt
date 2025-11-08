@@ -10,7 +10,7 @@ class ShoppingListRepository(private val apiService: ApiService) {
     suspend fun getShoppingLists(): Result<List<ShoppingList>> = try {
         val response = apiService.getShoppingLists()
         if (response.isSuccessful && response.body() != null) {
-            Result.success(response.body()!!)
+            Result.success(response.body()!!.data)
         } else {
             Result.failure(Exception(response.message()))
         }
@@ -55,7 +55,7 @@ class ShoppingListRepository(private val apiService: ApiService) {
     suspend fun getListItems(listId: Long): Result<List<ListItem>> = try {
         val response = apiService.getListItems(listId)
         if (response.isSuccessful && response.body() != null) {
-            Result.success(response.body()!!)
+            Result.success(response.body()!!.data)
         } else {
             Result.failure(Exception(response.message()))
         }
@@ -67,7 +67,7 @@ class ShoppingListRepository(private val apiService: ApiService) {
         val request = AddListItemRequest(ItemProduct(productId), quantity, unit)
         val response = apiService.addListItem(listId, request)
         if (response.isSuccessful && response.body() != null) {
-            Result.success(response.body()!!)
+            Result.success(response.body()!!.item)
         } else {
             Result.failure(Exception(response.message()))
         }
@@ -75,8 +75,9 @@ class ShoppingListRepository(private val apiService: ApiService) {
         Result.failure(e)
     }
 
-    suspend fun toggleItemPurchased(listId: Long, itemId: Long): Result<ListItem> = try {
-        val response = apiService.toggleItemPurchased(listId, itemId)
+    suspend fun toggleItemPurchased(listId: Long, itemId: Long, currentPurchasedStatus: Boolean): Result<ListItem> = try {
+        val request = ToggleItemPurchasedRequest(!currentPurchasedStatus)
+        val response = apiService.toggleItemPurchased(listId, itemId, request)
         if (response.isSuccessful && response.body() != null) {
             Result.success(response.body()!!)
         } else {
