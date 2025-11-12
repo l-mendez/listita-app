@@ -293,6 +293,9 @@ fun ShoppingListsScreenWrapper(
             navController.navigate(Screen.ListDetail.createRoute(listId))
         },
         onDeleteList = { viewModel.deleteShoppingList(it) },
+        onUpdateListName = { id, name -> viewModel.updateListName(id, name) },
+        onUpdateListDescription = { id, description -> viewModel.updateListDescription(id, description) },
+        onToggleRecurring = { id, current -> viewModel.toggleListRecurring(id, current) },
         onRefresh = { viewModel.loadShoppingLists() },
         onClearError = { viewModel.clearError() },
         onClearSuccess = { viewModel.clearSuccess() }
@@ -420,7 +423,10 @@ fun ShoppingListDetailScreenWrapper(
         listId = listId,
         uiState = uiState,
         onBack = onBack,
-        onAddItem = { showAddItemDialog = true },
+        onAddItem = {
+            viewModel.loadProducts()
+            showAddItemDialog = true
+        },
         onToggleItem = { itemId ->
             viewModel.toggleItemPurchased(listId, itemId)
         },

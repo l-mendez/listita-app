@@ -34,11 +34,18 @@ fun ShoppingListsScreen(
     onCreateList: () -> Unit,
     onListClick: (Long) -> Unit,
     onDeleteList: (Long) -> Unit,
+    onUpdateListName: (Long, String) -> Unit,
+    onUpdateListDescription: (Long, String) -> Unit,
+    onToggleRecurring: (Long, Boolean) -> Unit,
     onRefresh: () -> Unit,
     onClearError: () -> Unit,
     onClearSuccess: () -> Unit
 ) {
     var showDeleteDialog by remember { mutableStateOf<ShoppingList?>(null) }
+    var selectedList by remember { mutableStateOf<ShoppingList?>(null) }
+    var showOptions by remember { mutableStateOf(false) }
+    var showRenameDialog by remember { mutableStateOf(false) }
+    var showEditDescriptionDialog by remember { mutableStateOf(false) }
 
     // Error dialog
     if (uiState.error != null) {
@@ -61,6 +68,70 @@ fun ShoppingListsScreen(
             kotlinx.coroutines.delay(2000)
             onClearSuccess()
         }
+    }
+
+    // Rename dialog
+    if (showRenameDialog && selectedList != null) {
+        var newName by remember { mutableStateOf(selectedList!!.name) }
+        AlertDialog(
+            onDismissRequest = { showRenameDialog = false },
+            title = { Text(stringResource(R.string.cambiar_nombre)) },
+            text = {
+                OutlinedTextField(
+                    value = newName,
+                    onValueChange = { if (it.length <= 50) newName = it },
+                    label = { Text(stringResource(R.string.nuevo_nombre)) },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onUpdateListName(selectedList!!.id, newName.trim())
+                        showRenameDialog = false
+                        showOptions = false
+                    },
+                    enabled = newName.isNotBlank()
+                ) { Text(stringResource(R.string.save)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRenameDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    // Edit description dialog
+    if (showEditDescriptionDialog && selectedList != null) {
+        var newDescription by remember { mutableStateOf(selectedList!!.description ?: "") }
+        AlertDialog(
+            onDismissRequest = { showEditDescriptionDialog = false },
+            title = { Text(stringResource(R.string.cambiar_descripcion)) },
+            text = {
+                OutlinedTextField(
+                    value = newDescription,
+                    onValueChange = { if (it.length <= 200) newDescription = it },
+                    label = { Text(stringResource(R.string.nueva_descripcion)) },
+                    minLines = 2,
+                    maxLines = 4
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onUpdateListDescription(selectedList!!.id, newDescription)
+                        showEditDescriptionDialog = false
+                        showOptions = false
+                    }
+                ) { Text(stringResource(R.string.save)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEditDescriptionDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
     }
 
     // Delete confirmation dialog
@@ -100,11 +171,9 @@ fun ShoppingListsScreen(
             )
         },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = onCreateList,
-                icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                text = { Text(stringResource(R.string.create_list)) }
-            )
+            FloatingActionButton(onClick = onCreateList) {
+                Icon(Icons.Default.Add, contentDescription = null)
+            }
         },
         snackbarHost = {
             if (uiState.successMessage != null) {
@@ -151,20 +220,114 @@ fun ShoppingListsScreen(
                     }
                 }
             } else {
-                // Lists display
+                // Lists display grouped
+                val recurrentes = remember(uiState.lists) {
+                    uiState.lists.filter { it.recurring }.sortedBy { it.name.lowercase() }
+                }
+                val activas = remember(uiState.lists) {
+                    uiState.lists.filter { !it.recurring }.sortedBy { it.name.lowercase() }
+                }
                 LazyColumn(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(uiState.lists, key = { it.id }) { list ->
-                        ShoppingListItem(
-                            list = list,
-                            onClick = { onListClick(list.id) },
-                            onDeleteClick = { showDeleteDialog = list }
-                        )
+                    if (recurrentes.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = stringResource(R.string.recurrentes),
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            )
+                        }
+                        items(recurrentes, key = { it.id }) { list ->
+                            ShoppingListItem(
+                                list = list,
+                                itemsCount = uiState.itemsCountByListId[list.id],
+                                onClick = { onListClick(list.id) },
+                                onSettingsClick = {
+                                    selectedList = list
+                                    showOptions = true
+                                }
+                            )
+                        }
+                    }
+                    if (activas.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = stringResource(R.string.activas),
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            )
+                        }
+                        items(activas, key = { it.id }) { list ->
+                            ShoppingListItem(
+                                list = list,
+                                itemsCount = uiState.itemsCountByListId[list.id],
+                                onClick = { onListClick(list.id) },
+                                onSettingsClick = {
+                                    selectedList = list
+                                    showOptions = true
+                                }
+                            )
+                        }
                     }
                 }
             }
+        }
+    }
+
+    // Options bottom sheet
+    if (showOptions && selectedList != null) {
+        ModalBottomSheet(onDismissRequest = { showOptions = false }) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                FilterChip(
+                    selected = selectedList!!.recurring,
+                    onClick = {
+                        onToggleRecurring(selectedList!!.id, selectedList!!.recurring)
+                        showOptions = false
+                    },
+                    label = { Text(stringResource(R.string.recurrente)) },
+                    leadingIcon = { Icon(imageVector = Icons.Default.Star, contentDescription = null) }
+                )
+                TextButton(onClick = {
+                    showOptions = false
+                    showDeleteDialog = selectedList
+                }) {
+                    Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
+                }
+            }
+            Divider()
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.cambiar_nombre)) },
+                leadingContent = { Icon(Icons.Default.Edit, contentDescription = null) },
+                modifier = Modifier.clickable { showRenameDialog = true }
+            )
+            Divider()
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.cambiar_descripcion)) },
+                leadingContent = { Icon(Icons.Default.Edit, contentDescription = null) },
+                modifier = Modifier.clickable { showEditDescriptionDialog = true }
+            )
+            Divider()
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.hacer_privada)) },
+                leadingContent = { Icon(Icons.Default.Lock, contentDescription = null) },
+                trailingContent = { Text("(próximamente)", color = MaterialTheme.colorScheme.outline) }
+            )
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.compartir)) },
+                leadingContent = { Icon(Icons.Default.Share, contentDescription = null) },
+                trailingContent = { Text("(próximamente)", color = MaterialTheme.colorScheme.outline) }
+            )
+            Spacer(Modifier.height(16.dp))
         }
     }
 }
@@ -172,8 +335,9 @@ fun ShoppingListsScreen(
 @Composable
 private fun ShoppingListItem(
     list: ShoppingList,
+    itemsCount: Int?,
     onClick: () -> Unit,
-    onDeleteClick: () -> Unit
+    onSettingsClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -211,38 +375,24 @@ private fun ShoppingListItem(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.outline
-                    )
+                    val peopleCount = 1 + list.sharedWith.size
+                    val peopleText = if (list.sharedWith.isEmpty()) {
+                        stringResource(R.string.solo_tu)
+                    } else {
+                        stringResource(R.string.personas, peopleCount)
+                    }
                     Text(
-                        text = list.owner.name,
+                        text = peopleText + " - " + stringResource(R.string.productos, itemsCount ?: 0),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.outline
                     )
-                    if (list.sharedWith.isNotEmpty()) {
-                        Icon(
-                            imageVector = Icons.Default.Share,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.outline
-                        )
-                        Text(
-                            text = "+${list.sharedWith.size}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.outline
-                        )
-                    }
                 }
             }
 
-            IconButton(onClick = onDeleteClick) {
+            IconButton(onClick = onSettingsClick) {
                 Icon(
-                    Icons.Default.Delete,
-                    contentDescription = "Delete",
-                    tint = MaterialTheme.colorScheme.error
+                    Icons.Default.MoreVert,
+                    contentDescription = stringResource(R.string.configuracion)
                 )
             }
         }

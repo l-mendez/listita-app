@@ -41,6 +41,39 @@ class ShoppingListRepository(private val apiService: ApiService) {
         Result.failure(e)
     }
 
+    suspend fun updateShoppingListName(id: Long, name: String): Result<ShoppingList> = try {
+        val response = apiService.updateShoppingList(id, UpdateShoppingListRequest(name = name))
+        if (response.isSuccessful && response.body() != null) {
+            Result.success(response.body()!!)
+        } else {
+            Result.failure(Exception(response.message()))
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
+    suspend fun updateShoppingListDescription(id: Long, description: String): Result<ShoppingList> = try {
+        val response = apiService.updateShoppingList(id, UpdateShoppingListRequest(description = description))
+        if (response.isSuccessful && response.body() != null) {
+            Result.success(response.body()!!)
+        } else {
+            Result.failure(Exception(response.message()))
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
+    suspend fun toggleShoppingListRecurring(id: Long, currentRecurring: Boolean): Result<ShoppingList> = try {
+        val response = apiService.updateShoppingList(id, UpdateShoppingListRequest(recurring = !currentRecurring))
+        if (response.isSuccessful && response.body() != null) {
+            Result.success(response.body()!!)
+        } else {
+            Result.failure(Exception(response.message()))
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
     suspend fun deleteShoppingList(id: Long): Result<Unit> = try {
         val response = apiService.deleteShoppingList(id)
         if (response.isSuccessful) {
@@ -56,6 +89,17 @@ class ShoppingListRepository(private val apiService: ApiService) {
         val response = apiService.getListItems(listId)
         if (response.isSuccessful && response.body() != null) {
             Result.success(response.body()!!.data)
+        } else {
+            Result.failure(Exception(response.message()))
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
+    suspend fun getListItemsCount(listId: Long): Result<Int> = try {
+        val response = apiService.getListItems(listId)
+        if (response.isSuccessful && response.body() != null) {
+            Result.success(response.body()!!.pagination.total)
         } else {
             Result.failure(Exception(response.message()))
         }

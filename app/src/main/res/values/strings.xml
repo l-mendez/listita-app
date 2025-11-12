@@ -81,4 +81,18 @@
     <string name="confirm_delete_list">¿Eliminar esta lista?</string>
     <string name="confirm_delete_product">¿Eliminar este producto?</string>
     <string name="confirm_logout">¿Cerrar sesión?</string>
+    <string name="recurrentes">Recurrentes</string>
+    <string name="activas">Activas</string>
+    <string name="solo_tu">Solo tú</string>
+    <string name="personas">%1$d personas</string>
+    <string name="productos">%1$d productos</string>
+    <string name="configuracion">Configuración</string>
+    <string name="recurrente">Recurrente</string>
+    <string name="cambiar_nombre">Cambiar nombre</string>
+    <string name="cambiar_descripcion">Cambiar descripción</string>
+    <string name="hacer_privada">Hacer privada</string>
+    <string name="compartir">Compartir</string>
+    <string name="guardar_cambios">Guardar cambios</string>
+    <string name="nuevo_nombre">Nuevo nombre</string>
+    <string name="nueva_descripcion">Nueva descripción</string>
 </resources>

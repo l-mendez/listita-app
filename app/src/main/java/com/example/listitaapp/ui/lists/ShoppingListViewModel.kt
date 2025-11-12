@@ -20,6 +20,7 @@ data class ShoppingListUiState(
     val currentList: ShoppingList? = null,
     val currentListItems: List<ListItem> = emptyList(),
     val availableProducts: List<Product> = emptyList(),
+    val itemsCountByListId: Map<Long, Int> = emptyMap(),
     val isLoading: Boolean = false,
     val error: String? = null,
     val successMessage: String? = null
@@ -53,6 +54,20 @@ class ShoppingListViewModel(application: Application) : AndroidViewModel(applica
                             lists = lists,
                             isLoading = false
                         )
+                    }
+                    // Load item counts in parallel without blocking UI
+                    viewModelScope.launch {
+                        val countsMutable = mutableMapOf<Long, Int>()
+                        lists.forEach { list ->
+                            // Fire and collect sequentially to avoid too many parallel calls
+                            listRepository.getListItemsCount(list.id).fold(
+                                onSuccess = { count -> countsMutable[list.id] = count },
+                                onFailure = { _ -> }
+                            )
+                            _uiState.update { state ->
+                                state.copy(itemsCountByListId = state.itemsCountByListId + countsMutable)
+                            }
+                        }
                     }
                 },
                 onFailure = { exception ->
@@ -113,7 +128,7 @@ class ShoppingListViewModel(application: Application) : AndroidViewModel(applica
         }
     }
 
-    private fun loadProducts() {
+    fun loadProducts() {
         viewModelScope.launch {
             productRepository.getProducts().fold(
                 onSuccess = { products ->
@@ -175,6 +190,48 @@ class ShoppingListViewModel(application: Application) : AndroidViewModel(applica
                             error = exception.message ?: "Failed to delete list"
                         )
                     }
+                }
+            )
+        }
+    }
+
+    fun updateListName(id: Long, name: String) {
+        viewModelScope.launch {
+            listRepository.updateShoppingListName(id, name).fold(
+                onSuccess = {
+                    _uiState.update { it.copy(successMessage = "Lista actualizada") }
+                    loadShoppingLists()
+                },
+                onFailure = { exception ->
+                    _uiState.update { it.copy(error = exception.message ?: "No se pudo actualizar") }
+                }
+            )
+        }
+    }
+
+    fun updateListDescription(id: Long, description: String) {
+        viewModelScope.launch {
+            listRepository.updateShoppingListDescription(id, description).fold(
+                onSuccess = {
+                    _uiState.update { it.copy(successMessage = "Lista actualizada") }
+                    loadShoppingLists()
+                },
+                onFailure = { exception ->
+                    _uiState.update { it.copy(error = exception.message ?: "No se pudo actualizar") }
+                }
+            )
+        }
+    }
+
+    fun toggleListRecurring(id: Long, currentRecurring: Boolean) {
+        viewModelScope.launch {
+            listRepository.toggleShoppingListRecurring(id, currentRecurring).fold(
+                onSuccess = {
+                    _uiState.update { it.copy(successMessage = "Lista actualizada") }
+                    loadShoppingLists()
+                },
+                onFailure = { exception ->
+                    _uiState.update { it.copy(error = exception.message ?: "No se pudo actualizar") }
                 }
             )
         }
