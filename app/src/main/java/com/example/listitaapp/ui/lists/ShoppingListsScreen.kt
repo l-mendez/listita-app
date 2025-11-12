@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
@@ -15,6 +16,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.listitaapp.R
 import com.example.listitaapp.data.model.ShoppingList
+import com.example.listitaapp.ui.components.AppFab
+import com.example.listitaapp.ui.components.AppTopBar
+import com.example.listitaapp.ui.components.SectionHeader
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -161,19 +165,10 @@ fun ShoppingListsScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.shopping_lists)) },
-                actions = {
-                    IconButton(onClick = onRefresh) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
-                    }
-                }
-            )
+            AppTopBar(title = stringResource(R.string.shopping_lists))
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onCreateList) {
-                Icon(Icons.Default.Add, contentDescription = null)
-            }
+            AppFab(onClick = onCreateList, modifier = Modifier.size(64.dp))
         },
         snackbarHost = {
             if (uiState.successMessage != null) {
@@ -229,15 +224,11 @@ fun ShoppingListsScreen(
                 }
                 LazyColumn(
                     contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     if (recurrentes.isNotEmpty()) {
                         item {
-                            Text(
-                                text = stringResource(R.string.recurrentes),
-                                style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.padding(vertical = 4.dp)
-                            )
+                            SectionHeader(text = stringResource(R.string.recurrentes))
                         }
                         items(recurrentes, key = { it.id }) { list ->
                             ShoppingListItem(
@@ -253,11 +244,7 @@ fun ShoppingListsScreen(
                     }
                     if (activas.isNotEmpty()) {
                         item {
-                            Text(
-                                text = stringResource(R.string.activas),
-                                style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.padding(vertical = 4.dp)
-                            )
+                            SectionHeader(text = stringResource(R.string.activas))
                         }
                         items(activas, key = { it.id }) { list ->
                             ShoppingListItem(
@@ -343,34 +330,22 @@ private fun ShoppingListItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
+            .padding(vertical = 2.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(horizontal = 16.dp, vertical = 20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = if (list.recurring) Icons.Default.Refresh else Icons.AutoMirrored.Filled.List,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(40.dp)
-            )
-
-            Spacer(modifier = Modifier.width(16.dp))
-
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = list.name,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleLarge
                 )
-                if (list.description?.isNotBlank() == true) {
-                    Text(
-                        text = list.description,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.outline
-                    )
-                }
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -383,8 +358,8 @@ private fun ShoppingListItem(
                     }
                     Text(
                         text = peopleText + " - " + stringResource(R.string.productos, itemsCount ?: 0),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.outline
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

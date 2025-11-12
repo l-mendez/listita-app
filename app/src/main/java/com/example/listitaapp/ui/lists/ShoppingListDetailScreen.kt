@@ -16,6 +16,9 @@ import androidx.compose.ui.unit.dp
 import com.example.listitaapp.R
 import com.example.listitaapp.data.model.ListItem
 import com.example.listitaapp.data.model.Product
+import com.example.listitaapp.ui.components.AppTopBar
+import com.example.listitaapp.ui.components.StandardCard
+import com.example.listitaapp.ui.components.AppExtendedFab
 
 /**
  * Shopping List Detail Screen - Following HCI Principles:
@@ -89,20 +92,20 @@ fun ShoppingListDetailScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(uiState.currentList?.name ?: "Shopping List") },
+            AppTopBar(
+                title = uiState.currentList?.name ?: "Shopping List",
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
+                actions = {}
             )
         },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
+            AppExtendedFab(
                 onClick = onAddItem,
-                icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                text = { Text(stringResource(R.string.add_item)) }
+                text = stringResource(R.string.add_item)
             )
         },
         snackbarHost = {
@@ -160,7 +163,7 @@ fun ShoppingListDetailScreen(
                     val purchasedCount = uiState.currentListItems.count { it.purchased }
                     val totalCount = uiState.currentListItems.size
 
-                    Card(
+                    StandardCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp)
@@ -205,7 +208,7 @@ private fun ListItemCard(
     onToggle: () -> Unit,
     onDelete: () -> Unit
 ) {
-    Card(
+    StandardCard(
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -216,7 +219,12 @@ private fun ListItemCard(
         ) {
             Checkbox(
                 checked = item.purchased,
-                onCheckedChange = { onToggle() }
+                onCheckedChange = { onToggle() },
+                colors = CheckboxDefaults.colors(
+                    checkedColor = MaterialTheme.colorScheme.onSurface,
+                    uncheckedColor = MaterialTheme.colorScheme.onSurface,
+                    checkmarkColor = MaterialTheme.colorScheme.surface
+                )
             )
 
             Spacer(modifier = Modifier.width(12.dp))

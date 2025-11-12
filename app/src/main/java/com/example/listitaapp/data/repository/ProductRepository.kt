@@ -30,6 +30,27 @@ class ProductRepository(private val apiService: ApiService) {
         Result.failure(e)
     }
 
+    suspend fun updateProduct(
+        id: Long,
+        name: String?,
+        categoryId: Long?,
+        metadata: Map<String, Any>?
+    ): Result<Product> = try {
+        val request = UpdateProductRequest(
+            name = name,
+            category = categoryId?.let { ProductCategory(it) },
+            metadata = metadata
+        )
+        val response = apiService.updateProduct(id, request)
+        if (response.isSuccessful && response.body() != null) {
+            Result.success(response.body()!!)
+        } else {
+            Result.failure(Exception(response.message()))
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
     suspend fun deleteProduct(id: Long): Result<Unit> = try {
         val response = apiService.deleteProduct(id)
         if (response.isSuccessful) {

@@ -14,6 +14,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.listitaapp.R
 import com.example.listitaapp.data.model.Product
+import com.example.listitaapp.ui.components.AppTopBar
+import com.example.listitaapp.ui.components.StandardCard
 
 /**
  * Products Screen - Following HCI Principles:
@@ -30,6 +32,7 @@ fun ProductsScreen(
     uiState: ProductUiState,
     onCreateProduct: () -> Unit,
     onDeleteProduct: (Long) -> Unit,
+    onUpdateProduct: (Long, String?, String?, Long?) -> Unit,
     onCreateCategory: () -> Unit,
     onRefresh: () -> Unit,
     onSearchQueryChange: (String) -> Unit,
@@ -37,6 +40,7 @@ fun ProductsScreen(
     onClearSuccess: () -> Unit
 ) {
     var showDeleteDialog by remember { mutableStateOf<Product?>(null) }
+    var editingProduct by remember { mutableStateOf<Product?>(null) }
 
     // Error dialog
     if (uiState.error != null) {
@@ -86,10 +90,26 @@ fun ProductsScreen(
         )
     }
 
+    // Edit product dialog
+    editingProduct?.let { product ->
+        EditProductDialog(
+            product = product,
+            categories = uiState.categories,
+            onDismiss = { editingProduct = null },
+            onApply = { name, price, categoryId ->
+                onUpdateProduct(product.id, name, price, categoryId)
+                editingProduct = null
+            },
+            onDelete = {
+                showDeleteDialog = product
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.products)) },
+            AppTopBar(
+                title = stringResource(R.string.products),
                 actions = {
                     IconButton(onClick = onCreateCategory) {
                         Icon(Icons.Default.Add, contentDescription = "Create category")
@@ -171,7 +191,7 @@ fun ProductsScreen(
                             it.category?.name?.lowercase()?.contains(uiState.searchQuery.lowercase()) == true
                         }
                     },
-                    onDeleteClick = { showDeleteDialog = it },
+                    onEditClick = { editingProduct = it },
                     modifier = Modifier.fillMaxSize()
                 )
             }
@@ -202,10 +222,111 @@ private fun SearchBar(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun EditProductDialog(
+    product: Product,
+    categories: List<com.example.listitaapp.data.model.Category>,
+    onDismiss: () -> Unit,
+    onApply: (name: String?, price: String?, categoryId: Long?) -> Unit,
+    onDelete: () -> Unit
+) {
+    var name by remember { mutableStateOf(product.name) }
+    var price by remember { mutableStateOf(product.metadata?.get("price")?.toString() ?: "") }
+    var selectedCategoryId by remember { mutableStateOf(product.category?.id) }
+    var expanded by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss
+    ) {
+        StandardCard {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = "Edit product",
+                    style = MaterialTheme.typography.headlineSmall
+                )
+
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Name") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = price,
+                    onValueChange = { price = it.filter { ch -> ch.isDigit() || ch == '.' || ch == ',' } },
+                    label = { Text("Price") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = it }
+                ) {
+                    OutlinedTextField(
+                        value = categories.find { it.id == selectedCategoryId }?.name ?: "",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Categories") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        categories.forEach { category ->
+                            DropdownMenuItem(
+                                text = { Text(category.name) },
+                                onClick = {
+                                    selectedCategoryId = category.id
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Button(
+                        onClick = {
+                            onDelete()
+                            onDismiss()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Text("Delete")
+                    }
+
+                    Button(
+                        onClick = {
+                            onApply(name.ifBlank { null }, price.ifBlank { null }, selectedCategoryId)
+                        }
+                    ) {
+                        Text("Apply")
+                    }
+                }
+            }
+        }
+    }
+}
+
 @Composable
 private fun ProductsList(
     products: List<Product>,
-    onDeleteClick: (Product) -> Unit,
+    onEditClick: (Product) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -216,7 +337,7 @@ private fun ProductsList(
         items(products, key = { it.id }) { product ->
             ProductItem(
                 product = product,
-                onDeleteClick = { onDeleteClick(product) }
+                onEditClick = { onEditClick(product) }
             )
         }
     }
@@ -225,9 +346,9 @@ private fun ProductsList(
 @Composable
 private fun ProductItem(
     product: Product,
-    onDeleteClick: () -> Unit
+    onEditClick: () -> Unit
 ) {
-    Card(
+    StandardCard(
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -236,33 +357,26 @@ private fun ProductItem(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Default.ShoppingCart,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
-            )
-
-            Spacer(modifier = Modifier.width(16.dp))
-
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = product.name,
                     style = MaterialTheme.typography.titleMedium
                 )
-                product.category?.let { category ->
-                    Text(
-                        text = category.name,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.outline
-                    )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    val price = product.metadata?.get("price")?.toString()
+                    if (!price.isNullOrBlank()) {
+                        AssistChip(onClick = {}, label = { Text("$$price") })
+                    }
+                    product.category?.let { category ->
+                        AssistChip(onClick = {}, label = { Text(category.name) })
+                    }
                 }
             }
 
-            IconButton(onClick = onDeleteClick) {
+            IconButton(onClick = onEditClick) {
                 Icon(
-                    Icons.Default.Delete,
-                    contentDescription = "Delete",
-                    tint = MaterialTheme.colorScheme.error
+                    Icons.Default.Edit,
+                    contentDescription = "Edit"
                 )
             }
         }

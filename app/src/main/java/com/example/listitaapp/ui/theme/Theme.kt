@@ -9,35 +9,45 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = BrandPrimary,
+    onPrimary = OnBrandPrimary,
+    primaryContainer = Neutral300,
+    onPrimaryContainer = BrandPrimary,
+    background = Color(0xFF0B0B0B),
+    surface = Color(0xFF0F0F0F),
+    surfaceVariant = Neutral800,
+    onSurface = Color.White,
+    onSurfaceVariant = Neutral300,
+    secondary = Neutral600,
+    tertiary = Neutral400,
+    outline = Neutral600
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    primary = BrandPrimary,
+    onPrimary = OnBrandPrimary,
+    // Used by default FAB
+    primaryContainer = Neutral100,
+    onPrimaryContainer = BrandPrimary,
+    background = SurfaceDefault,
+    surface = SurfaceDefault,
+    surfaceVariant = SurfaceVariantLight,
+    onSurface = BrandPrimary,
+    onSurfaceVariant = Neutral600,
+    secondary = Neutral700,
+    tertiary = Neutral400,
+    outline = OutlineNeutral
 )
 
 @Composable
 fun ListitaAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    // Keep colors consistent with our design system
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

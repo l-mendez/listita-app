@@ -103,6 +103,37 @@ class ProductViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun updateProduct(
+        id: Long,
+        name: String?,
+        categoryId: Long?,
+        metadata: Map<String, Any>?
+    ) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+
+            repository.updateProduct(id, name, categoryId, metadata).fold(
+                onSuccess = {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            successMessage = "Product updated"
+                        )
+                    }
+                    loadProducts()
+                },
+                onFailure = { exception ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = exception.message ?: "Failed to update product"
+                        )
+                    }
+                }
+            )
+        }
+    }
+
     fun deleteProduct(id: Long) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }

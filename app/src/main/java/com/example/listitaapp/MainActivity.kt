@@ -9,9 +9,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -234,47 +235,79 @@ fun MainScreenScaffold(
     currentRoute: String,
     content: @Composable () -> Unit
 ) {
-    NavigationSuiteScaffold(
-        navigationSuiteItems = {
-            item(
-                icon = { Icon(Icons.Default.List, contentDescription = "Lists") },
-                label = { Text("Lists") },
-                selected = currentRoute == Screen.ShoppingLists.route,
-                onClick = {
-                    if (currentRoute != Screen.ShoppingLists.route) {
-                        navController.navigate(Screen.ShoppingLists.route) {
-                            popUpTo(Screen.ShoppingLists.route) { inclusive = true }
+    Scaffold(
+        bottomBar = {
+            Column {
+                Divider()
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ) {
+                    Spacer(Modifier.width(16.dp))
+                    NavigationBarItem(
+                        icon = { Icon(Icons.Default.List, contentDescription = "Lists") },
+                        label = { Text("Lists") },
+                        selected = currentRoute == Screen.ShoppingLists.route,
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.onSurface,
+                            selectedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurface,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurface,
+                            indicatorColor = Color.Transparent
+                        ),
+                        onClick = {
+                            if (currentRoute != Screen.ShoppingLists.route) {
+                                navController.navigate(Screen.ShoppingLists.route) {
+                                    popUpTo(Screen.ShoppingLists.route) { inclusive = true }
+                                }
+                            }
                         }
-                    }
-                }
-            )
-            item(
-                icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Products") },
-                label = { Text("Products") },
-                selected = currentRoute == Screen.Products.route,
-                onClick = {
-                    if (currentRoute != Screen.Products.route) {
-                        navController.navigate(Screen.Products.route) {
-                            popUpTo(Screen.ShoppingLists.route) { inclusive = false }
+                    )
+                    NavigationBarItem(
+                        icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Products") },
+                        label = { Text("Products") },
+                        selected = currentRoute == Screen.Products.route,
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.onSurface,
+                            selectedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurface,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurface,
+                            indicatorColor = Color.Transparent
+                        ),
+                        onClick = {
+                            if (currentRoute != Screen.Products.route) {
+                                navController.navigate(Screen.Products.route) {
+                                    popUpTo(Screen.ShoppingLists.route) { inclusive = false }
+                                }
+                            }
                         }
-                    }
-                }
-            )
-            item(
-                icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
-                label = { Text("Profile") },
-                selected = currentRoute == Screen.Profile.route,
-                onClick = {
-                    if (currentRoute != Screen.Profile.route) {
-                        navController.navigate(Screen.Profile.route) {
-                            popUpTo(Screen.ShoppingLists.route) { inclusive = false }
+                    )
+                    NavigationBarItem(
+                        icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
+                        label = { Text("Profile") },
+                        selected = currentRoute == Screen.Profile.route,
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.onSurface,
+                            selectedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurface,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurface,
+                            indicatorColor = Color.Transparent
+                        ),
+                        onClick = {
+                            if (currentRoute != Screen.Profile.route) {
+                                navController.navigate(Screen.Profile.route) {
+                                    popUpTo(Screen.ShoppingLists.route) { inclusive = false }
+                                }
+                            }
                         }
-                    }
+                    )
+                    Spacer(Modifier.width(16.dp))
                 }
-            )
+            }
         }
-    ) {
-        content()
+    ) { innerPadding ->
+        Box(modifier = Modifier.padding(innerPadding)) {
+            content()
+        }
     }
 }
 
@@ -322,6 +355,10 @@ fun ProductsScreenWrapper(viewModel: ProductViewModel) {
         uiState = uiState,
         onCreateProduct = { showCreateProductDialog = true },
         onDeleteProduct = { viewModel.deleteProduct(it) },
+        onUpdateProduct = { id, name, price, categoryId ->
+            val metadata = if (price.isNullOrBlank()) null else mapOf<String, Any>("price" to price)
+            viewModel.updateProduct(id, name, categoryId, metadata)
+        },
         onCreateCategory = { showCreateCategoryDialog = true },
         onRefresh = { viewModel.loadProducts() },
         onSearchQueryChange = { viewModel.updateSearchQuery(it) },

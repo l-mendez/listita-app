@@ -13,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.listitaapp.R
+import com.example.listitaapp.ui.components.AppTopBar
+import com.example.listitaapp.ui.components.StandardCard
 
 /**
  * Profile Screen - Following HCI Principles:
@@ -84,9 +86,7 @@ fun ProfileScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.profile)) }
-            )
+            AppTopBar(title = stringResource(R.string.profile))
         },
         snackbarHost = {
             if (uiState.successMessage != null) {
@@ -114,7 +114,7 @@ fun ProfileScreen(
             ) {
                 // Profile header
                 uiState.user?.let { user ->
-                    Card(
+                    StandardCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp)
@@ -190,11 +190,11 @@ private fun SettingsItem(
     onClick: () -> Unit,
     tint: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.primary
 ) {
-    Card(
-        onClick = onClick,
+    StandardCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        onClick = onClick
     ) {
         Row(
             modifier = Modifier
