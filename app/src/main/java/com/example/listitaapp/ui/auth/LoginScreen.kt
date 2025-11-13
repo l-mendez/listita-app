@@ -18,6 +18,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.listitaapp.R
+import com.example.listitaapp.ui.components.AppDialogType
+import com.example.listitaapp.ui.components.AppMessageDialog
 
 /**
  * Login Screen
@@ -44,18 +46,12 @@ fun LoginScreen(
 
     val focusManager = LocalFocusManager.current
 
-    // Show error dialog (Nielsen: Help users recognize, diagnose, recover from errors)
-    if (uiState.error != null) {
-        AlertDialog(
-            onDismissRequest = onClearError,
-            icon = { Icon(Icons.Default.Warning, contentDescription = null) },
-            title = { Text(stringResource(R.string.error)) },
-            text = { Text(uiState.error) },
-            confirmButton = {
-                TextButton(onClick = onClearError) {
-                    Text(stringResource(R.string.ok))
-                }
-            }
+    // Show error dialog (standardized)
+    uiState.error?.let {
+        AppMessageDialog(
+            type = AppDialogType.Error,
+            message = it,
+            onDismiss = onClearError
         )
     }
 

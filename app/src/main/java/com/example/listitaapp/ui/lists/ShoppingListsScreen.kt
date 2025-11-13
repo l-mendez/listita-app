@@ -22,6 +22,14 @@ import com.example.listitaapp.ui.components.SectionHeader
 import com.example.listitaapp.ui.components.OptionsBottomSheet
 import com.example.listitaapp.ui.components.SheetActionItem
 import com.example.listitaapp.ui.components.SheetHeaderWithDelete
+import com.example.listitaapp.ui.components.AppFormDialog
+import com.example.listitaapp.ui.components.AppConfirmDialog
+import com.example.listitaapp.ui.components.AppDialogType
+import com.example.listitaapp.ui.components.AppMessageDialog
+import com.example.listitaapp.ui.components.AppSnackbarHost
+import com.example.listitaapp.ui.components.rememberAppSnackbarState
+import com.example.listitaapp.ui.components.appSnackTypeFromMessage
+import com.example.listitaapp.ui.components.show
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -48,6 +56,7 @@ fun ShoppingListsScreen(
     onClearError: () -> Unit,
     onClearSuccess: () -> Unit
 ) {
+    val appSnackbar = rememberAppSnackbarState()
     var showDeleteDialog by remember { mutableStateOf<ShoppingList?>(null) }
     var selectedList by remember { mutableStateOf<ShoppingList?>(null) }
     var showOptions by remember { mutableStateOf(false) }
@@ -55,25 +64,19 @@ fun ShoppingListsScreen(
     var showEditDescriptionDialog by remember { mutableStateOf(false) }
     var showEditListDialog by remember { mutableStateOf(false) }
 
-    // Error dialog
-    if (uiState.error != null) {
-        AlertDialog(
-            onDismissRequest = onClearError,
-            icon = { Icon(Icons.Default.Warning, contentDescription = null) },
-            title = { Text(stringResource(R.string.error)) },
-            text = { Text(uiState.error) },
-            confirmButton = {
-                TextButton(onClick = onClearError) {
-                    Text(stringResource(R.string.ok))
-                }
-            }
+    // Error dialog (standardized)
+    uiState.error?.let {
+        AppMessageDialog(
+            type = AppDialogType.Error,
+            message = it,
+            onDismiss = onClearError
         )
     }
 
-    // Success snackbar
-    if (uiState.successMessage != null) {
-        LaunchedEffect(uiState.successMessage) {
-            kotlinx.coroutines.delay(2000)
+    // Success snackbar (standardized)
+    uiState.successMessage?.let { message ->
+        LaunchedEffect(message) {
+            appSnackbar.show(message, appSnackTypeFromMessage(message))
             onClearSuccess()
         }
     }
@@ -189,28 +192,16 @@ fun ShoppingListsScreen(
         )
     }
 
-    // Delete confirmation dialog
+    // Delete confirmation dialog (standardized)
     showDeleteDialog?.let { list ->
-        AlertDialog(
-            onDismissRequest = { showDeleteDialog = null },
-            icon = { Icon(Icons.Default.Delete, contentDescription = null) },
-            title = { Text(stringResource(R.string.confirm)) },
-            text = { Text(stringResource(R.string.confirm_delete_list)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onDeleteList(list.id)
-                        showDeleteDialog = null
-                    }
-                ) {
-                    Text(stringResource(R.string.delete))
-                }
+        AppConfirmDialog(
+            message = stringResource(R.string.confirm_delete_list),
+            onConfirm = {
+                onDeleteList(list.id)
+                showDeleteDialog = null
             },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = null }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
+            onDismiss = { showDeleteDialog = null },
+            destructive = true
         )
     }
 
@@ -221,13 +212,7 @@ fun ShoppingListsScreen(
         floatingActionButton = {
             AppFab(onClick = onCreateList, modifier = Modifier.size(64.dp))
         },
-        snackbarHost = {
-            if (uiState.successMessage != null) {
-                Snackbar {
-                    Text(uiState.successMessage)
-                }
-            }
-        }
+        snackbarHost = { AppSnackbarHost(state = appSnackbar) }
     ) { padding ->
         Box(
             modifier = Modifier
@@ -430,73 +415,45 @@ fun CreateShoppingListDialog(
     var description by remember { mutableStateOf("") }
     var recurring by remember { mutableStateOf(false) }
 
-    AlertDialog(
-        onDismissRequest = onDismiss
-    ) {
-        Card {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.create_list),
-                    style = MaterialTheme.typography.headlineSmall
-                )
-
-                OutlinedTextField(
-                    value = listName,
-                    onValueChange = { listName = it },
-                    label = { Text(stringResource(R.string.list_name)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                OutlinedTextField(
-                    value = description,
-                    onValueChange = { description = it },
-                    label = { Text(stringResource(R.string.list_description)) },
-                    minLines = 2,
-                    maxLines = 3,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(
-                        checked = recurring,
-                        onCheckedChange = { recurring = it }
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(stringResource(R.string.recurring_list))
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(onClick = onDismiss) {
-                        Text(stringResource(R.string.cancel))
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(
-                        onClick = {
-                            if (listName.isNotBlank()) {
-                                onCreate(
-                                    listName,
-                                    description.ifBlank { "" },
-                                    recurring
-                                )
-                                onDismiss()
-                            }
-                        },
-                        enabled = listName.isNotBlank()
-                    ) {
-                        Text(stringResource(R.string.create_list))
-                    }
-                }
+    AppFormDialog(
+        title = stringResource(R.string.create_list),
+        onDismiss = onDismiss,
+        confirmLabel = stringResource(R.string.create_list),
+        confirmEnabled = listName.isNotBlank(),
+        onConfirm = {
+            if (listName.isNotBlank()) {
+                onCreate(listName, description.ifBlank { "" }, recurring)
+                onDismiss()
             }
+        }
+    ) {
+        OutlinedTextField(
+            value = listName,
+            onValueChange = { listName = it },
+            label = { Text(stringResource(R.string.list_name)) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = description,
+            onValueChange = { description = it },
+            label = { Text(stringResource(R.string.list_description)) },
+            minLines = 2,
+            maxLines = 3,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = recurring,
+                onCheckedChange = { recurring = it }
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(stringResource(R.string.recurring_list))
         }
     }
 }

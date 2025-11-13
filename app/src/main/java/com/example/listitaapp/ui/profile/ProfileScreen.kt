@@ -15,6 +15,14 @@ import androidx.compose.ui.unit.dp
 import com.example.listitaapp.R
 import com.example.listitaapp.ui.components.AppTopBar
 import com.example.listitaapp.ui.components.StandardCard
+import com.example.listitaapp.ui.components.AppConfirmDialog
+import com.example.listitaapp.ui.components.AppDialogType
+import com.example.listitaapp.ui.components.AppMessageDialog
+import com.example.listitaapp.ui.components.AppFormDialog
+import com.example.listitaapp.ui.components.AppSnackbarHost
+import com.example.listitaapp.ui.components.rememberAppSnackbarState
+import com.example.listitaapp.ui.components.appSnackTypeFromMessage
+import com.example.listitaapp.ui.components.show
 
 /**
  * Profile Screen - Following HCI Principles:
@@ -34,53 +42,38 @@ fun ProfileScreen(
     onClearError: () -> Unit,
     onClearSuccess: () -> Unit
 ) {
+    val appSnackbar = rememberAppSnackbarState()
     var showLogoutDialog by remember { mutableStateOf(false) }
 
-    // Error dialog
-    if (uiState.error != null) {
-        AlertDialog(
-            onDismissRequest = onClearError,
-            icon = { Icon(Icons.Default.Warning, contentDescription = null) },
-            title = { Text(stringResource(R.string.error)) },
-            text = { Text(uiState.error) },
-            confirmButton = {
-                TextButton(onClick = onClearError) {
-                    Text(stringResource(R.string.ok))
-                }
-            }
+    // Error dialog (standardized)
+    uiState.error?.let {
+        AppMessageDialog(
+            type = AppDialogType.Error,
+            message = it,
+            onDismiss = onClearError
         )
     }
 
-    // Success snackbar
-    if (uiState.successMessage != null) {
-        LaunchedEffect(uiState.successMessage) {
-            kotlinx.coroutines.delay(2000)
+    // Success snackbar (standardized)
+    uiState.successMessage?.let { message ->
+        LaunchedEffect(message) {
+            appSnackbar.show(message, appSnackTypeFromMessage(message))
             onClearSuccess()
         }
     }
 
-    // Logout confirmation dialog
+    // Logout confirmation dialog (standardized, non-destructive style)
     if (showLogoutDialog) {
-        AlertDialog(
-            onDismissRequest = { showLogoutDialog = false },
-            icon = { Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null) },
-            title = { Text(stringResource(R.string.confirm)) },
-            text = { Text(stringResource(R.string.confirm_logout)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showLogoutDialog = false
-                        onLogout()
-                    }
-                ) {
-                    Text(stringResource(R.string.logout))
-                }
+        AppConfirmDialog(
+            message = stringResource(R.string.confirm_logout),
+            onConfirm = {
+                showLogoutDialog = false
+                onLogout()
             },
-            dismissButton = {
-                TextButton(onClick = { showLogoutDialog = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
+            onDismiss = { showLogoutDialog = false },
+            destructive = false,
+            icon = Icons.AutoMirrored.Filled.ExitToApp,
+            confirmLabel = stringResource(R.string.logout)
         )
     }
 
@@ -88,13 +81,7 @@ fun ProfileScreen(
         topBar = {
             AppTopBar(title = stringResource(R.string.profile))
         },
-        snackbarHost = {
-            if (uiState.successMessage != null) {
-                Snackbar {
-                    Text(uiState.successMessage)
-                }
-            }
-        }
+        snackbarHost = { AppSnackbarHost(state = appSnackbar) }
     ) { padding ->
         if (uiState.isLoading) {
             Box(
@@ -243,57 +230,32 @@ fun EditProfileDialog(
     var name by remember { mutableStateOf(currentName) }
     var surname by remember { mutableStateOf(currentSurname) }
 
-    AlertDialog(
-        onDismissRequest = onDismiss
-    ) {
-        Card {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.edit_profile),
-                    style = MaterialTheme.typography.headlineSmall
-                )
-
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text(stringResource(R.string.name)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                OutlinedTextField(
-                    value = surname,
-                    onValueChange = { surname = it },
-                    label = { Text(stringResource(R.string.surname)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(onClick = onDismiss) {
-                        Text(stringResource(R.string.cancel))
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(
-                        onClick = {
-                            if (name.isNotBlank() && surname.isNotBlank()) {
-                                onSave(name, surname)
-                                onDismiss()
-                            }
-                        },
-                        enabled = name.isNotBlank() && surname.isNotBlank()
-                    ) {
-                        Text(stringResource(R.string.save))
-                    }
-                }
+    AppFormDialog(
+        title = stringResource(R.string.edit_profile),
+        onDismiss = onDismiss,
+        confirmLabel = stringResource(R.string.save),
+        confirmEnabled = name.isNotBlank() && surname.isNotBlank(),
+        onConfirm = {
+            if (name.isNotBlank() && surname.isNotBlank()) {
+                onSave(name, surname)
+                onDismiss()
             }
         }
+    ) {
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text(stringResource(R.string.name)) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = surname,
+            onValueChange = { surname = it },
+            label = { Text(stringResource(R.string.surname)) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 
@@ -308,84 +270,60 @@ fun ChangePasswordDialog(
     var confirmPassword by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
 
-    AlertDialog(
-        onDismissRequest = onDismiss
-    ) {
-        Card {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.change_password),
-                    style = MaterialTheme.typography.headlineSmall
-                )
-
-                OutlinedTextField(
-                    value = currentPassword,
-                    onValueChange = {
-                        currentPassword = it
-                        error = null
-                    },
-                    label = { Text(stringResource(R.string.current_password)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation()
-                )
-
-                OutlinedTextField(
-                    value = newPassword,
-                    onValueChange = {
-                        newPassword = it
-                        error = null
-                    },
-                    label = { Text(stringResource(R.string.new_password)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation()
-                )
-
-                OutlinedTextField(
-                    value = confirmPassword,
-                    onValueChange = {
-                        confirmPassword = it
-                        error = null
-                    },
-                    label = { Text(stringResource(R.string.confirm_password)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    isError = error != null,
-                    supportingText = error?.let { { Text(it) } },
-                    visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation()
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(onClick = onDismiss) {
-                        Text(stringResource(R.string.cancel))
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(
-                        onClick = {
-                            when {
-                                currentPassword.isBlank() -> error = "Current password required"
-                                newPassword.isBlank() -> error = "New password required"
-                                newPassword.length < 6 -> error = "Password must be at least 6 characters"
-                                newPassword != confirmPassword -> error = "Passwords don't match"
-                                else -> {
-                                    onChange(currentPassword, newPassword)
-                                    onDismiss()
-                                }
-                            }
-                        },
-                        enabled = currentPassword.isNotBlank() && newPassword.isNotBlank() && confirmPassword.isNotBlank()
-                    ) {
-                        Text(stringResource(R.string.change_password))
-                    }
+    AppFormDialog(
+        title = stringResource(R.string.change_password),
+        onDismiss = onDismiss,
+        confirmLabel = stringResource(R.string.change_password),
+        confirmEnabled = currentPassword.isNotBlank() && newPassword.isNotBlank() && confirmPassword.isNotBlank(),
+        onConfirm = {
+            when {
+                currentPassword.isBlank() -> error = "Current password required"
+                newPassword.isBlank() -> error = "New password required"
+                newPassword.length < 6 -> error = "Password must be at least 6 characters"
+                newPassword != confirmPassword -> error = "Passwords don't match"
+                else -> {
+                    onChange(currentPassword, newPassword)
+                    onDismiss()
                 }
             }
         }
+    ) {
+        OutlinedTextField(
+            value = currentPassword,
+            onValueChange = {
+                currentPassword = it
+                error = null
+            },
+            label = { Text(stringResource(R.string.current_password)) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation()
+        )
+
+        OutlinedTextField(
+            value = newPassword,
+            onValueChange = {
+                newPassword = it
+                error = null
+            },
+            label = { Text(stringResource(R.string.new_password)) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation()
+        )
+
+        OutlinedTextField(
+            value = confirmPassword,
+            onValueChange = {
+                confirmPassword = it
+                error = null
+            },
+            label = { Text(stringResource(R.string.confirm_password)) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            isError = error != null,
+            supportingText = error?.let { { Text(it) } },
+            visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation()
+        )
     }
 }

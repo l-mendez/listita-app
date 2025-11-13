@@ -5,6 +5,7 @@
     <string name="loading">Cargando…</string>
     <string name="error">Error</string>
     <string name="success">Éxito</string>
+    <string name="info">Información</string>
     <string name="ok">Aceptar</string>
     <string name="cancel">Cancelar</string>
     <string name="save">Guardar</string>
@@ -81,6 +82,8 @@
     <string name="confirm_delete_list">¿Eliminar esta lista?</string>
     <string name="confirm_delete_product">¿Eliminar este producto?</string>
     <string name="confirm_logout">¿Cerrar sesión?</string>
+    <string name="confirm_remove_item_from_list">¿Eliminar %1$s de la lista?</string>
+    <string name="this_item">este ítem</string>
     <string name="recurrentes">Recurrentes</string>
     <string name="activas">Activas</string>
     <string name="solo_tu">Solo tú</string>

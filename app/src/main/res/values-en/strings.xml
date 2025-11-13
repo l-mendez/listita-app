@@ -5,6 +5,7 @@
     <string name="loading">Loading…</string>
     <string name="error">Error</string>
     <string name="success">Success</string>
+    <string name="info">Info</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
@@ -81,5 +82,7 @@
     <string name="confirm_delete_list">Delete this list?</string>
     <string name="confirm_delete_product">Delete this product?</string>
     <string name="confirm_logout">Log out?</string>
+    <string name="confirm_remove_item_from_list">Remove %1$s from list?</string>
+    <string name="this_item">this item</string>
     <string name="edit_list">Edit list</string>
 </resources>

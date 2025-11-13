@@ -16,6 +16,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.listitaapp.R
+import com.example.listitaapp.ui.components.AppDialogType
+import com.example.listitaapp.ui.components.AppMessageDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,33 +38,21 @@ fun VerifyAccountScreen(
     // Navigation handled by MainActivity based on auth state
     // When isAuthenticated becomes true, NavHost will automatically navigate to main screen
 
-    // Show error dialog
-    if (uiState.error != null) {
-        AlertDialog(
-            onDismissRequest = onClearError,
-            icon = { Icon(Icons.Default.Warning, contentDescription = null) },
-            title = { Text(stringResource(R.string.error)) },
-            text = { Text(uiState.error) },
-            confirmButton = {
-                TextButton(onClick = onClearError) {
-                    Text(stringResource(R.string.ok))
-                }
-            }
+    // Show error dialog (standardized)
+    uiState.error?.let {
+        AppMessageDialog(
+            type = AppDialogType.Error,
+            message = it,
+            onDismiss = onClearError
         )
     }
 
-    // Show success dialog (for resend)
-    if (uiState.successMessage != null) {
-        AlertDialog(
-            onDismissRequest = onClearSuccess,
-            icon = { Icon(Icons.Default.CheckCircle, contentDescription = null) },
-            title = { Text("Success") },
-            text = { Text(uiState.successMessage) },
-            confirmButton = {
-                TextButton(onClick = onClearSuccess) {
-                    Text(stringResource(R.string.ok))
-                }
-            }
+    // Show success dialog (standardized, for resend)
+    uiState.successMessage?.let { msg ->
+        AppMessageDialog(
+            type = AppDialogType.Success,
+            message = msg,
+            onDismiss = onClearSuccess
         )
     }
 

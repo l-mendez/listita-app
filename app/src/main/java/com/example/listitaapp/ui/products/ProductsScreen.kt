@@ -19,6 +19,14 @@ import com.example.listitaapp.ui.components.StandardCard
 import com.example.listitaapp.ui.components.OptionsBottomSheet
 import com.example.listitaapp.ui.components.SheetActionItem
 import com.example.listitaapp.ui.components.SheetHeaderWithDelete
+import com.example.listitaapp.ui.components.AppConfirmDialog
+import com.example.listitaapp.ui.components.AppDialogType
+import com.example.listitaapp.ui.components.AppMessageDialog
+import com.example.listitaapp.ui.components.AppFormDialog
+import com.example.listitaapp.ui.components.AppSnackbarHost
+import com.example.listitaapp.ui.components.rememberAppSnackbarState
+import com.example.listitaapp.ui.components.appSnackTypeFromMessage
+import com.example.listitaapp.ui.components.show
 
 /**
  * Products Screen - Following HCI Principles:
@@ -42,56 +50,39 @@ fun ProductsScreen(
     onClearError: () -> Unit,
     onClearSuccess: () -> Unit
 ) {
+    val appSnackbar = rememberAppSnackbarState()
     var showDeleteDialog by remember { mutableStateOf<Product?>(null) }
     var editingProduct by remember { mutableStateOf<Product?>(null) }
     var selectedProduct by remember { mutableStateOf<Product?>(null) }
     var showOptions by remember { mutableStateOf(false) }
 
-    // Error dialog
-    if (uiState.error != null) {
-        AlertDialog(
-            onDismissRequest = onClearError,
-            icon = { Icon(Icons.Default.Warning, contentDescription = null) },
-            title = { Text(stringResource(R.string.error)) },
-            text = { Text(uiState.error) },
-            confirmButton = {
-                TextButton(onClick = onClearError) {
-                    Text(stringResource(R.string.ok))
-                }
-            }
+    // Error dialog (standardized)
+    uiState.error?.let {
+        AppMessageDialog(
+            type = AppDialogType.Error,
+            message = it,
+            onDismiss = onClearError
         )
     }
 
-    // Success snackbar
-    if (uiState.successMessage != null) {
-        LaunchedEffect(uiState.successMessage) {
-            kotlinx.coroutines.delay(2000)
+    // Success snackbar (standardized)
+    uiState.successMessage?.let { message ->
+        LaunchedEffect(message) {
+            appSnackbar.show(message, appSnackTypeFromMessage(message))
             onClearSuccess()
         }
     }
 
-    // Delete confirmation dialog
+    // Delete confirmation dialog (standardized)
     showDeleteDialog?.let { product ->
-        AlertDialog(
-            onDismissRequest = { showDeleteDialog = null },
-            icon = { Icon(Icons.Default.Delete, contentDescription = null) },
-            title = { Text(stringResource(R.string.confirm)) },
-            text = { Text(stringResource(R.string.confirm_delete_product)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onDeleteProduct(product.id)
-                        showDeleteDialog = null
-                    }
-                ) {
-                    Text(stringResource(R.string.delete))
-                }
+        AppConfirmDialog(
+            message = stringResource(R.string.confirm_delete_product),
+            onConfirm = {
+                onDeleteProduct(product.id)
+                showDeleteDialog = null
             },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = null }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
+            onDismiss = { showDeleteDialog = null },
+            destructive = true
         )
     }
 
@@ -129,13 +120,7 @@ fun ProductsScreen(
                 text = { Text(stringResource(R.string.create_product)) }
             )
         },
-        snackbarHost = {
-            if (uiState.successMessage != null) {
-                Snackbar {
-                    Text(uiState.successMessage)
-                }
-            }
-        }
+        snackbarHost = { AppSnackbarHost(state = appSnackbar) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -264,67 +249,57 @@ private fun EditProductDialog(
     var selectedCategoryId by remember { mutableStateOf(product.category?.id) }
     var expanded by remember { mutableStateOf(false) }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.edit)) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text(stringResource(R.string.product_name)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                OutlinedTextField(
-                    value = price,
-                    onValueChange = { price = it.filter { ch -> ch.isDigit() || ch == '.' || ch == ',' } },
-                    label = { Text("Price") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                ExposedDropdownMenuBox(
-                    expanded = expanded,
-                    onExpandedChange = { expanded = it }
-                ) {
-                    OutlinedTextField(
-                        value = categories.find { it.id == selectedCategoryId }?.name ?: "",
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text(stringResource(R.string.category)) },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        categories.forEach { category ->
-                            DropdownMenuItem(
-                                text = { Text(category.name) },
-                                onClick = {
-                                    selectedCategoryId = category.id
-                                    expanded = false
-                                }
-                            )
+    AppFormDialog(
+        title = stringResource(R.string.edit),
+        onDismiss = onDismiss,
+        confirmLabel = stringResource(R.string.save),
+        onConfirm = { onApply(name.ifBlank { null }, price.ifBlank { null }, selectedCategoryId) },
+        confirmEnabled = name.isNotBlank()
+    ) {
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text(stringResource(R.string.product_name)) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = price,
+            onValueChange = { price = it.filter { ch -> ch.isDigit() || ch == '.' || ch == ',' } },
+            label = { Text("Price") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = it }
+        ) {
+            OutlinedTextField(
+                value = categories.find { it.id == selectedCategoryId }?.name ?: "",
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(stringResource(R.string.category)) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor()
+            )
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                categories.forEach { category ->
+                    DropdownMenuItem(
+                        text = { Text(category.name) },
+                        onClick = {
+                            selectedCategoryId = category.id
+                            expanded = false
                         }
-                    }
+                    )
                 }
             }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    onApply(name.ifBlank { null }, price.ifBlank { null }, selectedCategoryId)
-                }
-            ) { Text(stringResource(R.string.save)) }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
         }
-    )
+    }
 }
 
 @Composable
@@ -398,77 +373,52 @@ fun CreateProductDialog(
     var selectedCategoryId by remember { mutableStateOf<Long?>(null) }
     var expanded by remember { mutableStateOf(false) }
 
-    AlertDialog(
-        onDismissRequest = onDismiss
+    AppFormDialog(
+        title = stringResource(R.string.create_product),
+        onDismiss = onDismiss,
+        confirmLabel = stringResource(R.string.create_product),
+        confirmEnabled = productName.isNotBlank(),
+        onConfirm = {
+            if (productName.isNotBlank()) {
+                onCreate(productName, selectedCategoryId)
+                onDismiss()
+            }
+        }
     ) {
-        Card {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+        OutlinedTextField(
+            value = productName,
+            onValueChange = { productName = it },
+            label = { Text(stringResource(R.string.product_name)) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = it }
+        ) {
+            OutlinedTextField(
+                value = categories.find { it.id == selectedCategoryId }?.name ?: "",
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(stringResource(R.string.category)) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor()
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
             ) {
-                Text(
-                    text = stringResource(R.string.create_product),
-                    style = MaterialTheme.typography.headlineSmall
-                )
-
-                OutlinedTextField(
-                    value = productName,
-                    onValueChange = { productName = it },
-                    label = { Text(stringResource(R.string.product_name)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                ExposedDropdownMenuBox(
-                    expanded = expanded,
-                    onExpandedChange = { expanded = it }
-                ) {
-                    OutlinedTextField(
-                        value = categories.find { it.id == selectedCategoryId }?.name ?: "",
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text(stringResource(R.string.category)) },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor()
-                    )
-
-                    ExposedDropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        categories.forEach { category ->
-                            DropdownMenuItem(
-                                text = { Text(category.name) },
-                                onClick = {
-                                    selectedCategoryId = category.id
-                                    expanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(onClick = onDismiss) {
-                        Text(stringResource(R.string.cancel))
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(
+                categories.forEach { category ->
+                    DropdownMenuItem(
+                        text = { Text(category.name) },
                         onClick = {
-                            if (productName.isNotBlank()) {
-                                onCreate(productName, selectedCategoryId)
-                                onDismiss()
-                            }
-                        },
-                        enabled = productName.isNotBlank()
-                    ) {
-                        Text(stringResource(R.string.create_product))
-                    }
+                            selectedCategoryId = category.id
+                            expanded = false
+                        }
+                    )
                 }
             }
         }
@@ -482,34 +432,23 @@ fun CreateCategoryDialog(
 ) {
     var categoryName by remember { mutableStateOf("") }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.create_category)) },
-        text = {
-            OutlinedTextField(
-                value = categoryName,
-                onValueChange = { categoryName = it },
-                label = { Text(stringResource(R.string.category_name)) },
-                singleLine = true
-            )
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    if (categoryName.isNotBlank()) {
-                        onCreate(categoryName)
-                        onDismiss()
-                    }
-                },
-                enabled = categoryName.isNotBlank()
-            ) {
-                Text(stringResource(R.string.create_category))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel))
+    AppFormDialog(
+        title = stringResource(R.string.create_category),
+        onDismiss = onDismiss,
+        confirmLabel = stringResource(R.string.create_category),
+        confirmEnabled = categoryName.isNotBlank(),
+        onConfirm = {
+            if (categoryName.isNotBlank()) {
+                onCreate(categoryName)
+                onDismiss()
             }
         }
-    )
+    ) {
+        OutlinedTextField(
+            value = categoryName,
+            onValueChange = { categoryName = it },
+            label = { Text(stringResource(R.string.category_name)) },
+            singleLine = true
+        )
+    }
 }

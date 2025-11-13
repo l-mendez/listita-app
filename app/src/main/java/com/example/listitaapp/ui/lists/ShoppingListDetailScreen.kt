@@ -19,6 +19,14 @@ import com.example.listitaapp.data.model.Product
 import com.example.listitaapp.ui.components.AppTopBar
 import com.example.listitaapp.ui.components.StandardCard
 import com.example.listitaapp.ui.components.AppExtendedFab
+import com.example.listitaapp.ui.components.AppConfirmDialog
+import com.example.listitaapp.ui.components.AppDialogType
+import com.example.listitaapp.ui.components.AppMessageDialog
+import com.example.listitaapp.ui.components.AppFormDialog
+import com.example.listitaapp.ui.components.AppSnackbarHost
+import com.example.listitaapp.ui.components.rememberAppSnackbarState
+import com.example.listitaapp.ui.components.appSnackTypeFromMessage
+import com.example.listitaapp.ui.components.show
 
 /**
  * Shopping List Detail Screen - Following HCI Principles:
@@ -40,53 +48,37 @@ fun ShoppingListDetailScreen(
     onClearError: () -> Unit,
     onClearSuccess: () -> Unit
 ) {
+    val appSnackbar = rememberAppSnackbarState()
     var showDeleteDialog by remember { mutableStateOf<ListItem?>(null) }
 
-    // Error dialog
-    if (uiState.error != null) {
-        AlertDialog(
-            onDismissRequest = onClearError,
-            icon = { Icon(Icons.Default.Warning, contentDescription = null) },
-            title = { Text(stringResource(R.string.error)) },
-            text = { Text(uiState.error) },
-            confirmButton = {
-                TextButton(onClick = onClearError) {
-                    Text(stringResource(R.string.ok))
-                }
-            }
+    // Error dialog (standardized)
+    uiState.error?.let {
+        AppMessageDialog(
+            type = AppDialogType.Error,
+            message = it,
+            onDismiss = onClearError
         )
     }
 
-    // Success snackbar
-    if (uiState.successMessage != null) {
-        LaunchedEffect(uiState.successMessage) {
-            kotlinx.coroutines.delay(2000)
+    // Success snackbar (standardized)
+    uiState.successMessage?.let { message ->
+        LaunchedEffect(message) {
+            appSnackbar.show(message, appSnackTypeFromMessage(message))
             onClearSuccess()
         }
     }
 
-    // Delete confirmation dialog
+    // Delete confirmation dialog (standardized)
     showDeleteDialog?.let { item ->
-        AlertDialog(
-            onDismissRequest = { showDeleteDialog = null },
-            icon = { Icon(Icons.Default.Delete, contentDescription = null) },
-            title = { Text(stringResource(R.string.confirm)) },
-            text = { Text("Remove ${item.product?.name ?: "this item"} from list?") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onDeleteItem(item.id)
-                        showDeleteDialog = null
-                    }
-                ) {
-                    Text(stringResource(R.string.delete))
-                }
+        val productName = item.product?.name ?: stringResource(R.string.this_item)
+        AppConfirmDialog(
+            message = stringResource(R.string.confirm_remove_item_from_list, productName),
+            onConfirm = {
+                onDeleteItem(item.id)
+                showDeleteDialog = null
             },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = null }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
+            onDismiss = { showDeleteDialog = null },
+            destructive = true
         )
     }
 
@@ -108,13 +100,7 @@ fun ShoppingListDetailScreen(
                 text = stringResource(R.string.add_item)
             )
         },
-        snackbarHost = {
-            if (uiState.successMessage != null) {
-                Snackbar {
-                    Text(uiState.successMessage)
-                }
-            }
-        }
+        snackbarHost = { AppSnackbarHost(state = appSnackbar) }
     ) { padding ->
         Box(
             modifier = Modifier
@@ -273,145 +259,119 @@ fun AddItemToListDialog(
 
     val commonUnits = listOf("units", "kg", "g", "l", "ml", "pcs")
 
-    AlertDialog(
-        onDismissRequest = onDismiss
+    AppFormDialog(
+        title = stringResource(R.string.add_item),
+        onDismiss = onDismiss,
+        confirmLabel = stringResource(R.string.add_item),
+        confirmEnabled = selectedProductId != null && quantity.toDoubleOrNull() != null,
+        onConfirm = {
+            selectedProductId?.let { productId ->
+                val qty = quantity.toDoubleOrNull() ?: 1.0
+                onAdd(productId, qty, unit)
+                onDismiss()
+            }
+        }
     ) {
-        Card {
-            Column(
-                modifier = Modifier
-                    .padding(24.dp)
-                    .widthIn(max = 400.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+        // Show message if no products available
+        if (products.isEmpty()) {
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer
+                )
             ) {
                 Text(
-                    text = stringResource(R.string.add_item),
-                    style = MaterialTheme.typography.headlineSmall
+                    text = "No products available. Please create products first in the Products screen.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    modifier = Modifier.padding(16.dp)
                 )
+            }
+        }
 
-                // Show message if no products available
-                if (products.isEmpty()) {
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer
-                        )
-                    ) {
-                        Text(
-                            text = "No products available. Please create products first in the Products screen.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
-                            modifier = Modifier.padding(16.dp)
-                        )
-                    }
-                }
+        // Product selector
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = if (products.isNotEmpty()) it else false }
+        ) {
+            OutlinedTextField(
+                value = products.find { it.id == selectedProductId }?.name ?: "",
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(stringResource(R.string.product_name)) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                enabled = products.isNotEmpty(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor()
+            )
 
-                // Product selector
-                ExposedDropdownMenuBox(
-                    expanded = expanded,
-                    onExpandedChange = { expanded = if (products.isNotEmpty()) it else false }
-                ) {
-                    OutlinedTextField(
-                        value = products.find { it.id == selectedProductId }?.name ?: "",
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text(stringResource(R.string.product_name)) },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                        enabled = products.isNotEmpty(),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .menuAnchor()
-                    )
-
-                    ExposedDropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        products.forEach { product ->
-                            DropdownMenuItem(
-                                text = {
-                                    Column {
-                                        Text(product.name)
-                                        product.category?.let { category ->
-                                            Text(
-                                                text = category.name,
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.outline
-                                            )
-                                        }
-                                    }
-                                },
-                                onClick = {
-                                    selectedProductId = product.id
-                                    expanded = false
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                products.forEach { product ->
+                    DropdownMenuItem(
+                        text = {
+                            Column {
+                                Text(product.name)
+                                product.category?.let { category ->
+                                    Text(
+                                        text = category.name,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.outline
+                                    )
                                 }
-                            )
-                        }
-                    }
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedTextField(
-                        value = quantity,
-                        onValueChange = { quantity = it },
-                        label = { Text(stringResource(R.string.quantity)) },
-                        singleLine = true,
-                        modifier = Modifier.weight(1f)
-                    )
-
-                    var unitExpanded by remember { mutableStateOf(false) }
-                    ExposedDropdownMenuBox(
-                        expanded = unitExpanded,
-                        onExpandedChange = { unitExpanded = it },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        OutlinedTextField(
-                            value = unit,
-                            onValueChange = { unit = it },
-                            label = { Text(stringResource(R.string.unit)) },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .menuAnchor()
-                        )
-
-                        ExposedDropdownMenu(
-                            expanded = unitExpanded,
-                            onDismissRequest = { unitExpanded = false }
-                        ) {
-                            commonUnits.forEach { commonUnit ->
-                                DropdownMenuItem(
-                                    text = { Text(commonUnit) },
-                                    onClick = {
-                                        unit = commonUnit
-                                        unitExpanded = false
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(onClick = onDismiss) {
-                        Text(stringResource(R.string.cancel))
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(
-                        onClick = {
-                            selectedProductId?.let { productId ->
-                                val qty = quantity.toDoubleOrNull() ?: 1.0
-                                onAdd(productId, qty, unit)
-                                onDismiss()
                             }
                         },
-                        enabled = selectedProductId != null && quantity.toDoubleOrNull() != null
-                    ) {
-                        Text(stringResource(R.string.add_item))
+                        onClick = {
+                            selectedProductId = product.id
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            OutlinedTextField(
+                value = quantity,
+                onValueChange = { quantity = it },
+                label = { Text(stringResource(R.string.quantity)) },
+                singleLine = true,
+                modifier = Modifier.weight(1f)
+            )
+
+            var unitExpanded by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(
+                expanded = unitExpanded,
+                onExpandedChange = { unitExpanded = it },
+                modifier = Modifier.weight(1f)
+            ) {
+                OutlinedTextField(
+                    value = unit,
+                    onValueChange = { unit = it },
+                    label = { Text(stringResource(R.string.unit)) },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = unitExpanded,
+                    onDismissRequest = { unitExpanded = false }
+                ) {
+                    commonUnits.forEach { commonUnit ->
+                        DropdownMenuItem(
+                            text = { Text(commonUnit) },
+                            onClick = {
+                                unit = commonUnit
+                                unitExpanded = false
+                            }
+                        )
                     }
                 }
             }

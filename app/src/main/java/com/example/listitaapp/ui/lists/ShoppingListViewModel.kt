@@ -98,7 +98,9 @@ class ShoppingListViewModel @Inject constructor(
                                 it.copy(
                                     currentList = list,
                                     currentListItems = validItems,
-                                    isLoading = false
+                                    isLoading = false,
+                                    // Keep lists screen counters in sync while user is on detail
+                                    itemsCountByListId = it.itemsCountByListId + (list.id to validItems.size)
                                 )
                             }
                         },

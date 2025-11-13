@@ -12,7 +12,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -232,63 +238,39 @@ fun MainScreenScaffold(
                     containerColor = MaterialTheme.colorScheme.surface
                 ) {
                     Spacer(Modifier.width(16.dp))
-                    NavigationBarItem(
-                        icon = { Icon(Icons.Default.List, contentDescription = "Lists") },
-                        label = { Text("Lists") },
-                        selected = currentRoute == Screen.ShoppingLists.route,
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.onSurface,
-                            selectedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurface,
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurface,
-                            indicatorColor = Color.Transparent
-                        ),
-                        onClick = {
-                            if (currentRoute != Screen.ShoppingLists.route) {
-                                navController.navigate(Screen.ShoppingLists.route) {
-                                    popUpTo(Screen.ShoppingLists.route) { inclusive = true }
-                                }
+                    BottomNavItem(
+                        icon = Icons.Default.List,
+                        label = "Lists",
+                        selected = currentRoute == Screen.ShoppingLists.route
+                    ) {
+                        if (currentRoute != Screen.ShoppingLists.route) {
+                            navController.navigate(Screen.ShoppingLists.route) {
+                                popUpTo(Screen.ShoppingLists.route) { inclusive = true }
                             }
                         }
-                    )
-                    NavigationBarItem(
-                        icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Products") },
-                        label = { Text("Products") },
-                        selected = currentRoute == Screen.Products.route,
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.onSurface,
-                            selectedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurface,
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurface,
-                            indicatorColor = Color.Transparent
-                        ),
-                        onClick = {
-                            if (currentRoute != Screen.Products.route) {
-                                navController.navigate(Screen.Products.route) {
-                                    popUpTo(Screen.ShoppingLists.route) { inclusive = false }
-                                }
+                    }
+                    BottomNavItem(
+                        icon = Icons.Default.ShoppingCart,
+                        label = "Products",
+                        selected = currentRoute == Screen.Products.route
+                    ) {
+                        if (currentRoute != Screen.Products.route) {
+                            navController.navigate(Screen.Products.route) {
+                                popUpTo(Screen.ShoppingLists.route) { inclusive = false }
                             }
                         }
-                    )
-                    NavigationBarItem(
-                        icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
-                        label = { Text("Profile") },
-                        selected = currentRoute == Screen.Profile.route,
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.onSurface,
-                            selectedTextColor = MaterialTheme.colorScheme.onSurface,
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurface,
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurface,
-                            indicatorColor = Color.Transparent
-                        ),
-                        onClick = {
-                            if (currentRoute != Screen.Profile.route) {
-                                navController.navigate(Screen.Profile.route) {
-                                    popUpTo(Screen.ShoppingLists.route) { inclusive = false }
-                                }
+                    }
+                    BottomNavItem(
+                        icon = Icons.Default.Person,
+                        label = "Profile",
+                        selected = currentRoute == Screen.Profile.route
+                    ) {
+                        if (currentRoute != Screen.Profile.route) {
+                            navController.navigate(Screen.Profile.route) {
+                                popUpTo(Screen.ShoppingLists.route) { inclusive = false }
                             }
                         }
-                    )
+                    }
                     Spacer(Modifier.width(16.dp))
                 }
             }
@@ -296,6 +278,44 @@ fun MainScreenScaffold(
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             content()
+        }
+    }
+}
+
+@Composable
+private fun RowScope.BottomNavItem(
+    icon: ImageVector,
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    val backgroundColor = if (selected) {
+        MaterialTheme.colorScheme.secondaryContainer
+    } else {
+        Color.Transparent
+    }
+    val contentColor = if (selected) {
+        MaterialTheme.colorScheme.onSecondaryContainer
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    Box(
+        modifier = Modifier
+            .weight(1f)
+            .padding(vertical = 8.dp, horizontal = 8.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(backgroundColor)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            modifier = Modifier.padding(vertical = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Icon(icon, contentDescription = label, tint = contentColor)
+            Text(text = label, color = contentColor, style = MaterialTheme.typography.labelMedium)
         }
     }
 }
