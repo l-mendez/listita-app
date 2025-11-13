@@ -81,4 +81,5 @@
     <string name="confirm_delete_list">Delete this list?</string>
     <string name="confirm_delete_product">Delete this product?</string>
     <string name="confirm_logout">Log out?</string>
+    <string name="edit_list">Edit list</string>
 </resources>

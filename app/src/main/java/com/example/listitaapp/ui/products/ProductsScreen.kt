@@ -16,6 +16,9 @@ import com.example.listitaapp.R
 import com.example.listitaapp.data.model.Product
 import com.example.listitaapp.ui.components.AppTopBar
 import com.example.listitaapp.ui.components.StandardCard
+import com.example.listitaapp.ui.components.OptionsBottomSheet
+import com.example.listitaapp.ui.components.SheetActionItem
+import com.example.listitaapp.ui.components.SheetHeaderWithDelete
 
 /**
  * Products Screen - Following HCI Principles:
@@ -41,6 +44,8 @@ fun ProductsScreen(
 ) {
     var showDeleteDialog by remember { mutableStateOf<Product?>(null) }
     var editingProduct by remember { mutableStateOf<Product?>(null) }
+    var selectedProduct by remember { mutableStateOf<Product?>(null) }
+    var showOptions by remember { mutableStateOf(false) }
 
     // Error dialog
     if (uiState.error != null) {
@@ -99,9 +104,6 @@ fun ProductsScreen(
             onApply = { name, price, categoryId ->
                 onUpdateProduct(product.id, name, price, categoryId)
                 editingProduct = null
-            },
-            onDelete = {
-                showDeleteDialog = product
             }
         )
     }
@@ -191,10 +193,37 @@ fun ProductsScreen(
                             it.category?.name?.lowercase()?.contains(uiState.searchQuery.lowercase()) == true
                         }
                     },
-                    onEditClick = { editingProduct = it },
+                    onSettingsClick = {
+                        selectedProduct = it
+                        showOptions = true
+                    },
                     modifier = Modifier.fillMaxSize()
                 )
             }
+        }
+    }
+
+    // Options bottom sheet for products
+    if (showOptions && selectedProduct != null) {
+        OptionsBottomSheet(
+            onDismissRequest = { showOptions = false },
+            headerContent = {
+                SheetHeaderWithDelete(
+                    onDeleteClick = {
+                        showOptions = false
+                        showDeleteDialog = selectedProduct
+                    }
+                )
+            }
+        ) {
+            SheetActionItem(
+                text = "Edit",
+                icon = Icons.Default.Edit,
+                onClick = {
+                    editingProduct = selectedProduct
+                    showOptions = false
+                }
+            )
         }
     }
 }
@@ -228,8 +257,7 @@ private fun EditProductDialog(
     product: Product,
     categories: List<com.example.listitaapp.data.model.Category>,
     onDismiss: () -> Unit,
-    onApply: (name: String?, price: String?, categoryId: Long?) -> Unit,
-    onDelete: () -> Unit
+    onApply: (name: String?, price: String?, categoryId: Long?) -> Unit
 ) {
     var name by remember { mutableStateOf(product.name) }
     var price by remember { mutableStateOf(product.metadata?.get("price")?.toString() ?: "") }
@@ -237,26 +265,17 @@ private fun EditProductDialog(
     var expanded by remember { mutableStateOf(false) }
 
     AlertDialog(
-        onDismissRequest = onDismiss
-    ) {
-        StandardCard {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Text(
-                    text = "Edit product",
-                    style = MaterialTheme.typography.headlineSmall
-                )
-
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.edit)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Name") },
+                    label = { Text(stringResource(R.string.product_name)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
-
                 OutlinedTextField(
                     value = price,
                     onValueChange = { price = it.filter { ch -> ch.isDigit() || ch == '.' || ch == ',' } },
@@ -264,7 +283,6 @@ private fun EditProductDialog(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
-
                 ExposedDropdownMenuBox(
                     expanded = expanded,
                     onExpandedChange = { expanded = it }
@@ -273,13 +291,12 @@ private fun EditProductDialog(
                         value = categories.find { it.id == selectedCategoryId }?.name ?: "",
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Categories") },
+                        label = { Text(stringResource(R.string.category)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .menuAnchor()
                     )
-
                     ExposedDropdownMenu(
                         expanded = expanded,
                         onDismissRequest = { expanded = false }
@@ -295,38 +312,25 @@ private fun EditProductDialog(
                         }
                     }
                 }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Button(
-                        onClick = {
-                            onDelete()
-                            onDismiss()
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                    ) {
-                        Text("Delete")
-                    }
-
-                    Button(
-                        onClick = {
-                            onApply(name.ifBlank { null }, price.ifBlank { null }, selectedCategoryId)
-                        }
-                    ) {
-                        Text("Apply")
-                    }
-                }
             }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onApply(name.ifBlank { null }, price.ifBlank { null }, selectedCategoryId)
+                }
+            ) { Text(stringResource(R.string.save)) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
         }
-    }
+    )
 }
 
 @Composable
 private fun ProductsList(
     products: List<Product>,
-    onEditClick: (Product) -> Unit,
+    onSettingsClick: (Product) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -337,7 +341,7 @@ private fun ProductsList(
         items(products, key = { it.id }) { product ->
             ProductItem(
                 product = product,
-                onEditClick = { onEditClick(product) }
+                onSettingsClick = { onSettingsClick(product) }
             )
         }
     }
@@ -346,7 +350,7 @@ private fun ProductsList(
 @Composable
 private fun ProductItem(
     product: Product,
-    onEditClick: () -> Unit
+    onSettingsClick: () -> Unit
 ) {
     StandardCard(
         modifier = Modifier.fillMaxWidth()
@@ -373,10 +377,10 @@ private fun ProductItem(
                 }
             }
 
-            IconButton(onClick = onEditClick) {
+            IconButton(onClick = onSettingsClick) {
                 Icon(
-                    Icons.Default.Edit,
-                    contentDescription = "Edit"
+                    Icons.Default.MoreVert,
+                    contentDescription = "Settings"
                 )
             }
         }

@@ -19,6 +19,9 @@ import com.example.listitaapp.data.model.ShoppingList
 import com.example.listitaapp.ui.components.AppFab
 import com.example.listitaapp.ui.components.AppTopBar
 import com.example.listitaapp.ui.components.SectionHeader
+import com.example.listitaapp.ui.components.OptionsBottomSheet
+import com.example.listitaapp.ui.components.SheetActionItem
+import com.example.listitaapp.ui.components.SheetHeaderWithDelete
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -50,6 +53,7 @@ fun ShoppingListsScreen(
     var showOptions by remember { mutableStateOf(false) }
     var showRenameDialog by remember { mutableStateOf(false) }
     var showEditDescriptionDialog by remember { mutableStateOf(false) }
+    var showEditListDialog by remember { mutableStateOf(false) }
 
     // Error dialog
     if (uiState.error != null) {
@@ -132,6 +136,53 @@ fun ShoppingListsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showEditDescriptionDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    // Combined Edit dialog (name + description)
+    if (showEditListDialog && selectedList != null) {
+        var newName by remember { mutableStateOf(selectedList!!.name) }
+        var newDescription by remember { mutableStateOf(selectedList!!.description ?: "") }
+        AlertDialog(
+            onDismissRequest = { showEditListDialog = false },
+            title = { Text(stringResource(R.string.edit_list)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    OutlinedTextField(
+                        value = newName,
+                        onValueChange = { if (it.length <= 50) newName = it },
+                        label = { Text(stringResource(R.string.list_name)) },
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = newDescription,
+                        onValueChange = { if (it.length <= 200) newDescription = it },
+                        label = { Text(stringResource(R.string.list_description)) },
+                        minLines = 2,
+                        maxLines = 4
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (newName != selectedList!!.name) {
+                            onUpdateListName(selectedList!!.id, newName.trim())
+                        }
+                        if (newDescription != (selectedList!!.description ?: "")) {
+                            onUpdateListDescription(selectedList!!.id, newDescription)
+                        }
+                        showEditListDialog = false
+                        showOptions = false
+                    },
+                    enabled = newName.isNotBlank()
+                ) { Text(stringResource(R.string.save)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEditListDialog = false }) {
                     Text(stringResource(R.string.cancel))
                 }
             }
@@ -265,56 +316,44 @@ fun ShoppingListsScreen(
 
     // Options bottom sheet
     if (showOptions && selectedList != null) {
-        ModalBottomSheet(onDismissRequest = { showOptions = false }) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                FilterChip(
-                    selected = selectedList!!.recurring,
-                    onClick = {
-                        onToggleRecurring(selectedList!!.id, selectedList!!.recurring)
+        OptionsBottomSheet(onDismissRequest = { showOptions = false },
+            headerContent = {
+                SheetHeaderWithDelete(
+                    onDeleteClick = {
                         showOptions = false
+                        showDeleteDialog = selectedList
                     },
-                    label = { Text(stringResource(R.string.recurrente)) },
-                    leadingIcon = { Icon(imageVector = Icons.Default.Star, contentDescription = null) }
+                    leadingContent = {
+                        FilterChip(
+                            selected = selectedList!!.recurring,
+                            onClick = {
+                                onToggleRecurring(selectedList!!.id, selectedList!!.recurring)
+                                showOptions = false
+                            },
+                            label = { Text(stringResource(R.string.recurrente)) },
+                            leadingIcon = { Icon(imageVector = Icons.Default.Star, contentDescription = null) }
+                        )
+                    }
                 )
-                TextButton(onClick = {
-                    showOptions = false
-                    showDeleteDialog = selectedList
-                }) {
-                    Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
-                }
             }
-            Divider()
-            ListItem(
-                headlineContent = { Text(stringResource(R.string.cambiar_nombre)) },
-                leadingContent = { Icon(Icons.Default.Edit, contentDescription = null) },
-                modifier = Modifier.clickable { showRenameDialog = true }
+        ) {
+            SheetActionItem(
+                text = stringResource(R.string.edit),
+                icon = Icons.Default.Edit,
+                onClick = { showEditListDialog = true }
             )
-            Divider()
-            ListItem(
-                headlineContent = { Text(stringResource(R.string.cambiar_descripcion)) },
-                leadingContent = { Icon(Icons.Default.Edit, contentDescription = null) },
-                modifier = Modifier.clickable { showEditDescriptionDialog = true }
+            SheetActionItem(
+                text = stringResource(R.string.hacer_privada),
+                icon = Icons.Default.Lock,
+                onClick = { /* coming soon */ },
+                trailing = { Text("(próximamente)", color = MaterialTheme.colorScheme.outline) }
             )
-            Divider()
-            ListItem(
-                headlineContent = { Text(stringResource(R.string.hacer_privada)) },
-                leadingContent = { Icon(Icons.Default.Lock, contentDescription = null) },
-                trailingContent = { Text("(próximamente)", color = MaterialTheme.colorScheme.outline) }
+            SheetActionItem(
+                text = stringResource(R.string.compartir),
+                icon = Icons.Default.Share,
+                onClick = { /* coming soon */ },
+                trailing = { Text("(próximamente)", color = MaterialTheme.colorScheme.outline) }
             )
-            ListItem(
-                headlineContent = { Text(stringResource(R.string.compartir)) },
-                leadingContent = { Icon(Icons.Default.Share, contentDescription = null) },
-                trailingContent = { Text("(próximamente)", color = MaterialTheme.colorScheme.outline) }
-            )
-            Spacer(Modifier.height(16.dp))
         }
     }
 }
@@ -346,6 +385,13 @@ private fun ShoppingListItem(
                     text = list.name,
                     style = MaterialTheme.typography.titleLarge
                 )
+                if (!list.description.isNullOrBlank()) {
+                    Text(
+                        text = list.description ?: "",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
