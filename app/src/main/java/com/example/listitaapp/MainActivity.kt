@@ -20,7 +20,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.example.listitaapp.data.api.ApiClient
 import com.example.listitaapp.ui.auth.AuthViewModel
 import com.example.listitaapp.ui.auth.LoginScreen
 import com.example.listitaapp.ui.auth.RegisterScreen
@@ -30,12 +29,9 @@ import com.example.listitaapp.ui.navigation.Screen
 import com.example.listitaapp.ui.products.*
 import com.example.listitaapp.ui.profile.*
 import com.example.listitaapp.ui.theme.ListitaAppTheme
+import dagger.hilt.android.AndroidEntryPoint
 
-/**
- * MainActivity - Entry point of the app
- * Implements adaptive navigation for responsive design across different screen sizes
- * Follows HCI principles for consistent user experience
- */
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val authViewModel: AuthViewModel by viewModels()
@@ -45,9 +41,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Initialize API Client
-        ApiClient.init(this)
 
         enableEdgeToEdge()
         setContent {
@@ -73,7 +66,6 @@ fun AppNavigation(
     val navController = rememberNavController()
     val authUiState by authViewModel.uiState.collectAsState()
 
-    // Navigate to main screen when user becomes authenticated
     LaunchedEffect(authUiState.isAuthenticated) {
         if (authUiState.isAuthenticated) {
             val currentRoute = navController.currentBackStackEntry?.destination?.route
@@ -101,7 +93,6 @@ fun AppNavigation(
                 Screen.Login.route
             }
         ) {
-            // Authentication screens
             composable(Screen.Login.route) {
                 LaunchedEffect(Unit) {
                     authViewModel.resetRegistrationState()
@@ -171,7 +162,6 @@ fun AppNavigation(
                 )
             }
 
-            // Main app screens with adaptive navigation
             composable(Screen.ShoppingLists.route) {
                 MainScreenScaffold(
                     navController = navController,
@@ -208,7 +198,6 @@ fun AppNavigation(
                 }
             }
 
-            // Detail screens
             composable(
                 route = Screen.ListDetail.route,
                 arguments = listOf(navArgument("listId") { type = NavType.LongType })
@@ -444,12 +433,10 @@ fun ShoppingListDetailScreenWrapper(
     val uiState by viewModel.uiState.collectAsState()
     var showAddItemDialog by remember { mutableStateOf(false) }
 
-    // Load list details when screen appears
     LaunchedEffect(listId) {
         viewModel.loadListDetails(listId)
     }
 
-    // Clear current list when leaving screen
     DisposableEffect(Unit) {
         onDispose {
             viewModel.clearCurrentList()

@@ -4,8 +4,11 @@ import com.example.listitaapp.data.api.ApiService
 import com.example.listitaapp.data.dto.*
 import com.example.listitaapp.data.model.Category
 import com.example.listitaapp.data.model.Product
+import javax.inject.Inject
 
-class ProductRepository(private val apiService: ApiService) {
+class ProductRepository @Inject constructor(
+    private val apiService: ApiService
+) {
 
     suspend fun getProducts(): Result<List<Product>> = try {
         val response = apiService.getProducts()

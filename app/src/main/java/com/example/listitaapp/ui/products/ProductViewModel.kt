@@ -1,17 +1,17 @@
 package com.example.listitaapp.ui.products
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.listitaapp.data.api.ApiClient
 import com.example.listitaapp.data.model.Category
 import com.example.listitaapp.data.model.Product
 import com.example.listitaapp.data.repository.ProductRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class ProductUiState(
     val products: List<Product> = emptyList(),
@@ -22,17 +22,15 @@ data class ProductUiState(
     val searchQuery: String = ""
 )
 
-class ProductViewModel(application: Application) : AndroidViewModel(application) {
-
+@HiltViewModel
+class ProductViewModel @Inject constructor(
     private val repository: ProductRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProductUiState())
     val uiState: StateFlow<ProductUiState> = _uiState.asStateFlow()
 
     init {
-        val apiService = ApiClient.getApiService(application)
-        repository = ProductRepository(apiService)
-
         loadProducts()
         loadCategories()
     }

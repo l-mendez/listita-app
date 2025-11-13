@@ -4,8 +4,11 @@ import com.example.listitaapp.data.api.ApiService
 import com.example.listitaapp.data.dto.*
 import com.example.listitaapp.data.model.ListItem
 import com.example.listitaapp.data.model.ShoppingList
+import javax.inject.Inject
 
-class ShoppingListRepository(private val apiService: ApiService) {
+class ShoppingListRepository @Inject constructor(
+    private val apiService: ApiService
+) {
 
     suspend fun getShoppingLists(): Result<List<ShoppingList>> = try {
         val response = apiService.getShoppingLists()

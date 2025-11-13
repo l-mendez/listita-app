@@ -1,19 +1,19 @@
 package com.example.listitaapp.ui.lists
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.listitaapp.data.api.ApiClient
 import com.example.listitaapp.data.model.ListItem
 import com.example.listitaapp.data.model.Product
 import com.example.listitaapp.data.model.ShoppingList
 import com.example.listitaapp.data.repository.ProductRepository
 import com.example.listitaapp.data.repository.ShoppingListRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class ShoppingListUiState(
     val lists: List<ShoppingList> = emptyList(),
@@ -26,19 +26,16 @@ data class ShoppingListUiState(
     val successMessage: String? = null
 )
 
-class ShoppingListViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val listRepository: ShoppingListRepository
+@HiltViewModel
+class ShoppingListViewModel @Inject constructor(
+    private val listRepository: ShoppingListRepository,
     private val productRepository: ProductRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ShoppingListUiState())
     val uiState: StateFlow<ShoppingListUiState> = _uiState.asStateFlow()
 
     init {
-        val apiService = ApiClient.getApiService(application)
-        listRepository = ShoppingListRepository(apiService)
-        productRepository = ProductRepository(apiService)
-
         loadShoppingLists()
         loadProducts()
     }

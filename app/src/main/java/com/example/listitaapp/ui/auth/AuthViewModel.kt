@@ -1,15 +1,15 @@
 package com.example.listitaapp.ui.auth
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.listitaapp.data.api.ApiClient
 import com.example.listitaapp.data.repository.AuthRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class AuthUiState(
     val isLoading: Boolean = false,
@@ -17,24 +17,20 @@ data class AuthUiState(
     val error: String? = null,
     val successMessage: String? = null,
     val email: String = "",
-    val password: String = "", // Temporarily stored for auto-login after verification
+    val password: String = "",
     val registrationComplete: Boolean = false,
     val verificationComplete: Boolean = false
 )
 
-class AuthViewModel(application: Application) : AndroidViewModel(application) {
-
+@HiltViewModel
+class AuthViewModel @Inject constructor(
     private val repository: AuthRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     init {
-        val apiService = ApiClient.getApiService(application)
-        val tokenManager = ApiClient.getTokenManager(application)
-        repository = AuthRepository(apiService, tokenManager)
-
-        // Check if already authenticated
         checkAuthentication()
     }
 

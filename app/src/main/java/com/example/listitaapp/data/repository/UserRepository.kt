@@ -2,8 +2,11 @@ package com.example.listitaapp.data.repository
 
 import com.example.listitaapp.data.api.ApiService
 import com.example.listitaapp.data.model.User
+import javax.inject.Inject
 
-class UserRepository(private val apiService: ApiService) {
+class UserRepository @Inject constructor(
+    private val apiService: ApiService
+) {
 
     suspend fun getProfile(): Result<User> = try {
         val response = apiService.getProfile()

@@ -5,18 +5,14 @@ import com.example.listitaapp.data.api.TokenManager
 import com.example.listitaapp.data.dto.*
 import com.example.listitaapp.data.model.User
 import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import retrofit2.Response
+import javax.inject.Inject
 
-class AuthRepository(
+class AuthRepository @Inject constructor(
     private val apiService: ApiService,
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val moshi: Moshi
 ) {
-
-    // Moshi instance for parsing error responses
-    private val moshi = Moshi.Builder()
-        .add(KotlinJsonAdapterFactory())
-        .build()
 
     /**
      * Extract error message from API response body

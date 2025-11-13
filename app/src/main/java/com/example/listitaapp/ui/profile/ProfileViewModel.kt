@@ -1,17 +1,17 @@
 package com.example.listitaapp.ui.profile
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.listitaapp.data.api.ApiClient
 import com.example.listitaapp.data.model.User
 import com.example.listitaapp.data.repository.AuthRepository
 import com.example.listitaapp.data.repository.UserRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class ProfileUiState(
     val user: User? = null,
@@ -20,20 +20,16 @@ data class ProfileUiState(
     val successMessage: String? = null
 )
 
-class ProfileViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val userRepository: UserRepository
+@HiltViewModel
+class ProfileViewModel @Inject constructor(
+    private val userRepository: UserRepository,
     private val authRepository: AuthRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
     init {
-        val apiService = ApiClient.getApiService(application)
-        val tokenManager = ApiClient.getTokenManager(application)
-        userRepository = UserRepository(apiService)
-        authRepository = AuthRepository(apiService, tokenManager)
-
         loadProfile()
     }
 
