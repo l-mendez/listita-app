@@ -18,6 +18,8 @@ private val LightColorScheme = lightColorScheme(
     onSurfaceVariant = Neutral600,
     secondary = Neutral700,
     tertiary = Neutral400,
+    tertiaryContainer = Amber100, // Subtle yellow/amber for recurring chip
+    onTertiaryContainer = Amber900, // Dark amber text for contrast
     outline = OutlineNeutral
 )
 

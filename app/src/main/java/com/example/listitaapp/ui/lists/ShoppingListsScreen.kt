@@ -13,6 +13,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.listitaapp.R
@@ -20,9 +25,10 @@ import com.example.listitaapp.data.model.ShoppingList
 import com.example.listitaapp.ui.components.AppFab
 import com.example.listitaapp.ui.components.AppTopBar
 import com.example.listitaapp.ui.components.SectionHeader
-import com.example.listitaapp.ui.components.OptionsBottomSheet
-import com.example.listitaapp.ui.components.SheetActionItem
-import com.example.listitaapp.ui.components.SheetHeaderWithDelete
+import com.example.listitaapp.ui.components.OptionsPopupMenu
+import com.example.listitaapp.ui.components.PopupMenuAction
+import com.example.listitaapp.ui.components.PopupHeaderButton
+import com.example.listitaapp.ui.components.PopupHeaderDeleteButton
 import com.example.listitaapp.ui.components.AppFormDialog
 import com.example.listitaapp.ui.components.AppConfirmDialog
 import com.example.listitaapp.ui.components.AppDialogType
@@ -68,6 +74,7 @@ fun ShoppingListsScreen(
     var showDeleteDialog by remember { mutableStateOf<ShoppingList?>(null) }
     var selectedList by remember { mutableStateOf<ShoppingList?>(null) }
     var showOptions by remember { mutableStateOf(false) }
+    var anchorBounds by remember { mutableStateOf<Rect?>(null) }
     var showRenameDialog by remember { mutableStateOf(false) }
     var showEditDescriptionDialog by remember { mutableStateOf(false) }
     var showEditListDialog by remember { mutableStateOf(false) }
@@ -265,8 +272,9 @@ fun ShoppingListsScreen(
                                 list = list,
                                 itemsCount = uiState.itemsCountByListId[list.id],
                                 onClick = { onListClick(list.id) },
-                                onSettingsClick = {
+                                onSettingsClick = { bounds ->
                                     selectedList = list
+                                    anchorBounds = bounds
                                     showOptions = true
                                 }
                             )
@@ -281,8 +289,9 @@ fun ShoppingListsScreen(
                                 list = list,
                                 itemsCount = uiState.itemsCountByListId[list.id],
                                 onClick = { onListClick(list.id) },
-                                onSettingsClick = {
+                                onSettingsClick = { bounds ->
                                     selectedList = list
+                                    anchorBounds = bounds
                                     showOptions = true
                                 }
                             )
@@ -293,52 +302,60 @@ fun ShoppingListsScreen(
         }
     }
 
-    // Options bottom sheet
-    if (showOptions && selectedList != null) {
-        OptionsBottomSheet(onDismissRequest = { showOptions = false },
-            headerContent = {
-                SheetHeaderWithDelete(
-                    onDeleteClick = {
+    // Options popup menu
+    OptionsPopupMenu(
+        expanded = showOptions && selectedList != null,
+        onDismissRequest = { showOptions = false },
+        anchorBounds = anchorBounds,
+        headerButtons = {
+            PopupHeaderButton(
+                text = stringResource(R.string.recurrente),
+                icon = Icons.Default.History,
+                selected = selectedList?.recurring == true,
+                onClick = {
+                    selectedList?.let {
+                        // Pass the CURRENT recurring value, repository will toggle it
+                        onToggleRecurring(it.id, it.recurring)
                         showOptions = false
-                        showDeleteDialog = selectedList
-                    },
-                    leadingContent = {
-                        FilterChip(
-                            selected = selectedList!!.recurring,
-                            onClick = {
-                                onToggleRecurring(selectedList!!.id, selectedList!!.recurring)
-                                showOptions = false
-                            },
-                            label = { Text(stringResource(R.string.recurrente)) },
-                            leadingIcon = { Icon(imageVector = Icons.Default.History, contentDescription = null) }
-                        )
                     }
-                )
-            }
-        ) {
-            SheetActionItem(
+                }
+            )
+            PopupHeaderDeleteButton(
+                onClick = {
+                    showOptions = false
+                    showDeleteDialog = selectedList
+                }
+            )
+        },
+        actions = listOf(
+            PopupMenuAction(
                 text = stringResource(R.string.edit),
                 icon = Icons.Default.Edit,
-                onClick = { showEditListDialog = true }
-            )
-            SheetActionItem(
+                onClick = {
+                    showEditListDialog = true
+                }
+            ),
+            PopupMenuAction(
                 text = stringResource(R.string.hacer_privada),
                 icon = Icons.Default.Lock,
                 onClick = {
-                    onMakePrivate(selectedList!!.id)
-                    showOptions = false
+                    selectedList?.let {
+                        onMakePrivate(it.id)
+                    }
                 }
-            )
-            SheetActionItem(
+            ),
+            PopupMenuAction(
                 text = stringResource(R.string.compartir),
                 icon = Icons.Default.Share,
                 onClick = {
-                    onLoadSharedUsers(selectedList!!.id)
-                    showShareDialog = true
+                    selectedList?.let {
+                        onLoadSharedUsers(it.id)
+                        showShareDialog = true
+                    }
                 }
             )
-        }
-    }
+        )
+    )
 
     // Share dialog
     if (showShareDialog && selectedList != null) {
@@ -367,7 +384,7 @@ private fun ShoppingListItem(
     list: ShoppingList,
     itemsCount: Int?,
     onClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: (Rect) -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -424,7 +441,27 @@ private fun ShoppingListItem(
                 }
             }
 
-            IconButton(onClick = onSettingsClick) {
+            var buttonPosition by remember { mutableStateOf<Offset?>(null) }
+            var buttonSize by remember { mutableStateOf<IntSize?>(null) }
+            IconButton(
+                onClick = {
+                    buttonPosition?.let { pos ->
+                        buttonSize?.let { size ->
+                            val bounds = Rect(
+                                left = pos.x,
+                                top = pos.y,
+                                right = pos.x + size.width,
+                                bottom = pos.y + size.height
+                            )
+                            onSettingsClick(bounds)
+                        }
+                    }
+                },
+                modifier = Modifier.onGloballyPositioned { coordinates ->
+                    buttonPosition = coordinates.localToRoot(Offset.Zero)
+                    buttonSize = coordinates.size
+                }
+            ) {
                 Icon(
                     Icons.Default.MoreVert,
                     contentDescription = stringResource(R.string.configuracion)
