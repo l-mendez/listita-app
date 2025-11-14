@@ -52,6 +52,10 @@ fun ShoppingListsScreen(
     onUpdateListName: (Long, String) -> Unit,
     onUpdateListDescription: (Long, String) -> Unit,
     onToggleRecurring: (Long, Boolean) -> Unit,
+    onShareByEmail: (Long, String) -> Unit,
+    onLoadSharedUsers: (Long) -> Unit,
+    onRevokeShare: (Long, Long) -> Unit,
+    onMakePrivate: (Long) -> Unit,
     onRefresh: () -> Unit,
     onClearError: () -> Unit,
     onClearSuccess: () -> Unit
@@ -63,6 +67,7 @@ fun ShoppingListsScreen(
     var showRenameDialog by remember { mutableStateOf(false) }
     var showEditDescriptionDialog by remember { mutableStateOf(false) }
     var showEditListDialog by remember { mutableStateOf(false) }
+    var showShareDialog by remember { mutableStateOf(false) }
 
     // Error dialog (standardized)
     uiState.error?.let {
@@ -330,16 +335,41 @@ fun ShoppingListsScreen(
             SheetActionItem(
                 text = stringResource(R.string.hacer_privada),
                 icon = Icons.Default.Lock,
-                onClick = { /* coming soon */ },
-                trailing = { Text("(próximamente)", color = MaterialTheme.colorScheme.outline) }
+                onClick = {
+                    onMakePrivate(selectedList!!.id)
+                    showOptions = false
+                }
             )
             SheetActionItem(
                 text = stringResource(R.string.compartir),
                 icon = Icons.Default.Share,
-                onClick = { /* coming soon */ },
-                trailing = { Text("(próximamente)", color = MaterialTheme.colorScheme.outline) }
+                onClick = {
+                    onLoadSharedUsers(selectedList!!.id)
+                    showShareDialog = true
+                }
             )
         }
+    }
+
+    // Share dialog
+    if (showShareDialog && selectedList != null) {
+        ShareListDialog(
+            sharedUsers = uiState.sharedUsers,
+            isLoading = uiState.isLoading,
+            onDismiss = {
+                showShareDialog = false
+                showOptions = false
+            },
+            onShare = { email ->
+                onShareByEmail(selectedList!!.id, email)
+            },
+            onRevoke = { userId ->
+                onRevokeShare(selectedList!!.id, userId)
+            },
+            onMakePrivate = {
+                onMakePrivate(selectedList!!.id)
+            }
+        )
     }
 }
 
@@ -454,6 +484,74 @@ fun CreateShoppingListDialog(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(stringResource(R.string.recurring_list))
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ShareListDialog(
+    sharedUsers: List<com.example.listitaapp.data.model.User>,
+    isLoading: Boolean,
+    onDismiss: () -> Unit,
+    onShare: (String) -> Unit,
+    onRevoke: (Long) -> Unit,
+    onMakePrivate: () -> Unit
+) {
+    var email by remember { mutableStateOf("") }
+    AppFormDialog(
+        title = stringResource(R.string.compartir),
+        onDismiss = onDismiss,
+        confirmLabel = stringResource(R.string.compartir),
+        confirmEnabled = email.isNotBlank() && !isLoading,
+        onConfirm = {
+            onShare(email.trim())
+            email = ""
+        }
+    ) {
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = stringResource(R.string.compartido_con),
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        if (sharedUsers.isEmpty()) {
+            Text(
+                text = stringResource(R.string.solo_tu),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else {
+            sharedUsers.forEach { user ->
+                ListItem(
+                    headlineContent = { Text(text = "${user.name} ${user.surname}") },
+                    supportingContent = { Text(text = user.email) },
+                    trailingContent = {
+                        TextButton(enabled = !isLoading, onClick = { onRevoke(user.id) }) {
+                            Text(stringResource(R.string.remove))
+                        }
+                    }
+                )
+                Divider()
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+        TextButton(
+            enabled = !isLoading,
+            onClick = onMakePrivate
+        ) {
+            Icon(Icons.Default.Lock, contentDescription = null)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(text = stringResource(R.string.hacer_privada))
         }
     }
 }

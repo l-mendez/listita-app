@@ -3,6 +3,7 @@ package com.example.listitaapp.data.repository
 import com.example.listitaapp.data.api.ApiService
 import com.example.listitaapp.data.dto.*
 import com.example.listitaapp.data.model.ListItem
+import com.example.listitaapp.data.model.User
 import com.example.listitaapp.data.model.ShoppingList
 import javax.inject.Inject
 
@@ -86,6 +87,65 @@ class ShoppingListRepository @Inject constructor(
         }
     } catch (e: Exception) {
         Result.failure(e)
+    }
+
+    suspend fun shareListWithEmail(listId: Long, email: String): Result<Unit> = try {
+        val response = apiService.shareShoppingListByEmail(listId, ShareByEmailRequest(email))
+        if (response.isSuccessful) {
+            Result.success(Unit)
+        } else {
+            Result.failure(Exception(response.message()))
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
+    suspend fun getSharedUsers(listId: Long): Result<List<User>> = try {
+        val response = apiService.getSharedUsers(listId)
+        if (response.isSuccessful && response.body() != null) {
+            Result.success(response.body()!!)
+        } else {
+            Result.failure(Exception(response.message()))
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
+    suspend fun revokeShare(listId: Long, userId: Long): Result<Unit> = try {
+        val response = apiService.revokeShare(listId, userId)
+        if (response.isSuccessful) {
+            Result.success(Unit)
+        } else {
+            Result.failure(Exception(response.message()))
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
+    suspend fun makeListPrivate(listId: Long): Result<Unit> {
+        return try {
+            val usersResponse = apiService.getSharedUsers(listId)
+            if (!usersResponse.isSuccessful || usersResponse.body() == null) {
+                Result.failure(Exception(usersResponse.message()))
+            } else {
+                val users = usersResponse.body()!!
+                var failure: Exception? = null
+                for (user in users) {
+                    val revokeResponse = apiService.revokeShare(listId, user.id)
+                    if (!revokeResponse.isSuccessful) {
+                        failure = Exception(revokeResponse.message())
+                        break
+                    }
+                }
+                if (failure != null) {
+                    Result.failure(failure)
+                } else {
+                    Result.success(Unit)
+                }
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     suspend fun getListItems(listId: Long): Result<List<ListItem>> = try {

@@ -6,6 +6,7 @@ import com.example.listitaapp.data.dto.*
 import com.example.listitaapp.data.model.User
 import com.squareup.moshi.Moshi
 import retrofit2.Response
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class AuthRepository @Inject constructor(
@@ -223,7 +224,14 @@ class AuthRepository @Inject constructor(
      * Logout (clear local auth data)
      */
     suspend fun logout() {
-        tokenManager.clearAuth()
+        try {
+            // Best-effort logout on server; ignore response failures
+            apiService.logout()
+        } catch (_: Exception) {
+            // Ignore network errors on logout
+        } finally {
+            tokenManager.clearAuth()
+        }
     }
 
     /**
@@ -231,5 +239,12 @@ class AuthRepository @Inject constructor(
      */
     suspend fun isAuthenticated(): Boolean {
         return tokenManager.isAuthenticated()
+    }
+
+    /**
+     * Auth state flow to observe token changes (true when token present)
+     */
+    fun authState(): kotlinx.coroutines.flow.Flow<Boolean> {
+        return tokenManager.getToken().map { it != null }
     }
 }

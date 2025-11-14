@@ -38,6 +38,9 @@ interface ApiService {
     @PUT("api/users/profile")
     suspend fun updateProfile(@Body request: UpdateProfileRequest): Response<User>
 
+    @POST("api/users/logout")
+    suspend fun logout(): Response<Unit>
+
     // ========== Category Endpoints ==========
 
     @GET("api/categories")
@@ -102,6 +105,13 @@ interface ApiService {
     suspend fun shareShoppingList(
         @Path("id") id: Long,
         @Body request: ShareListRequest
+    ): Response<Unit>
+
+    // Alternative share endpoint accepting an email in the body
+    @POST("api/shopping-lists/{id}/share")
+    suspend fun shareShoppingListByEmail(
+        @Path("id") id: Long,
+        @Body request: ShareByEmailRequest
     ): Response<Unit>
 
     @GET("api/shopping-lists/{id}/shared-users")

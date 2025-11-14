@@ -99,4 +99,6 @@
     <string name="nuevo_nombre">Nuevo nombre</string>
     <string name="nueva_descripcion">Nueva descripción</string>
     <string name="edit_list">Editar lista</string>
+    <string name="compartido_con">Compartido con</string>
+    <string name="remove">Quitar</string>
 </resources>

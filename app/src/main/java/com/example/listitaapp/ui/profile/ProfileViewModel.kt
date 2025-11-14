@@ -30,7 +30,7 @@ class ProfileViewModel @Inject constructor(
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
     init {
-        loadProfile()
+        observeAuthState()
     }
 
     fun loadProfile() {
@@ -55,6 +55,18 @@ class ProfileViewModel @Inject constructor(
                     }
                 }
             )
+        }
+    }
+
+    private fun observeAuthState() {
+        viewModelScope.launch {
+            authRepository.authState().collect { isAuth ->
+                if (isAuth) {
+                    loadProfile()
+                } else {
+                    _uiState.update { it.copy(user = null) }
+                }
+            }
         }
     }
 

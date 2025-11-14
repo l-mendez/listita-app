@@ -85,4 +85,6 @@
     <string name="confirm_remove_item_from_list">Remove %1$s from list?</string>
     <string name="this_item">this item</string>
     <string name="edit_list">Edit list</string>
+    <string name="compartido_con">Shared with</string>
+    <string name="remove">Remove</string>
 </resources>

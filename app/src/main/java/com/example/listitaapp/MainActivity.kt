@@ -338,6 +338,10 @@ fun ShoppingListsScreenWrapper(
         onUpdateListName = { id, name -> viewModel.updateListName(id, name) },
         onUpdateListDescription = { id, description -> viewModel.updateListDescription(id, description) },
         onToggleRecurring = { id, current -> viewModel.toggleListRecurring(id, current) },
+        onShareByEmail = { id, email -> viewModel.shareListByEmail(id, email) },
+        onLoadSharedUsers = { id -> viewModel.loadSharedUsers(id) },
+        onRevokeShare = { id, userId -> viewModel.revokeUserAccess(id, userId) },
+        onMakePrivate = { id -> viewModel.makeListPrivate(id) },
         onRefresh = { viewModel.loadShoppingLists() },
         onClearError = { viewModel.clearError() },
         onClearSuccess = { viewModel.clearSuccess() }

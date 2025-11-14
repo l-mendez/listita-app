@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.listitaapp.data.model.ListItem
 import com.example.listitaapp.data.model.Product
 import com.example.listitaapp.data.model.ShoppingList
+import com.example.listitaapp.data.model.User
 import com.example.listitaapp.data.repository.ProductRepository
 import com.example.listitaapp.data.repository.ShoppingListRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,6 +22,7 @@ data class ShoppingListUiState(
     val currentListItems: List<ListItem> = emptyList(),
     val availableProducts: List<Product> = emptyList(),
     val itemsCountByListId: Map<Long, Int> = emptyMap(),
+    val sharedUsers: List<User> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
     val successMessage: String? = null
@@ -305,6 +307,77 @@ class ShoppingListViewModel @Inject constructor(
     fun clearCurrentList() {
         _uiState.update {
             it.copy(currentList = null, currentListItems = emptyList())
+        }
+    }
+
+    // ====== Sharing / Privacy ======
+    fun loadSharedUsers(listId: Long) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            listRepository.getSharedUsers(listId).fold(
+                onSuccess = { users ->
+                    _uiState.update { state ->
+                        state.copy(sharedUsers = users, isLoading = false)
+                    }
+                },
+                onFailure = { exception ->
+                    _uiState.update {
+                        it.copy(isLoading = false, error = exception.message ?: "Failed to load shared users")
+                    }
+                }
+            )
+        }
+    }
+
+    fun shareListByEmail(listId: Long, email: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            listRepository.shareListWithEmail(listId, email).fold(
+                onSuccess = {
+                    _uiState.update {
+                        it.copy(isLoading = false, successMessage = "List shared")
+                    }
+                    loadSharedUsers(listId)
+                },
+                onFailure = { exception ->
+                    _uiState.update {
+                        it.copy(isLoading = false, error = exception.message ?: "Failed to share list")
+                    }
+                }
+            )
+        }
+    }
+
+    fun revokeUserAccess(listId: Long, userId: Long) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            listRepository.revokeShare(listId, userId).fold(
+                onSuccess = {
+                    _uiState.update { it.copy(isLoading = false, successMessage = "Access revoked") }
+                    loadSharedUsers(listId)
+                },
+                onFailure = { exception ->
+                    _uiState.update {
+                        it.copy(isLoading = false, error = exception.message ?: "Failed to revoke access")
+                    }
+                }
+            )
+        }
+    }
+
+    fun makeListPrivate(listId: Long) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            listRepository.makeListPrivate(listId).fold(
+                onSuccess = {
+                    _uiState.update { it.copy(isLoading = false, successMessage = "List set to private", sharedUsers = emptyList()) }
+                },
+                onFailure = { exception ->
+                    _uiState.update {
+                        it.copy(isLoading = false, error = exception.message ?: "Failed to make list private")
+                    }
+                }
+            )
         }
     }
 

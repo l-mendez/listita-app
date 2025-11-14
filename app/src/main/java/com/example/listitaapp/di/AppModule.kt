@@ -3,6 +3,7 @@ package com.example.listitaapp.di
 import android.content.Context
 import com.example.listitaapp.data.api.ApiService
 import com.example.listitaapp.data.api.AuthInterceptor
+import com.example.listitaapp.data.api.ClearOnUnauthorizedInterceptor
 import com.example.listitaapp.data.api.TokenManager
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -59,10 +60,12 @@ object AppModule {
     @Singleton
     fun provideOkHttpClient(
         authInterceptor: AuthInterceptor,
-        loggingInterceptor: HttpLoggingInterceptor
+        loggingInterceptor: HttpLoggingInterceptor,
+        tokenManager: TokenManager
     ): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
+            .addInterceptor(ClearOnUnauthorizedInterceptor(tokenManager))
             .addInterceptor(loggingInterceptor)
             .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
             .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)

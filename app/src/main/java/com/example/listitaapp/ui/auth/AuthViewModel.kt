@@ -19,7 +19,8 @@ data class AuthUiState(
     val email: String = "",
     val password: String = "",
     val registrationComplete: Boolean = false,
-    val verificationComplete: Boolean = false
+    val verificationComplete: Boolean = false,
+    val currentUserEmail: String? = null
 )
 
 @HiltViewModel
@@ -32,6 +33,7 @@ class AuthViewModel @Inject constructor(
 
     init {
         checkAuthentication()
+        observeAuthState()
     }
 
     private fun checkAuthentication() {
@@ -41,17 +43,38 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    private fun observeAuthState() {
+        viewModelScope.launch {
+            repository.authState().collect { isAuth ->
+                _uiState.update { it.copy(isAuthenticated = isAuth) }
+                if (isAuth) {
+                    // Refresh current user email when authenticated
+                    repository.getProfile().fold(
+                        onSuccess = { user ->
+                            _uiState.update { state -> state.copy(currentUserEmail = user.email) }
+                        },
+                        onFailure = { _ -> }
+                    )
+                } else {
+                    _uiState.update { it.copy(currentUserEmail = null) }
+                }
+            }
+        }
+    }
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
             repository.login(email, password).fold(
                 onSuccess = {
-                    _uiState.update {
-                        it.copy(
+                    // Fetch profile to ensure UI reflects the authenticated account
+                    val profileResult = repository.getProfile()
+                    _uiState.update { state ->
+                        state.copy(
                             isLoading = false,
                             isAuthenticated = true,
-                            error = null
+                            currentUserEmail = profileResult.getOrNull()?.email,
+                            error = profileResult.exceptionOrNull()?.message
                         )
                     }
                 },
@@ -200,7 +223,8 @@ class AuthViewModel @Inject constructor(
                     email = "",
                     password = "", // Clear stored credentials
                     registrationComplete = false,
-                    verificationComplete = false
+                    verificationComplete = false,
+                    currentUserEmail = null
                 )
             }
         }

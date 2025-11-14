@@ -43,6 +43,12 @@ data class ShareListRequest(
 )
 
 @JsonClass(generateAdapter = true)
+data class ShareByEmailRequest(
+    @Json(name = "email")
+    val email: String
+)
+
+@JsonClass(generateAdapter = true)
 data class ShareUser(
     @Json(name = "id")
     val id: Long
