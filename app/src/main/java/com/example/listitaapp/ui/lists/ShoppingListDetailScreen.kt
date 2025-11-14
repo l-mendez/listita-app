@@ -250,6 +250,9 @@ private fun ListItemCard(
 @Composable
 fun AddItemToListDialog(
     products: List<Product>,
+    recentProduct: Product?,
+    onCreateNewProduct: () -> Unit,
+    onClearRecentProduct: () -> Unit,
     onDismiss: () -> Unit,
     onAdd: (Long, Double, String) -> Unit
 ) {
@@ -259,6 +262,13 @@ fun AddItemToListDialog(
     var expanded by remember { mutableStateOf(false) }
 
     val commonUnits = listOf("units", "kg", "g", "l", "ml", "pcs")
+
+    LaunchedEffect(recentProduct?.id) {
+        if (recentProduct != null) {
+            selectedProductId = recentProduct.id
+            onClearRecentProduct()
+        }
+    }
 
     AppFormDialog(
         title = stringResource(R.string.add_item),
@@ -330,7 +340,6 @@ fun AddItemToListDialog(
                 }
             }
         }
-
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -371,6 +380,13 @@ fun AddItemToListDialog(
                     }
                 }
             }
+        }
+
+        TextButton(
+            onClick = onCreateNewProduct,
+            modifier = Modifier.align(Alignment.End)
+        ) {
+            Text(text = stringResource(R.string.create_new_product))
         }
     }
 }

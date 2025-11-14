@@ -34,7 +34,7 @@
     <string name="forgot_password">Forgot password?</string>
 
     <!-- Navigation -->
-    <string name="shopping_lists">Shopping Lists</string>
+    <string name="shopping_lists">Lists</string>
     <string name="products">Products</string>
     <string name="profile">Profile</string>
 
@@ -52,6 +52,7 @@
 
     <!-- Products -->
     <string name="create_product">Create Product</string>
+    <string name="create_new_product">Create new product</string>
     <string name="product_name">Product Name</string>
     <string name="category">Category</string>
     <string name="empty_products">No products available</string>

@@ -30,6 +30,7 @@ import com.example.listitaapp.ui.components.show
 import com.example.listitaapp.ui.components.AppTextField
 import com.example.listitaapp.ui.components.AppSearchField
 import com.example.listitaapp.ui.components.AppExtendedFab
+import com.example.listitaapp.ui.components.CreateProductDialog
 
 /**
  * Products Screen - Following HCI Principles:
@@ -345,65 +346,6 @@ private fun ProductItem(
                     Icons.Default.MoreVert,
                     contentDescription = "Settings"
                 )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CreateProductDialog(
-    categories: List<com.example.listitaapp.data.model.Category>,
-    onDismiss: () -> Unit,
-    onCreate: (String, Long?) -> Unit
-) {
-    var productName by remember { mutableStateOf("") }
-    var selectedCategoryId by remember { mutableStateOf<Long?>(null) }
-    var expanded by remember { mutableStateOf(false) }
-
-    AppFormDialog(
-        title = stringResource(R.string.create_product),
-        onDismiss = onDismiss,
-        confirmLabel = stringResource(R.string.create_product),
-        confirmEnabled = productName.isNotBlank(),
-        onConfirm = {
-            if (productName.isNotBlank()) {
-                onCreate(productName, selectedCategoryId)
-                onDismiss()
-            }
-        }
-    ) {
-        AppTextField(
-            value = productName,
-            onValueChange = { productName = it },
-            label = stringResource(R.string.product_name)
-        )
-        ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = it }
-        ) {
-            AppTextField(
-                value = categories.find { it.id == selectedCategoryId }?.name ?: "",
-                onValueChange = {},
-                readOnly = true,
-                label = stringResource(R.string.category),
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                modifier = Modifier.menuAnchor()
-            )
-
-            ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
-                categories.forEach { category ->
-                    DropdownMenuItem(
-                        text = { Text(category.name) },
-                        onClick = {
-                            selectedCategoryId = category.id
-                            expanded = false
-                        }
-                    )
-                }
             }
         }
     }

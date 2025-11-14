@@ -2,6 +2,7 @@ package com.example.listitaapp.ui.lists
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.listitaapp.data.model.Category
 import com.example.listitaapp.data.model.ListItem
 import com.example.listitaapp.data.model.Product
 import com.example.listitaapp.data.model.ShoppingList
@@ -21,6 +22,8 @@ data class ShoppingListUiState(
     val currentList: ShoppingList? = null,
     val currentListItems: List<ListItem> = emptyList(),
     val availableProducts: List<Product> = emptyList(),
+    val availableCategories: List<Category> = emptyList(),
+    val recentlyCreatedProduct: Product? = null,
     val itemsCountByListId: Map<Long, Int> = emptyMap(),
     val sharedUsers: List<User> = emptyList(),
     val isLoading: Boolean = false,
@@ -40,6 +43,7 @@ class ShoppingListViewModel @Inject constructor(
     init {
         loadShoppingLists()
         loadProducts()
+        loadCategories()
     }
 
     fun loadShoppingLists() {
@@ -144,6 +148,21 @@ class ShoppingListViewModel @Inject constructor(
         }
     }
 
+    fun loadCategories() {
+        viewModelScope.launch {
+            productRepository.getCategories().fold(
+                onSuccess = { categories ->
+                    _uiState.update { it.copy(availableCategories = categories) }
+                },
+                onFailure = { exception ->
+                    _uiState.update {
+                        it.copy(error = exception.message ?: "Failed to load categories")
+                    }
+                }
+            )
+        }
+    }
+
     fun createShoppingList(name: String, description: String?, recurring: Boolean) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
@@ -163,6 +182,33 @@ class ShoppingListViewModel @Inject constructor(
                         it.copy(
                             isLoading = false,
                             error = exception.message ?: "Failed to create list"
+                        )
+                    }
+                }
+            )
+        }
+    }
+
+    fun createProduct(name: String, categoryId: Long?) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+
+            productRepository.createProduct(name, categoryId).fold(
+                onSuccess = { product ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            availableProducts = (it.availableProducts + product).distinctBy { item -> item.id },
+                            recentlyCreatedProduct = product,
+                            successMessage = "Product created successfully"
+                        )
+                    }
+                },
+                onFailure = { exception ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = exception.message ?: "Failed to create product"
                         )
                     }
                 }
@@ -387,5 +433,9 @@ class ShoppingListViewModel @Inject constructor(
 
     fun clearSuccess() {
         _uiState.update { it.copy(successMessage = null) }
+    }
+
+    fun clearRecentlyCreatedProduct() {
+        _uiState.update { it.copy(recentlyCreatedProduct = null) }
     }
 }

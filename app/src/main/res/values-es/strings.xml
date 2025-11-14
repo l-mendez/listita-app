@@ -1,0 +1,130 @@
+<resources>
+  <string name="app_name">Listita</string>
+
+  <!-- Common -->
+  <string name="loading">Cargando…</string>
+  <string name="error">Error</string>
+  <string name="success">Éxito</string>
+  <string name="info">Información</string>
+  <string name="ok">OK</string>
+  <string name="cancel">Cancelar</string>
+  <string name="save">Guardar</string>
+  <string name="delete">Eliminar</string>
+  <string name="edit">Editar</string>
+  <string name="add">Agregar</string>
+  <string name="search">Buscar</string>
+  <string name="confirm">Confirmar</string>
+  <string name="yes">Sí</string>
+  <string name="no">No</string>
+
+  <!-- Auth -->
+  <string name="login">Iniciar Sesión</string>
+  <string name="register">Registrarse</string>
+  <string name="email">Correo Electrónico</string>
+  <string name="password">Contraseña</string>
+  <string name="name">Nombre</string>
+  <string name="surname">Apellido</string>
+  <string name="verify_account">Verificar Cuenta</string>
+  <string name="verification_code">Código de Verificación</string>
+  <string name="logout">Cerrar Sesión</string>
+  <string name="change_password">Cambiar Contraseña</string>
+  <string name="current_password">Contraseña Actual</string>
+  <string name="new_password">Nueva Contraseña</string>
+  <string name="confirm_password">Confirmar Contraseña</string>
+  <string name="forgot_password">¿Olvidaste tu contraseña?</string>
+
+  <!-- Navigation -->
+  <string name="shopping_lists">Listas</string>
+  <string name="products">Productos</string>
+  <string name="profile">Perfil</string>
+
+  <!-- Shopping Lists -->
+  <string name="create_list">Crear Lista</string>
+  <string name="list_name">Nombre de la Lista</string>
+  <string name="list_description">Descripción</string>
+  <string name="recurring_list">Lista Recurrente</string>
+  <string name="empty_lists">No tienes listas de compras</string>
+  <string name="add_item">Agregar Producto</string>
+  <string name="quantity">Cantidad</string>
+  <string name="unit">Unidad</string>
+  <string name="purchased">Comprado</string>
+  <string name="mark_purchased">Marcar como comprado</string>
+
+  <!-- Products -->
+  <string name="create_product">Crear Producto</string>
+  <string name="create_new_product">Crear nuevo producto</string>
+  <string name="product_name">Nombre del Producto</string>
+  <string name="category">Categoría</string>
+  <string name="empty_products">No hay productos disponibles</string>
+  <string name="create_category">Crear Categoría</string>
+  <string name="category_name">Nombre de Categoría</string>
+
+  <!-- Profile -->
+  <string name="my_profile">Mi Perfil</string>
+  <string name="settings">Configuración</string>
+  <string name="edit_profile">Editar Perfil</string>
+
+  <!-- Validation -->
+  <string name="field_required">Este campo es requerido</string>
+  <string name="invalid_email">Correo electrónico inválido</string>
+  <string name="password_too_short">La contraseña debe tener al menos 6 caracteres</string>
+  <string name="passwords_dont_match">Las contraseñas no coinciden</string>
+
+  <!-- Messages -->
+  <string name="login_success">Inicio de sesión exitoso</string>
+  <string name="registration_success">Registro exitoso. Verifica tu correo.</string>
+  <string name="verification_success">Cuenta verificada exitosamente</string>
+  <string name="password_changed">Contraseña cambiada exitosamente</string>
+  <string name="list_created">Lista creada exitosamente</string>
+  <string name="list_deleted">Lista eliminada</string>
+  <string name="product_created">Producto creado exitosamente</string>
+  <string name="item_added">Producto agregado a la lista</string>
+  <string name="network_error">Error de conexión. Verifica tu red.</string>
+  <string name="confirm_delete_list">¿Eliminar esta lista?</string>
+  <string name="confirm_delete_product">¿Eliminar este producto?</string>
+  <string name="confirm_logout">¿Cerrar sesión?</string>
+  <string name="confirm_remove_item_from_list">¿Eliminar %1$s de la lista?</string>
+  <string name="this_item">este ítem</string>
+  <string name="recurrentes">Recurrentes</string>
+  <string name="activas">Activas</string>
+  <string name="solo_tu">Solo tú</string>
+  <string name="personas">%1$d personas</string>
+  <string name="productos">%1$d productos</string>
+  <string name="configuracion">Configuración</string>
+  <string name="recurrente">Recurrente</string>
+  <string name="cambiar_nombre">Cambiar nombre</string>
+  <string name="cambiar_descripcion">Cambiar descripción</string>
+  <string name="hacer_privada">Hacer privada</string>
+  <string name="compartir">Compartir</string>
+  <string name="guardar_cambios">Guardar cambios</string>
+  <string name="nuevo_nombre">Nuevo nombre</string>
+  <string name="nueva_descripcion">Nueva descripción</string>
+  <string name="edit_list">Editar lista</string>
+  <string name="compartido_con">Compartido con</string>
+  <string name="remove">Quitar</string>
+
+  <!-- Login/Register Screen Texts -->
+  <string name="email_placeholder">ejemplo@correo.com</string>
+  <string name="no_account">¿No tienes cuenta?</string>
+  <string name="already_have_account">¿Ya tienes cuenta?</string>
+  <string name="email_required">El correo es requerido</string>
+  <string name="password_required">La contraseña es requerida</string>
+  <string name="name_required">El nombre es requerido</string>
+  <string name="surname_required">El apellido es requerido</string>
+  <string name="name_too_short">El nombre debe tener al menos 2 caracteres</string>
+  <string name="surname_too_short">El apellido debe tener al menos 2 caracteres</string>
+
+  <!-- Verification Screen -->
+  <string name="verification_info">Hemos enviado un código de verificación a tu correo</string>
+  <string name="check_spam">Si no lo ves, revisa tu carpeta de spam</string>
+  <string name="code_placeholder">Ingresa el código</string>
+  <string name="verify_account_title">Verificar Cuenta</string>
+  <string name="resend_code">Reenviar código</string>
+  <string name="back_to_login">Volver al inicio de sesión</string>
+  <string name="code_required">El código de verificación es requerido</string>
+  <string name="code_invalid">El código debe tener 6 dígitos</string>
+
+  <!-- Additional Messages -->
+  <string name="list_updated">Lista actualizada</string>
+  <string name="failed_to_update">Fallo al actualizar</string>
+</resources>

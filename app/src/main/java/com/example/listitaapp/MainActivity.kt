@@ -30,6 +30,7 @@ import com.example.listitaapp.ui.auth.AuthViewModel
 import com.example.listitaapp.ui.auth.LoginScreen
 import com.example.listitaapp.ui.auth.RegisterScreen
 import com.example.listitaapp.ui.auth.VerifyAccountScreen
+import com.example.listitaapp.ui.components.CreateProductDialog
 import com.example.listitaapp.ui.lists.*
 import com.example.listitaapp.ui.navigation.Screen
 import com.example.listitaapp.ui.products.*
@@ -456,6 +457,7 @@ fun ShoppingListDetailScreenWrapper(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showAddItemDialog by remember { mutableStateOf(false) }
+    var showCreateProductDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(listId) {
         viewModel.loadListDetails(listId)
@@ -473,6 +475,7 @@ fun ShoppingListDetailScreenWrapper(
         onBack = onBack,
         onAddItem = {
             viewModel.loadProducts()
+            viewModel.loadCategories()
             showAddItemDialog = true
         },
         onToggleItem = { itemId ->
@@ -488,10 +491,26 @@ fun ShoppingListDetailScreenWrapper(
     if (showAddItemDialog) {
         AddItemToListDialog(
             products = uiState.availableProducts,
+            recentProduct = uiState.recentlyCreatedProduct,
+            onCreateNewProduct = {
+                viewModel.loadCategories()
+                showCreateProductDialog = true
+            },
+            onClearRecentProduct = { viewModel.clearRecentlyCreatedProduct() },
             onDismiss = { showAddItemDialog = false },
             onAdd = { productId, quantity, unit ->
                 viewModel.addItemToList(listId, productId, quantity, unit)
                 showAddItemDialog = false
+            }
+        )
+    }
+
+    if (showCreateProductDialog) {
+        CreateProductDialog(
+            categories = uiState.availableCategories,
+            onDismiss = { showCreateProductDialog = false },
+            onCreate = { name, categoryId ->
+                viewModel.createProduct(name, categoryId)
             }
         )
     }
