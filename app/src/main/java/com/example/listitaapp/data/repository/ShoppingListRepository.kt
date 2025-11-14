@@ -5,18 +5,33 @@ import com.example.listitaapp.data.dto.*
 import com.example.listitaapp.data.model.ListItem
 import com.example.listitaapp.data.model.User
 import com.example.listitaapp.data.model.ShoppingList
+import com.squareup.moshi.Moshi
+import retrofit2.Response
 import javax.inject.Inject
 
 class ShoppingListRepository @Inject constructor(
-    private val apiService: ApiService
+    private val apiService: ApiService,
+    private val moshi: Moshi
 ) {
+
+    private fun <T> getErrorMessage(response: Response<T>, defaultMessage: String): String {
+        return try {
+            response.errorBody()?.string()?.let { errorBody ->
+                val adapter = moshi.adapter(ErrorResponse::class.java)
+                adapter.fromJson(errorBody)?.message
+            } ?: response.message().ifEmpty { defaultMessage }
+        } catch (e: Exception) {
+            response.message().ifEmpty { defaultMessage }
+        }
+    }
 
     suspend fun getShoppingLists(): Result<List<ShoppingList>> = try {
         val response = apiService.getShoppingLists()
         if (response.isSuccessful && response.body() != null) {
             Result.success(response.body()!!.data)
         } else {
-            Result.failure(Exception(response.message()))
+            val errorMessage = getErrorMessage(response, "Failed to get shopping lists")
+            Result.failure(Exception(errorMessage))
         }
     } catch (e: Exception) {
         Result.failure(e)
@@ -28,7 +43,8 @@ class ShoppingListRepository @Inject constructor(
         if (response.isSuccessful && response.body() != null) {
             Result.success(response.body()!!)
         } else {
-            Result.failure(Exception(response.message()))
+            val errorMessage = getErrorMessage(response, "Failed to create list")
+            Result.failure(Exception(errorMessage))
         }
     } catch (e: Exception) {
         Result.failure(e)
@@ -39,7 +55,8 @@ class ShoppingListRepository @Inject constructor(
         if (response.isSuccessful && response.body() != null) {
             Result.success(response.body()!!)
         } else {
-            Result.failure(Exception(response.message()))
+            val errorMessage = getErrorMessage(response, "Failed to get shopping list")
+            Result.failure(Exception(errorMessage))
         }
     } catch (e: Exception) {
         Result.failure(e)
@@ -50,7 +67,8 @@ class ShoppingListRepository @Inject constructor(
         if (response.isSuccessful && response.body() != null) {
             Result.success(response.body()!!)
         } else {
-            Result.failure(Exception(response.message()))
+            val errorMessage = getErrorMessage(response, "Failed to update list name")
+            Result.failure(Exception(errorMessage))
         }
     } catch (e: Exception) {
         Result.failure(e)
@@ -61,7 +79,8 @@ class ShoppingListRepository @Inject constructor(
         if (response.isSuccessful && response.body() != null) {
             Result.success(response.body()!!)
         } else {
-            Result.failure(Exception(response.message()))
+            val errorMessage = getErrorMessage(response, "Failed to update list description")
+            Result.failure(Exception(errorMessage))
         }
     } catch (e: Exception) {
         Result.failure(e)
@@ -72,7 +91,8 @@ class ShoppingListRepository @Inject constructor(
         if (response.isSuccessful && response.body() != null) {
             Result.success(response.body()!!)
         } else {
-            Result.failure(Exception(response.message()))
+            val errorMessage = getErrorMessage(response, "Failed to toggle recurring status")
+            Result.failure(Exception(errorMessage))
         }
     } catch (e: Exception) {
         Result.failure(e)
@@ -83,7 +103,8 @@ class ShoppingListRepository @Inject constructor(
         if (response.isSuccessful) {
             Result.success(Unit)
         } else {
-            Result.failure(Exception(response.message()))
+            val errorMessage = getErrorMessage(response, "Failed to delete list")
+            Result.failure(Exception(errorMessage))
         }
     } catch (e: Exception) {
         Result.failure(e)
@@ -94,7 +115,8 @@ class ShoppingListRepository @Inject constructor(
         if (response.isSuccessful) {
             Result.success(Unit)
         } else {
-            Result.failure(Exception(response.message()))
+            val errorMessage = getErrorMessage(response, "Failed to share list")
+            Result.failure(Exception(errorMessage))
         }
     } catch (e: Exception) {
         Result.failure(e)
@@ -105,7 +127,8 @@ class ShoppingListRepository @Inject constructor(
         if (response.isSuccessful && response.body() != null) {
             Result.success(response.body()!!)
         } else {
-            Result.failure(Exception(response.message()))
+            val errorMessage = getErrorMessage(response, "Failed to get shared users")
+            Result.failure(Exception(errorMessage))
         }
     } catch (e: Exception) {
         Result.failure(e)
@@ -116,7 +139,8 @@ class ShoppingListRepository @Inject constructor(
         if (response.isSuccessful) {
             Result.success(Unit)
         } else {
-            Result.failure(Exception(response.message()))
+            val errorMessage = getErrorMessage(response, "Failed to revoke share")
+            Result.failure(Exception(errorMessage))
         }
     } catch (e: Exception) {
         Result.failure(e)
@@ -126,14 +150,16 @@ class ShoppingListRepository @Inject constructor(
         return try {
             val usersResponse = apiService.getSharedUsers(listId)
             if (!usersResponse.isSuccessful || usersResponse.body() == null) {
-                Result.failure(Exception(usersResponse.message()))
+                val errorMessage = getErrorMessage(usersResponse, "Failed to get shared users")
+                Result.failure(Exception(errorMessage))
             } else {
                 val users = usersResponse.body()!!
                 var failure: Exception? = null
                 for (user in users) {
                     val revokeResponse = apiService.revokeShare(listId, user.id)
                     if (!revokeResponse.isSuccessful) {
-                        failure = Exception(revokeResponse.message())
+                        val errorMessage = getErrorMessage(revokeResponse, "Failed to revoke share")
+                        failure = Exception(errorMessage)
                         break
                     }
                 }
@@ -153,7 +179,8 @@ class ShoppingListRepository @Inject constructor(
         if (response.isSuccessful && response.body() != null) {
             Result.success(response.body()!!.data)
         } else {
-            Result.failure(Exception(response.message()))
+            val errorMessage = getErrorMessage(response, "Failed to get list items")
+            Result.failure(Exception(errorMessage))
         }
     } catch (e: Exception) {
         Result.failure(e)
@@ -164,7 +191,8 @@ class ShoppingListRepository @Inject constructor(
         if (response.isSuccessful && response.body() != null) {
             Result.success(response.body()!!.pagination.total)
         } else {
-            Result.failure(Exception(response.message()))
+            val errorMessage = getErrorMessage(response, "Failed to get items count")
+            Result.failure(Exception(errorMessage))
         }
     } catch (e: Exception) {
         Result.failure(e)
@@ -176,7 +204,8 @@ class ShoppingListRepository @Inject constructor(
         if (response.isSuccessful && response.body() != null) {
             Result.success(response.body()!!.item)
         } else {
-            Result.failure(Exception(response.message()))
+            val errorMessage = getErrorMessage(response, "Failed to add item")
+            Result.failure(Exception(errorMessage))
         }
     } catch (e: Exception) {
         Result.failure(e)
@@ -188,7 +217,8 @@ class ShoppingListRepository @Inject constructor(
         if (response.isSuccessful && response.body() != null) {
             Result.success(response.body()!!)
         } else {
-            Result.failure(Exception(response.message()))
+            val errorMessage = getErrorMessage(response, "Failed to toggle item status")
+            Result.failure(Exception(errorMessage))
         }
     } catch (e: Exception) {
         Result.failure(e)
@@ -199,7 +229,8 @@ class ShoppingListRepository @Inject constructor(
         if (response.isSuccessful) {
             Result.success(Unit)
         } else {
-            Result.failure(Exception(response.message()))
+            val errorMessage = getErrorMessage(response, "Failed to delete item")
+            Result.failure(Exception(errorMessage))
         }
     } catch (e: Exception) {
         Result.failure(e)
