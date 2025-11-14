@@ -30,7 +30,8 @@ import com.example.listitaapp.ui.auth.AuthViewModel
 import com.example.listitaapp.ui.auth.LoginScreen
 import com.example.listitaapp.ui.auth.RegisterScreen
 import com.example.listitaapp.ui.auth.VerifyAccountScreen
-import com.example.listitaapp.ui.components.CreateProductDialog
+import com.example.listitaapp.ui.components.AddProductDialog
+import com.example.listitaapp.ui.components.CreateCategoryDialog
 import com.example.listitaapp.ui.lists.*
 import com.example.listitaapp.ui.navigation.Screen
 import com.example.listitaapp.ui.products.*
@@ -362,12 +363,12 @@ fun ShoppingListsScreenWrapper(
 @Composable
 fun ProductsScreenWrapper(viewModel: ProductViewModel) {
     val uiState by viewModel.uiState.collectAsState()
-    var showCreateProductDialog by remember { mutableStateOf(false) }
+    var showAddProductDialog by remember { mutableStateOf(false) }
     var showCreateCategoryDialog by remember { mutableStateOf(false) }
 
     ProductsScreen(
         uiState = uiState,
-        onCreateProduct = { showCreateProductDialog = true },
+        onCreateProduct = { showAddProductDialog = true },
         onDeleteProduct = { viewModel.deleteProduct(it) },
         onUpdateProduct = { id, name, price, categoryId ->
             val metadata = if (price.isNullOrBlank()) null else mapOf<String, Any>("price" to price)
@@ -380,13 +381,18 @@ fun ProductsScreenWrapper(viewModel: ProductViewModel) {
         onClearSuccess = { viewModel.clearSuccess() }
     )
 
-    if (showCreateProductDialog) {
-        CreateProductDialog(
+    if (showAddProductDialog) {
+        AddProductDialog(
             categories = uiState.categories,
-            onDismiss = { showCreateProductDialog = false },
-            onCreate = { name, categoryId ->
+            onDismiss = { showAddProductDialog = false },
+            onCreateProduct = { name, categoryId ->
                 viewModel.createProduct(name, categoryId)
-                showCreateProductDialog = false
+                showAddProductDialog = false
+            },
+            onCreateCategory = { name, onCreated ->
+                viewModel.createCategory(name) { category ->
+                    onCreated(category)
+                }
             }
         )
     }
@@ -457,7 +463,8 @@ fun ShoppingListDetailScreenWrapper(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showAddItemDialog by remember { mutableStateOf(false) }
-    var showCreateProductDialog by remember { mutableStateOf(false) }
+    var showAddProductDialog by remember { mutableStateOf(false) }
+    var resumeAddItemAfterProduct by remember { mutableStateOf(false) }
 
     LaunchedEffect(listId) {
         viewModel.loadListDetails(listId)
@@ -494,7 +501,9 @@ fun ShoppingListDetailScreenWrapper(
             recentProduct = uiState.recentlyCreatedProduct,
             onCreateNewProduct = {
                 viewModel.loadCategories()
-                showCreateProductDialog = true
+                resumeAddItemAfterProduct = true
+                showAddItemDialog = false
+                showAddProductDialog = true
             },
             onClearRecentProduct = { viewModel.clearRecentlyCreatedProduct() },
             onDismiss = { showAddItemDialog = false },
@@ -505,12 +514,28 @@ fun ShoppingListDetailScreenWrapper(
         )
     }
 
-    if (showCreateProductDialog) {
-        CreateProductDialog(
+    if (showAddProductDialog) {
+        AddProductDialog(
             categories = uiState.availableCategories,
-            onDismiss = { showCreateProductDialog = false },
-            onCreate = { name, categoryId ->
+            onDismiss = {
+                showAddProductDialog = false
+                if (resumeAddItemAfterProduct) {
+                    resumeAddItemAfterProduct = false
+                    showAddItemDialog = true
+                }
+            },
+            onCreateProduct = { name, categoryId ->
                 viewModel.createProduct(name, categoryId)
+                showAddProductDialog = false
+                if (resumeAddItemAfterProduct) {
+                    resumeAddItemAfterProduct = false
+                    showAddItemDialog = true
+                }
+            },
+            onCreateCategory = { name, onCreated ->
+                viewModel.createCategory(name) { category ->
+                    onCreated(category)
+                }
             }
         )
     }

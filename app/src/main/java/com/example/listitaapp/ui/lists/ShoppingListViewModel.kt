@@ -256,6 +256,34 @@ class ShoppingListViewModel @Inject constructor(
         }
     }
 
+    fun createCategory(name: String, onCreated: ((Category) -> Unit)? = null) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+
+            productRepository.createCategory(name).fold(
+                onSuccess = { category ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            availableCategories = (it.availableCategories + category).distinctBy { item -> item.id },
+                            successMessage = "Category created successfully"
+                        )
+                    }
+                    onCreated?.invoke(category)
+                    loadCategories()
+                },
+                onFailure = { exception ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = exception.message ?: "Failed to create category"
+                        )
+                    }
+                }
+            )
+        }
+    }
+
     fun deleteShoppingList(id: Long) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }

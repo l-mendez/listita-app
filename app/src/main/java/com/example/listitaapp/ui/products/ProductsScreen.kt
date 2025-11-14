@@ -30,7 +30,6 @@ import com.example.listitaapp.ui.components.show
 import com.example.listitaapp.ui.components.AppTextField
 import com.example.listitaapp.ui.components.AppSearchField
 import com.example.listitaapp.ui.components.AppExtendedFab
-import com.example.listitaapp.ui.components.CreateProductDialog
 
 /**
  * Products Screen - Following HCI Principles:
@@ -348,32 +347,5 @@ private fun ProductItem(
                 )
             }
         }
-    }
-}
-
-@Composable
-fun CreateCategoryDialog(
-    onDismiss: () -> Unit,
-    onCreate: (String) -> Unit
-) {
-    var categoryName by remember { mutableStateOf("") }
-
-    AppFormDialog(
-        title = stringResource(R.string.create_category),
-        onDismiss = onDismiss,
-        confirmLabel = stringResource(R.string.create_category),
-        confirmEnabled = categoryName.isNotBlank(),
-        onConfirm = {
-            if (categoryName.isNotBlank()) {
-                onCreate(categoryName)
-                onDismiss()
-            }
-        }
-    ) {
-        AppTextField(
-            value = categoryName,
-            onValueChange = { categoryName = it },
-            label = stringResource(R.string.category_name)
-        )
     }
 }

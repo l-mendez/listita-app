@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.stringResource
 import com.example.listitaapp.R
 import com.example.listitaapp.data.model.Category
@@ -15,11 +16,14 @@ import com.example.listitaapp.data.model.Category
 @Composable
 fun CreateProductDialog(
     categories: List<Category>,
+    productName: String,
+    onProductNameChange: (String) -> Unit,
+    selectedCategoryId: Long?,
+    onCategorySelected: (Long?) -> Unit,
     onDismiss: () -> Unit,
-    onCreate: (String, Long?) -> Unit
+    onCreate: (String, Long?) -> Unit,
+    onRequestCreateCategory: () -> Unit
 ) {
-    var productName by remember { mutableStateOf("") }
-    var selectedCategoryId by remember { mutableStateOf<Long?>(null) }
     var expanded by remember { mutableStateOf(false) }
 
     AppFormDialog(
@@ -36,7 +40,7 @@ fun CreateProductDialog(
     ) {
         AppTextField(
             value = productName,
-            onValueChange = { productName = it },
+            onValueChange = onProductNameChange,
             label = stringResource(R.string.product_name)
         )
         ExposedDropdownMenuBox(
@@ -60,12 +64,18 @@ fun CreateProductDialog(
                     DropdownMenuItem(
                         text = { Text(category.name) },
                         onClick = {
-                            selectedCategoryId = category.id
+                            onCategorySelected(category.id)
                             expanded = false
                         }
                     )
                 }
             }
+        }
+        TextButton(
+            onClick = onRequestCreateCategory,
+            modifier = Modifier.align(Alignment.End)
+        ) {
+            Text(text = stringResource(R.string.create_category))
         }
     }
 }

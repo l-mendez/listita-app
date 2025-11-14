@@ -193,18 +193,20 @@ class ProductViewModel @Inject constructor(
         }
     }
 
-    fun createCategory(name: String) {
+    fun createCategory(name: String, onCreated: ((Category) -> Unit)? = null) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
             repository.createCategory(name).fold(
-                onSuccess = {
+                onSuccess = { category ->
                     _uiState.update {
                         it.copy(
                             isLoading = false,
+                            categories = (it.categories + category).distinctBy { item -> item.id },
                             successMessage = "Category created successfully"
                         )
                     }
+                    onCreated?.invoke(category)
                     loadCategories()
                 },
                 onFailure = { exception ->
