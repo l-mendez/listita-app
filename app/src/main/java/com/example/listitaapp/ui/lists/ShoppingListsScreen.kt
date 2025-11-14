@@ -39,9 +39,6 @@ import com.example.listitaapp.ui.components.AppTextField
 import com.example.listitaapp.ui.components.AppTextButton
 import com.example.listitaapp.ui.components.appSnackTypeFromMessage
 import com.example.listitaapp.ui.components.show
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 /**
  * Shopping Lists Screen - Following HCI Principles:
@@ -317,26 +314,20 @@ fun ShoppingListsScreen(
                         // Pass the CURRENT recurring value, repository will toggle it
                         onToggleRecurring(it.id, it.recurring)
                         showOptions = false
-<<<<<<< HEAD
-=======
-                        showDeleteDialog = selectedList
-                    },
-                    leadingContent = {
-                        FilterChip(
-                            selected = selectedList!!.recurring,
-                            onClick = {
-                                onToggleRecurring(selectedList!!.id, selectedList!!.recurring)
-                                showOptions = false
-                            },
-                            label = { Text(stringResource(R.string.recurrente)) },
-                            leadingIcon = { Icon(imageVector = Icons.Default.History, contentDescription = null) }
-                        )
->>>>>>> 366043889ad68d37ba922131bc6c9fd94cda8ac4
                     }
-                )
-            }
-        ) {
-            SheetActionItem(
+                }
+            )
+            PopupHeaderDeleteButton(
+                onClick = {
+                    selectedList?.let {
+                        showDeleteDialog = it
+                        showOptions = false
+                    }
+                }
+            )
+        },
+        actions = listOf(
+            PopupMenuAction(
                 text = stringResource(R.string.edit),
                 icon = Icons.Default.Edit,
                 onClick = {
