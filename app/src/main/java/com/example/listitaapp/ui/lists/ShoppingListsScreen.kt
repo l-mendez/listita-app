@@ -92,118 +92,87 @@ fun ShoppingListsScreen(
     // Rename dialog
     if (showRenameDialog && selectedList != null) {
         var newName by remember { mutableStateOf(selectedList!!.name) }
-        AlertDialog(
-            onDismissRequest = { showRenameDialog = false },
-            title = { Text(stringResource(R.string.cambiar_nombre)) },
-            text = {
-                AppTextField(
-                    value = newName,
-                    onValueChange = { if (it.length <= 50) newName = it },
-                    label = stringResource(R.string.nuevo_nombre)
-                )
+        AppFormDialog(
+            title = stringResource(R.string.cambiar_nombre),
+            onDismiss = { showRenameDialog = false },
+            confirmLabel = stringResource(R.string.save),
+            onConfirm = {
+                onUpdateListName(selectedList!!.id, newName.trim())
+                showRenameDialog = false
+                showOptions = false
             },
-            confirmButton = {
-                AppTextButton(
-                    onClick = {
-                        onUpdateListName(selectedList!!.id, newName.trim())
-                        showRenameDialog = false
-                        showOptions = false
-                    },
-                    text = stringResource(R.string.save),
-                    enabled = newName.isNotBlank()
-                )
-            },
-            dismissButton = {
-                AppTextButton(
-                    onClick = { showRenameDialog = false },
-                    text = stringResource(R.string.cancel)
-                )
-            }
-        )
+            confirmEnabled = newName.isNotBlank(),
+            icon = Icons.Filled.Edit
+        ) {
+            AppTextField(
+                value = newName,
+                onValueChange = { if (it.length <= 50) newName = it },
+                label = stringResource(R.string.nuevo_nombre)
+            )
+        }
     }
 
     // Edit description dialog
     if (showEditDescriptionDialog && selectedList != null) {
         var newDescription by remember { mutableStateOf(selectedList!!.description ?: "") }
-        AlertDialog(
-            onDismissRequest = { showEditDescriptionDialog = false },
-            title = { Text(stringResource(R.string.cambiar_descripcion)) },
-            text = {
-                AppTextField(
-                    value = newDescription,
-                    onValueChange = { if (it.length <= 200) newDescription = it },
-                    label = stringResource(R.string.nueva_descripcion),
-                    singleLine = false,
-                    minLines = 2,
-                    maxLines = 4
-                )
+        AppFormDialog(
+            title = stringResource(R.string.cambiar_descripcion),
+            onDismiss = { showEditDescriptionDialog = false },
+            confirmLabel = stringResource(R.string.save),
+            onConfirm = {
+                onUpdateListDescription(selectedList!!.id, newDescription)
+                showEditDescriptionDialog = false
+                showOptions = false
             },
-            confirmButton = {
-                AppTextButton(
-                    onClick = {
-                        onUpdateListDescription(selectedList!!.id, newDescription)
-                        showEditDescriptionDialog = false
-                        showOptions = false
-                    },
-                    text = stringResource(R.string.save)
-                )
-            },
-            dismissButton = {
-                AppTextButton(
-                    onClick = { showEditDescriptionDialog = false },
-                    text = stringResource(R.string.cancel)
-                )
-            }
-        )
+            confirmEnabled = true,
+            icon = Icons.Filled.Description
+        ) {
+            AppTextField(
+                value = newDescription,
+                onValueChange = { if (it.length <= 200) newDescription = it },
+                label = stringResource(R.string.nueva_descripcion),
+                singleLine = false,
+                minLines = 2,
+                maxLines = 4
+            )
+        }
     }
 
     // Combined Edit dialog (name + description)
     if (showEditListDialog && selectedList != null) {
         var newName by remember { mutableStateOf(selectedList!!.name) }
         var newDescription by remember { mutableStateOf(selectedList!!.description ?: "") }
-        AlertDialog(
-            onDismissRequest = { showEditListDialog = false },
-            title = { Text(stringResource(R.string.edit_list)) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    AppTextField(
-                        value = newName,
-                        onValueChange = { if (it.length <= 50) newName = it },
-                        label = stringResource(R.string.list_name)
-                    )
-                    AppTextField(
-                        value = newDescription,
-                        onValueChange = { if (it.length <= 200) newDescription = it },
-                        label = stringResource(R.string.list_description),
-                        singleLine = false,
-                        minLines = 2,
-                        maxLines = 4
-                    )
+        AppFormDialog(
+            title = stringResource(R.string.edit_list),
+            onDismiss = { showEditListDialog = false },
+            confirmLabel = stringResource(R.string.save),
+            onConfirm = {
+                if (newName != selectedList!!.name) {
+                    onUpdateListName(selectedList!!.id, newName.trim())
                 }
+                if (newDescription != (selectedList!!.description ?: "")) {
+                    onUpdateListDescription(selectedList!!.id, newDescription)
+                }
+                showEditListDialog = false
+                showOptions = false
             },
-            confirmButton = {
-                AppTextButton(
-                    onClick = {
-                        if (newName != selectedList!!.name) {
-                            onUpdateListName(selectedList!!.id, newName.trim())
-                        }
-                        if (newDescription != (selectedList!!.description ?: "")) {
-                            onUpdateListDescription(selectedList!!.id, newDescription)
-                        }
-                        showEditListDialog = false
-                        showOptions = false
-                    },
-                    text = stringResource(R.string.save),
-                    enabled = newName.isNotBlank()
-                )
-            },
-            dismissButton = {
-                AppTextButton(
-                    onClick = { showEditListDialog = false },
-                    text = stringResource(R.string.cancel)
-                )
-            }
-        )
+            confirmEnabled = newName.isNotBlank(),
+            icon = Icons.Filled.Edit
+        ) {
+            AppTextField(
+                value = newName,
+                onValueChange = { if (it.length <= 50) newName = it },
+                label = stringResource(R.string.list_name)
+            )
+            AppTextField(
+                value = newDescription,
+                onValueChange = { if (it.length <= 200) newDescription = it },
+                label = stringResource(R.string.list_description),
+                singleLine = false,
+                minLines = 2,
+                maxLines = 4
+            )
+        }
     }
 
     // Delete confirmation dialog (standardized)

@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import com.example.listitaapp.R
 
 enum class AppDialogType {
@@ -85,14 +86,17 @@ fun AppMessageDialog(
         )
     }
 
-    AlertDialog(onDismissRequest = onDismiss) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
         AnimatedVisibility(
             visible = true,
             enter = fadeIn() + scaleIn(initialScale = 0.95f),
             exit = fadeOut() + scaleOut(targetScale = 0.95f)
         ) {
             Card(
-                modifier = Modifier.widthIn(min = 280.dp, max = 420.dp),
+                modifier = Modifier.fillMaxWidth(0.9f),
                 shape = RoundedCornerShape(24.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -170,14 +174,17 @@ fun AppConfirmDialog(
         iconTint = MaterialTheme.colorScheme.onPrimaryContainer
     }
 
-    AlertDialog(onDismissRequest = onDismiss) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
         AnimatedVisibility(
             visible = true,
             enter = fadeIn() + scaleIn(initialScale = 0.95f),
             exit = fadeOut() + scaleOut(targetScale = 0.95f)
         ) {
             Card(
-                modifier = Modifier.widthIn(min = 280.dp, max = 420.dp),
+                modifier = Modifier.fillMaxWidth(0.9f),
                 shape = RoundedCornerShape(24.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -250,14 +257,17 @@ fun AppFormDialog(
     iconTint: Color = MaterialTheme.colorScheme.onPrimaryContainer,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    AlertDialog(onDismissRequest = onDismiss) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
         AnimatedVisibility(
             visible = true,
             enter = fadeIn() + scaleIn(initialScale = 0.95f),
             exit = fadeOut() + scaleOut(targetScale = 0.95f)
         ) {
             Card(
-                modifier = Modifier.widthIn(min = 300.dp, max = 520.dp),
+                modifier = Modifier.fillMaxWidth(0.9f),
                 shape = RoundedCornerShape(24.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
