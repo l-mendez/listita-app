@@ -7,6 +7,7 @@ import com.example.listitaapp.data.model.ListItem
 import com.example.listitaapp.data.model.Product
 import com.example.listitaapp.data.model.ShoppingList
 import com.example.listitaapp.data.model.User
+import com.example.listitaapp.data.repository.AuthRepository
 import com.example.listitaapp.data.repository.ProductRepository
 import com.example.listitaapp.data.repository.ShoppingListRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -34,16 +35,55 @@ data class ShoppingListUiState(
 @HiltViewModel
 class ShoppingListViewModel @Inject constructor(
     private val listRepository: ShoppingListRepository,
-    private val productRepository: ProductRepository
+    private val productRepository: ProductRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ShoppingListUiState())
     val uiState: StateFlow<ShoppingListUiState> = _uiState.asStateFlow()
 
     init {
-        loadShoppingLists()
-        loadProducts()
-        loadCategories()
+        observeAuthState()
+    }
+
+    /**
+     * Observe authentication state changes and reload/clear data accordingly
+     */
+    private fun observeAuthState() {
+        viewModelScope.launch {
+            authRepository.authState().collect { isAuthenticated ->
+                if (isAuthenticated) {
+                    // User logged in - load fresh data for the authenticated user
+                    loadShoppingLists()
+                    loadProducts()
+                    loadCategories()
+                } else {
+                    // User logged out - clear all cached data
+                    clearAllData()
+                }
+            }
+        }
+    }
+
+    /**
+     * Clear all cached data when user logs out
+     */
+    private fun clearAllData() {
+        _uiState.update {
+            ShoppingListUiState(
+                lists = emptyList(),
+                currentList = null,
+                currentListItems = emptyList(),
+                availableProducts = emptyList(),
+                availableCategories = emptyList(),
+                recentlyCreatedProduct = null,
+                itemsCountByListId = emptyMap(),
+                sharedUsers = emptyList(),
+                isLoading = false,
+                error = null,
+                successMessage = null
+            )
+        }
     }
 
     fun loadShoppingLists() {

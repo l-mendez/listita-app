@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.listitaapp.data.model.Category
 import com.example.listitaapp.data.model.Product
+import com.example.listitaapp.data.repository.AuthRepository
 import com.example.listitaapp.data.repository.ProductRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,15 +25,49 @@ data class ProductUiState(
 
 @HiltViewModel
 class ProductViewModel @Inject constructor(
-    private val repository: ProductRepository
+    private val repository: ProductRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProductUiState())
     val uiState: StateFlow<ProductUiState> = _uiState.asStateFlow()
 
     init {
-        loadProducts()
-        loadCategories()
+        observeAuthState()
+    }
+
+    /**
+     * Observe authentication state changes and reload/clear data accordingly
+     */
+    private fun observeAuthState() {
+        viewModelScope.launch {
+            authRepository.authState().collect { isAuthenticated ->
+                if (isAuthenticated) {
+                    // User logged in - load fresh data for the authenticated user
+                    loadProducts()
+                    loadCategories()
+                } else {
+                    // User logged out - clear all cached data
+                    clearAllData()
+                }
+            }
+        }
+    }
+
+    /**
+     * Clear all cached data when user logs out
+     */
+    private fun clearAllData() {
+        _uiState.update {
+            ProductUiState(
+                products = emptyList(),
+                categories = emptyList(),
+                isLoading = false,
+                error = null,
+                successMessage = null,
+                searchQuery = ""
+            )
+        }
     }
 
     fun loadProducts() {
