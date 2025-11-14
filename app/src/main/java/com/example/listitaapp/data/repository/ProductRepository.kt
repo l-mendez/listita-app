@@ -87,4 +87,27 @@ class ProductRepository @Inject constructor(
     } catch (e: Exception) {
         Result.failure(e)
     }
+
+    suspend fun updateCategory(id: Long, name: String): Result<Category> = try {
+        val request = UpdateCategoryRequest(name = name)
+        val response = apiService.updateCategory(id, request)
+        if (response.isSuccessful && response.body() != null) {
+            Result.success(response.body()!!)
+        } else {
+            Result.failure(Exception(response.message()))
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
+    suspend fun deleteCategory(id: Long): Result<Unit> = try {
+        val response = apiService.deleteCategory(id)
+        if (response.isSuccessful) {
+            Result.success(Unit)
+        } else {
+            Result.failure(Exception(response.message()))
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
 }

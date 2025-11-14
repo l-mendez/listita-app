@@ -30,6 +30,7 @@ import com.example.listitaapp.ui.auth.AuthViewModel
 import com.example.listitaapp.ui.auth.LoginScreen
 import com.example.listitaapp.ui.auth.RegisterScreen
 import com.example.listitaapp.ui.auth.VerifyAccountScreen
+import com.example.listitaapp.ui.categories.CategoryViewModel
 import com.example.listitaapp.ui.components.AddProductDialog
 import com.example.listitaapp.ui.components.CreateCategoryDialog
 import com.example.listitaapp.ui.lists.*
@@ -44,6 +45,7 @@ class MainActivity : ComponentActivity() {
 
     private val authViewModel: AuthViewModel by viewModels()
     private val productViewModel: ProductViewModel by viewModels()
+    private val categoryViewModel: CategoryViewModel by viewModels()
     private val shoppingListViewModel: ShoppingListViewModel by viewModels()
     private val profileViewModel: ProfileViewModel by viewModels()
     private val purchaseHistoryViewModel: com.example.listitaapp.ui.purchases.PurchaseHistoryViewModel by viewModels()
@@ -57,6 +59,7 @@ class MainActivity : ComponentActivity() {
                 AppNavigation(
                     authViewModel = authViewModel,
                     productViewModel = productViewModel,
+                    categoryViewModel = categoryViewModel,
                     shoppingListViewModel = shoppingListViewModel,
                     profileViewModel = profileViewModel,
                     purchaseHistoryViewModel = purchaseHistoryViewModel
@@ -70,6 +73,7 @@ class MainActivity : ComponentActivity() {
 fun AppNavigation(
     authViewModel: AuthViewModel,
     productViewModel: ProductViewModel,
+    categoryViewModel: CategoryViewModel,
     shoppingListViewModel: ShoppingListViewModel,
     profileViewModel: ProfileViewModel,
     purchaseHistoryViewModel: com.example.listitaapp.ui.purchases.PurchaseHistoryViewModel
@@ -200,7 +204,8 @@ fun AppNavigation(
                     currentRoute = Screen.Products.route
                 ) {
                     ProductsScreenWrapper(
-                        viewModel = productViewModel
+                        viewModel = productViewModel,
+                        categoryViewModel = categoryViewModel
                     )
                 }
             }
@@ -226,6 +231,8 @@ fun AppNavigation(
                 ShoppingListDetailScreenWrapper(
                     listId = listId,
                     viewModel = shoppingListViewModel,
+                    productViewModel = productViewModel,
+                    categoryViewModel = categoryViewModel,
                     onBack = { navController.popBackStack() }
                 )
             }
@@ -385,13 +392,18 @@ fun ShoppingListsScreenWrapper(
 }
 
 @Composable
-fun ProductsScreenWrapper(viewModel: ProductViewModel) {
+fun ProductsScreenWrapper(
+    viewModel: ProductViewModel,
+    categoryViewModel: CategoryViewModel
+) {
     val uiState by viewModel.uiState.collectAsState()
+    val categoryUiState by categoryViewModel.uiState.collectAsState()
     var showAddProductDialog by remember { mutableStateOf(false) }
     var showCreateCategoryDialog by remember { mutableStateOf(false) }
 
     ProductsScreen(
         uiState = uiState,
+        categories = categoryUiState.categories,
         onCreateProduct = { showAddProductDialog = true },
         onDeleteProduct = { viewModel.deleteProduct(it) },
         onUpdateProduct = { id, name, price, categoryId ->
@@ -399,7 +411,10 @@ fun ProductsScreenWrapper(viewModel: ProductViewModel) {
             viewModel.updateProduct(id, name, categoryId, metadata)
         },
         onCreateCategory = { showCreateCategoryDialog = true },
-        onRefresh = { viewModel.loadProducts() },
+        onRefresh = {
+            viewModel.loadProducts()
+            categoryViewModel.loadCategories()
+        },
         onSearchQueryChange = { viewModel.updateSearchQuery(it) },
         onClearError = { viewModel.clearError() },
         onClearSuccess = { viewModel.clearSuccess() }
@@ -407,14 +422,14 @@ fun ProductsScreenWrapper(viewModel: ProductViewModel) {
 
     if (showAddProductDialog) {
         AddProductDialog(
-            categories = uiState.categories,
+            categories = categoryUiState.categories,
             onDismiss = { showAddProductDialog = false },
             onCreateProduct = { name, categoryId ->
                 viewModel.createProduct(name, categoryId)
                 showAddProductDialog = false
             },
             onCreateCategory = { name, onCreated ->
-                viewModel.createCategory(name) { category ->
+                categoryViewModel.createCategory(name) { category ->
                     onCreated(category)
                 }
             }
@@ -425,7 +440,7 @@ fun ProductsScreenWrapper(viewModel: ProductViewModel) {
         CreateCategoryDialog(
             onDismiss = { showCreateCategoryDialog = false },
             onCreate = { name ->
-                viewModel.createCategory(name)
+                categoryViewModel.createCategory(name)
                 showCreateCategoryDialog = false
             }
         )
@@ -483,9 +498,13 @@ fun ProfileScreenWrapper(
 fun ShoppingListDetailScreenWrapper(
     listId: Long,
     viewModel: ShoppingListViewModel,
+    productViewModel: ProductViewModel,
+    categoryViewModel: CategoryViewModel,
     onBack: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val productUiState by productViewModel.uiState.collectAsState()
+    val categoryUiState by categoryViewModel.uiState.collectAsState()
     var showAddItemDialog by remember { mutableStateOf(false) }
     var showAddProductDialog by remember { mutableStateOf(false) }
     var resumeAddItemAfterProduct by remember { mutableStateOf(false) }
@@ -505,8 +524,6 @@ fun ShoppingListDetailScreenWrapper(
         uiState = uiState,
         onBack = onBack,
         onAddItem = {
-            viewModel.loadProducts()
-            viewModel.loadCategories()
             showAddItemDialog = true
         },
         onToggleItem = { itemId ->
@@ -521,15 +538,16 @@ fun ShoppingListDetailScreenWrapper(
 
     if (showAddItemDialog) {
         AddItemToListDialog(
-            products = uiState.availableProducts,
-            recentProduct = uiState.recentlyCreatedProduct,
+            products = productUiState.products,
+            recentProduct = productUiState.recentlyCreatedProduct,
             onCreateNewProduct = {
-                viewModel.loadCategories()
+                productViewModel.loadProducts()
+                categoryViewModel.loadCategories()
                 resumeAddItemAfterProduct = true
                 showAddItemDialog = false
                 showAddProductDialog = true
             },
-            onClearRecentProduct = { viewModel.clearRecentlyCreatedProduct() },
+            onClearRecentProduct = { productViewModel.clearRecentlyCreatedProduct() },
             onDismiss = { showAddItemDialog = false },
             onAdd = { productId, quantity, unit ->
                 viewModel.addItemToList(listId, productId, quantity, unit)
@@ -540,7 +558,7 @@ fun ShoppingListDetailScreenWrapper(
 
     if (showAddProductDialog) {
         AddProductDialog(
-            categories = uiState.availableCategories,
+            categories = categoryUiState.categories,
             onDismiss = {
                 showAddProductDialog = false
                 if (resumeAddItemAfterProduct) {
@@ -549,7 +567,7 @@ fun ShoppingListDetailScreenWrapper(
                 }
             },
             onCreateProduct = { name, categoryId ->
-                viewModel.createProduct(name, categoryId)
+                productViewModel.createProduct(name, categoryId)
                 showAddProductDialog = false
                 if (resumeAddItemAfterProduct) {
                     resumeAddItemAfterProduct = false
@@ -557,7 +575,7 @@ fun ShoppingListDetailScreenWrapper(
                 }
             },
             onCreateCategory = { name, onCreated ->
-                viewModel.createCategory(name) { category ->
+                categoryViewModel.createCategory(name) { category ->
                     onCreated(category)
                 }
             }

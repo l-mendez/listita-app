@@ -14,6 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.listitaapp.R
 import com.example.listitaapp.data.model.Product
+import com.example.listitaapp.data.model.Category
 import com.example.listitaapp.ui.components.AppTopBar
 import com.example.listitaapp.ui.components.StandardCard
 import com.example.listitaapp.ui.components.OptionsBottomSheet
@@ -44,6 +45,7 @@ import com.example.listitaapp.ui.components.AppExtendedFab
 @Composable
 fun ProductsScreen(
     uiState: ProductUiState,
+    categories: List<Category>,
     onCreateProduct: () -> Unit,
     onDeleteProduct: (Long) -> Unit,
     onUpdateProduct: (Long, String?, String?, Long?) -> Unit,
@@ -93,7 +95,7 @@ fun ProductsScreen(
     editingProduct?.let { product ->
         EditProductDialog(
             product = product,
-            categories = uiState.categories,
+            categories = categories,
             onDismiss = { editingProduct = null },
             onApply = { name, price, categoryId ->
                 onUpdateProduct(product.id, name, price, categoryId)
@@ -234,7 +236,7 @@ private fun SearchBar(
 @Composable
 private fun EditProductDialog(
     product: Product,
-    categories: List<com.example.listitaapp.data.model.Category>,
+    categories: List<Category>,
     onDismiss: () -> Unit,
     onApply: (name: String?, price: String?, categoryId: Long?) -> Unit
 ) {
