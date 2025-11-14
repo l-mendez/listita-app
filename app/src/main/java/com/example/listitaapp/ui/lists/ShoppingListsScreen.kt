@@ -505,6 +505,16 @@ fun ShareListDialog(
     onMakePrivate: () -> Unit
 ) {
     var email by remember { mutableStateOf("") }
+    
+    // Clear email when loading completes successfully
+    LaunchedEffect(isLoading) {
+        if (!isLoading && email.isNotBlank()) {
+            // Small delay to allow user to see success feedback
+            kotlinx.coroutines.delay(300)
+            email = ""
+        }
+    }
+    
     AppFormDialog(
         title = stringResource(R.string.compartir),
         onDismiss = onDismiss,
@@ -512,14 +522,22 @@ fun ShareListDialog(
         confirmEnabled = email.isNotBlank() && !isLoading,
         onConfirm = {
             onShare(email.trim())
-            email = ""
         }
     ) {
         AppTextField(
             value = email,
             onValueChange = { email = it },
             label = "Email",
-            leadingIcon = Icons.Default.Email
+            leadingIcon = Icons.Default.Email,
+            enabled = !isLoading,
+            trailingIcon = {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp
+                    )
+                }
+            }
         )
 
         Spacer(modifier = Modifier.height(8.dp))

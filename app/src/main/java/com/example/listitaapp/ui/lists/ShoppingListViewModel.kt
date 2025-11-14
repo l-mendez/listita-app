@@ -424,6 +424,7 @@ class ShoppingListViewModel @Inject constructor(
                         it.copy(isLoading = false, successMessage = "List shared")
                     }
                     loadSharedUsers(listId)
+                    loadShoppingLists()
                 },
                 onFailure = { exception ->
                     _uiState.update {
@@ -441,6 +442,7 @@ class ShoppingListViewModel @Inject constructor(
                 onSuccess = {
                     _uiState.update { it.copy(isLoading = false, successMessage = "Access revoked") }
                     loadSharedUsers(listId)
+                    loadShoppingLists()
                 },
                 onFailure = { exception ->
                     _uiState.update {
@@ -457,6 +459,7 @@ class ShoppingListViewModel @Inject constructor(
             listRepository.makeListPrivate(listId).fold(
                 onSuccess = {
                     _uiState.update { it.copy(isLoading = false, successMessage = "List set to private", sharedUsers = emptyList()) }
+                    loadShoppingLists()
                 },
                 onFailure = { exception ->
                     _uiState.update {
