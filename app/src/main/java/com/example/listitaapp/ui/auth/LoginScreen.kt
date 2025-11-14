@@ -20,6 +20,10 @@ import androidx.compose.ui.unit.dp
 import com.example.listitaapp.R
 import com.example.listitaapp.ui.components.AppDialogType
 import com.example.listitaapp.ui.components.AppMessageDialog
+import com.example.listitaapp.ui.components.AppTextField
+import com.example.listitaapp.ui.components.AppPasswordField
+import com.example.listitaapp.ui.components.AppButton
+import com.example.listitaapp.ui.components.AppTextButton
 
 /**
  * Login Screen
@@ -88,44 +92,36 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Email field (Nielsen: Recognition over recall)
-            OutlinedTextField(
+            AppTextField(
                 value = email,
                 onValueChange = {
                     email = it
                     emailError = null // Clear error on input
                 },
-                label = { Text(stringResource(R.string.email)) },
-                placeholder = { Text("ejemplo@correo.com") },
-                leadingIcon = {
-                    Icon(Icons.Default.Email, contentDescription = null)
-                },
+                label = stringResource(R.string.email),
+                placeholder = "ejemplo@correo.com",
+                leadingIcon = Icons.Default.Email,
                 isError = emailError != null,
-                supportingText = emailError?.let { { Text(it) } },
+                errorMessage = emailError,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
                     imeAction = ImeAction.Next
                 ),
                 keyboardActions = KeyboardActions(
                     onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                ),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                )
             )
 
             // Password field
-            OutlinedTextField(
+            AppPasswordField(
                 value = password,
                 onValueChange = {
                     password = it
                     passwordError = null
                 },
-                label = { Text(stringResource(R.string.password)) },
-                leadingIcon = {
-                    Icon(Icons.Default.Lock, contentDescription = null)
-                },
-                visualTransformation = PasswordVisualTransformation(),
+                label = stringResource(R.string.password),
                 isError = passwordError != null,
-                supportingText = passwordError?.let { { Text(it) } },
+                errorMessage = passwordError,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,
                     imeAction = ImeAction.Done
@@ -139,15 +135,13 @@ fun LoginScreen(
                             onLogin(email, password)
                         }
                     }
-                ),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                )
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             // Login button (Nielsen: Visibility of system status)
-            Button(
+            AppButton(
                 onClick = {
                     if (validateInput(email, password,
                             { emailError = it },
@@ -155,28 +149,18 @@ fun LoginScreen(
                         onLogin(email, password)
                     }
                 },
+                text = stringResource(R.string.login),
                 enabled = !uiState.isLoading,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-            ) {
-                if (uiState.isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                } else {
-                    Text(stringResource(R.string.login))
-                }
-            }
+                loading = uiState.isLoading,
+                fullWidth = true
+            )
 
             // Register link (Gestalt: Continuity)
-            TextButton(
+            AppTextButton(
                 onClick = onNavigateToRegister,
+                text = "¿No tienes cuenta? ${stringResource(R.string.register)}",
                 enabled = !uiState.isLoading
-            ) {
-                Text("¿No tienes cuenta? ${stringResource(R.string.register)}")
-            }
+            )
         }
     }
 }

@@ -28,6 +28,8 @@ import com.example.listitaapp.ui.components.AppDialogType
 import com.example.listitaapp.ui.components.AppMessageDialog
 import com.example.listitaapp.ui.components.AppSnackbarHost
 import com.example.listitaapp.ui.components.rememberAppSnackbarState
+import com.example.listitaapp.ui.components.AppTextField
+import com.example.listitaapp.ui.components.AppTextButton
 import com.example.listitaapp.ui.components.appSnackTypeFromMessage
 import com.example.listitaapp.ui.components.show
 import java.time.Instant
@@ -93,27 +95,28 @@ fun ShoppingListsScreen(
             onDismissRequest = { showRenameDialog = false },
             title = { Text(stringResource(R.string.cambiar_nombre)) },
             text = {
-                OutlinedTextField(
+                AppTextField(
                     value = newName,
                     onValueChange = { if (it.length <= 50) newName = it },
-                    label = { Text(stringResource(R.string.nuevo_nombre)) },
-                    singleLine = true
+                    label = stringResource(R.string.nuevo_nombre)
                 )
             },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         onUpdateListName(selectedList!!.id, newName.trim())
                         showRenameDialog = false
                         showOptions = false
                     },
+                    text = stringResource(R.string.save),
                     enabled = newName.isNotBlank()
-                ) { Text(stringResource(R.string.save)) }
+                )
             },
             dismissButton = {
-                TextButton(onClick = { showRenameDialog = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
+                AppTextButton(
+                    onClick = { showRenameDialog = false },
+                    text = stringResource(R.string.cancel)
+                )
             }
         )
     }
@@ -125,27 +128,30 @@ fun ShoppingListsScreen(
             onDismissRequest = { showEditDescriptionDialog = false },
             title = { Text(stringResource(R.string.cambiar_descripcion)) },
             text = {
-                OutlinedTextField(
+                AppTextField(
                     value = newDescription,
                     onValueChange = { if (it.length <= 200) newDescription = it },
-                    label = { Text(stringResource(R.string.nueva_descripcion)) },
+                    label = stringResource(R.string.nueva_descripcion),
+                    singleLine = false,
                     minLines = 2,
                     maxLines = 4
                 )
             },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         onUpdateListDescription(selectedList!!.id, newDescription)
                         showEditDescriptionDialog = false
                         showOptions = false
-                    }
-                ) { Text(stringResource(R.string.save)) }
+                    },
+                    text = stringResource(R.string.save)
+                )
             },
             dismissButton = {
-                TextButton(onClick = { showEditDescriptionDialog = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
+                AppTextButton(
+                    onClick = { showEditDescriptionDialog = false },
+                    text = stringResource(R.string.cancel)
+                )
             }
         )
     }
@@ -159,23 +165,23 @@ fun ShoppingListsScreen(
             title = { Text(stringResource(R.string.edit_list)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedTextField(
+                    AppTextField(
                         value = newName,
                         onValueChange = { if (it.length <= 50) newName = it },
-                        label = { Text(stringResource(R.string.list_name)) },
-                        singleLine = true
+                        label = stringResource(R.string.list_name)
                     )
-                    OutlinedTextField(
+                    AppTextField(
                         value = newDescription,
                         onValueChange = { if (it.length <= 200) newDescription = it },
-                        label = { Text(stringResource(R.string.list_description)) },
+                        label = stringResource(R.string.list_description),
+                        singleLine = false,
                         minLines = 2,
                         maxLines = 4
                     )
                 }
             },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         if (newName != selectedList!!.name) {
                             onUpdateListName(selectedList!!.id, newName.trim())
@@ -186,13 +192,15 @@ fun ShoppingListsScreen(
                         showEditListDialog = false
                         showOptions = false
                     },
+                    text = stringResource(R.string.save),
                     enabled = newName.isNotBlank()
-                ) { Text(stringResource(R.string.save)) }
+                )
             },
             dismissButton = {
-                TextButton(onClick = { showEditListDialog = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
+                AppTextButton(
+                    onClick = { showEditListDialog = false },
+                    text = stringResource(R.string.cancel)
+                )
             }
         )
     }
@@ -457,21 +465,19 @@ fun CreateShoppingListDialog(
             }
         }
     ) {
-        OutlinedTextField(
+        AppTextField(
             value = listName,
             onValueChange = { listName = it },
-            label = { Text(stringResource(R.string.list_name)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            label = stringResource(R.string.list_name)
         )
 
-        OutlinedTextField(
+        AppTextField(
             value = description,
             onValueChange = { description = it },
-            label = { Text(stringResource(R.string.list_description)) },
+            label = stringResource(R.string.list_description),
+            singleLine = false,
             minLines = 2,
-            maxLines = 3,
-            modifier = Modifier.fillMaxWidth()
+            maxLines = 3
         )
 
         Row(
@@ -509,12 +515,11 @@ fun ShareListDialog(
             email = ""
         }
     ) {
-        OutlinedTextField(
+        AppTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("Email") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            label = "Email",
+            leadingIcon = Icons.Default.Email
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -535,9 +540,11 @@ fun ShareListDialog(
                     headlineContent = { Text(text = "${user.name} ${user.surname}") },
                     supportingContent = { Text(text = user.email) },
                     trailingContent = {
-                        TextButton(enabled = !isLoading, onClick = { onRevoke(user.id) }) {
-                            Text(stringResource(R.string.remove))
-                        }
+                        AppTextButton(
+                            enabled = !isLoading,
+                            onClick = { onRevoke(user.id) },
+                            text = stringResource(R.string.remove)
+                        )
                     }
                 )
                 Divider()
@@ -545,13 +552,11 @@ fun ShareListDialog(
         }
 
         Spacer(modifier = Modifier.height(8.dp))
-        TextButton(
+        AppTextButton(
             enabled = !isLoading,
-            onClick = onMakePrivate
-        ) {
-            Icon(Icons.Default.Lock, contentDescription = null)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(text = stringResource(R.string.hacer_privada))
-        }
+            onClick = onMakePrivate,
+            text = stringResource(R.string.hacer_privada),
+            icon = Icons.Default.Lock
+        )
     }
 }

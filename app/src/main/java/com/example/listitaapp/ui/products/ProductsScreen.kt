@@ -27,6 +27,9 @@ import com.example.listitaapp.ui.components.AppSnackbarHost
 import com.example.listitaapp.ui.components.rememberAppSnackbarState
 import com.example.listitaapp.ui.components.appSnackTypeFromMessage
 import com.example.listitaapp.ui.components.show
+import com.example.listitaapp.ui.components.AppTextField
+import com.example.listitaapp.ui.components.AppSearchField
+import com.example.listitaapp.ui.components.AppExtendedFab
 
 /**
  * Products Screen - Following HCI Principles:
@@ -114,10 +117,10 @@ fun ProductsScreen(
             )
         },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
+            AppExtendedFab(
                 onClick = onCreateProduct,
-                icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                text = { Text(stringResource(R.string.create_product)) }
+                text = stringResource(R.string.create_product),
+                icon = Icons.Default.Add
             )
         },
         snackbarHost = { AppSnackbarHost(state = appSnackbar) }
@@ -219,20 +222,11 @@ private fun SearchBar(
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    OutlinedTextField(
+    AppSearchField(
         value = query,
         onValueChange = onQueryChange,
-        modifier = modifier,
-        placeholder = { Text(stringResource(R.string.search)) },
-        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-        trailingIcon = {
-            if (query.isNotEmpty()) {
-                IconButton(onClick = { onQueryChange("") }) {
-                    Icon(Icons.Default.Clear, contentDescription = "Clear search")
-                }
-            }
-        },
-        singleLine = true
+        placeholder = stringResource(R.string.search),
+        modifier = modifier
     )
 }
 
@@ -256,33 +250,27 @@ private fun EditProductDialog(
         onConfirm = { onApply(name.ifBlank { null }, price.ifBlank { null }, selectedCategoryId) },
         confirmEnabled = name.isNotBlank()
     ) {
-        OutlinedTextField(
+        AppTextField(
             value = name,
             onValueChange = { name = it },
-            label = { Text(stringResource(R.string.product_name)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            label = stringResource(R.string.product_name)
         )
-        OutlinedTextField(
+        AppTextField(
             value = price,
             onValueChange = { price = it.filter { ch -> ch.isDigit() || ch == '.' || ch == ',' } },
-            label = { Text("Price") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            label = "Price"
         )
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = it }
         ) {
-            OutlinedTextField(
+            AppTextField(
                 value = categories.find { it.id == selectedCategoryId }?.name ?: "",
                 onValueChange = {},
                 readOnly = true,
-                label = { Text(stringResource(R.string.category)) },
+                label = stringResource(R.string.category),
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor()
+                modifier = Modifier.menuAnchor()
             )
             ExposedDropdownMenu(
                 expanded = expanded,
@@ -385,26 +373,22 @@ fun CreateProductDialog(
             }
         }
     ) {
-        OutlinedTextField(
+        AppTextField(
             value = productName,
             onValueChange = { productName = it },
-            label = { Text(stringResource(R.string.product_name)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            label = stringResource(R.string.product_name)
         )
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = it }
         ) {
-            OutlinedTextField(
+            AppTextField(
                 value = categories.find { it.id == selectedCategoryId }?.name ?: "",
                 onValueChange = {},
                 readOnly = true,
-                label = { Text(stringResource(R.string.category)) },
+                label = stringResource(R.string.category),
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor()
+                modifier = Modifier.menuAnchor()
             )
 
             ExposedDropdownMenu(
@@ -444,11 +428,10 @@ fun CreateCategoryDialog(
             }
         }
     ) {
-        OutlinedTextField(
+        AppTextField(
             value = categoryName,
             onValueChange = { categoryName = it },
-            label = { Text(stringResource(R.string.category_name)) },
-            singleLine = true
+            label = stringResource(R.string.category_name)
         )
     }
 }

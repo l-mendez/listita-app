@@ -131,9 +131,10 @@ fun AppMessageDialog(
                         modifier = androidx.compose.ui.Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
-                        TextButton(onClick = onDismiss) {
-                            Text(confirmLabel)
-                        }
+                        AppTextButton(
+                            onClick = onDismiss,
+                            text = confirmLabel
+                        )
                     }
                 }
             }
@@ -210,18 +211,21 @@ fun AppConfirmDialog(
                         modifier = androidx.compose.ui.Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
-                        TextButton(onClick = onDismiss) {
-                            Text(dismissLabel)
-                        }
+                        AppTextButton(
+                            onClick = onDismiss,
+                            text = dismissLabel
+                        )
                         Spacer(modifier = androidx.compose.ui.Modifier.width(8.dp))
-                        Button(
-                            onClick = onConfirm,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = confirmContainer,
-                                contentColor = confirmContent
+                        if (destructive) {
+                            AppDestructiveButton(
+                                onClick = onConfirm,
+                                text = confirmLabel
                             )
-                        ) {
-                            Text(confirmLabel)
+                        } else {
+                            AppButton(
+                                onClick = onConfirm,
+                                text = confirmLabel
+                            )
                         }
                     }
                 }
@@ -284,16 +288,16 @@ fun AppFormDialog(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
-                        TextButton(onClick = onDismiss) {
-                            Text(dismissLabel)
-                        }
+                        AppTextButton(
+                            onClick = onDismiss,
+                            text = dismissLabel
+                        )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Button(
+                        AppButton(
                             onClick = onConfirm,
+                            text = confirmLabel,
                             enabled = confirmEnabled
-                        ) {
-                            Text(confirmLabel)
-                        }
+                        )
                     }
                 }
             }

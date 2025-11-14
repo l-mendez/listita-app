@@ -23,6 +23,8 @@ import com.example.listitaapp.ui.components.AppSnackbarHost
 import com.example.listitaapp.ui.components.rememberAppSnackbarState
 import com.example.listitaapp.ui.components.appSnackTypeFromMessage
 import com.example.listitaapp.ui.components.show
+import com.example.listitaapp.ui.components.AppTextField
+import com.example.listitaapp.ui.components.AppPasswordField
 
 /**
  * Profile Screen - Following HCI Principles:
@@ -154,8 +156,6 @@ fun ProfileScreen(
                     onClick = onChangePassword
                 )
 
-                Divider(modifier = Modifier.padding(vertical = 16.dp))
-
                 // Logout button
                 SettingsItem(
                     icon = Icons.AutoMirrored.Filled.ExitToApp,
@@ -180,7 +180,7 @@ private fun SettingsItem(
     StandardCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         onClick = onClick
     ) {
         Row(
@@ -242,19 +242,17 @@ fun EditProfileDialog(
             }
         }
     ) {
-        OutlinedTextField(
+        AppTextField(
             value = name,
             onValueChange = { name = it },
-            label = { Text(stringResource(R.string.name)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            label = stringResource(R.string.name),
+            leadingIcon = Icons.Default.Person
         )
-        OutlinedTextField(
+        AppTextField(
             value = surname,
             onValueChange = { surname = it },
-            label = { Text(stringResource(R.string.surname)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
+            label = stringResource(R.string.surname),
+            leadingIcon = Icons.Default.Person
         )
     }
 }
@@ -288,42 +286,33 @@ fun ChangePasswordDialog(
             }
         }
     ) {
-        OutlinedTextField(
+        AppPasswordField(
             value = currentPassword,
             onValueChange = {
                 currentPassword = it
                 error = null
             },
-            label = { Text(stringResource(R.string.current_password)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation()
+            label = stringResource(R.string.current_password)
         )
 
-        OutlinedTextField(
+        AppPasswordField(
             value = newPassword,
             onValueChange = {
                 newPassword = it
                 error = null
             },
-            label = { Text(stringResource(R.string.new_password)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation()
+            label = stringResource(R.string.new_password)
         )
 
-        OutlinedTextField(
+        AppPasswordField(
             value = confirmPassword,
             onValueChange = {
                 confirmPassword = it
                 error = null
             },
-            label = { Text(stringResource(R.string.confirm_password)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
+            label = stringResource(R.string.confirm_password),
             isError = error != null,
-            supportingText = error?.let { { Text(it) } },
-            visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation()
+            errorMessage = error
         )
     }
 }

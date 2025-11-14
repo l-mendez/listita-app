@@ -237,7 +237,7 @@ fun MainScreenScaffold(
                 NavigationBar(
                     containerColor = MaterialTheme.colorScheme.surface
                 ) {
-                    Spacer(Modifier.width(16.dp))
+                    Spacer(Modifier.width(8.dp))
                     BottomNavItem(
                         icon = Icons.Default.List,
                         label = "Lists",
@@ -271,7 +271,7 @@ fun MainScreenScaffold(
                             }
                         }
                     }
-                    Spacer(Modifier.width(16.dp))
+                    Spacer(Modifier.width(8.dp))
                 }
             }
         }
@@ -290,12 +290,12 @@ private fun RowScope.BottomNavItem(
     onClick: () -> Unit
 ) {
     val backgroundColor = if (selected) {
-        MaterialTheme.colorScheme.secondaryContainer
+        Color(0xFFE5E5E5) // Light gray
     } else {
         Color.Transparent
     }
     val contentColor = if (selected) {
-        MaterialTheme.colorScheme.onSecondaryContainer
+        Color.Black
     } else {
         MaterialTheme.colorScheme.onSurfaceVariant
     }

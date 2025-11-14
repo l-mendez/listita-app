@@ -19,6 +19,10 @@ import androidx.compose.ui.unit.dp
 import com.example.listitaapp.R
 import com.example.listitaapp.ui.components.AppDialogType
 import com.example.listitaapp.ui.components.AppMessageDialog
+import com.example.listitaapp.ui.components.AppTextField
+import com.example.listitaapp.ui.components.AppPasswordField
+import com.example.listitaapp.ui.components.AppButton
+import com.example.listitaapp.ui.components.AppTextButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -96,117 +100,95 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             // Name field
-            OutlinedTextField(
+            AppTextField(
                 value = name,
                 onValueChange = {
                     name = it
                     nameError = null
                 },
-                label = { Text(stringResource(R.string.name)) },
-                leadingIcon = {
-                    Icon(Icons.Default.Person, contentDescription = null)
-                },
+                label = stringResource(R.string.name),
+                leadingIcon = Icons.Default.Person,
                 isError = nameError != null,
-                supportingText = nameError?.let { { Text(it) } },
+                errorMessage = nameError,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
                     imeAction = ImeAction.Next
                 ),
                 keyboardActions = KeyboardActions(
                     onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                ),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                )
             )
 
             // Surname field
-            OutlinedTextField(
+            AppTextField(
                 value = surname,
                 onValueChange = {
                     surname = it
                     surnameError = null
                 },
-                label = { Text(stringResource(R.string.surname)) },
-                leadingIcon = {
-                    Icon(Icons.Default.Person, contentDescription = null)
-                },
+                label = stringResource(R.string.surname),
+                leadingIcon = Icons.Default.Person,
                 isError = surnameError != null,
-                supportingText = surnameError?.let { { Text(it) } },
+                errorMessage = surnameError,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
                     imeAction = ImeAction.Next
                 ),
                 keyboardActions = KeyboardActions(
                     onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                ),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                )
             )
 
             // Email field
-            OutlinedTextField(
+            AppTextField(
                 value = email,
                 onValueChange = {
                     email = it
                     emailError = null
                 },
-                label = { Text(stringResource(R.string.email)) },
-                placeholder = { Text("ejemplo@correo.com") },
-                leadingIcon = {
-                    Icon(Icons.Default.Email, contentDescription = null)
-                },
+                label = stringResource(R.string.email),
+                placeholder = "ejemplo@correo.com",
+                leadingIcon = Icons.Default.Email,
                 isError = emailError != null,
-                supportingText = emailError?.let { { Text(it) } },
+                errorMessage = emailError,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
                     imeAction = ImeAction.Next
                 ),
                 keyboardActions = KeyboardActions(
                     onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                ),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                )
             )
 
             // Password field
-            OutlinedTextField(
+            AppPasswordField(
                 value = password,
                 onValueChange = {
                     password = it
                     passwordError = null
                 },
-                label = { Text(stringResource(R.string.password)) },
-                leadingIcon = {
-                    Icon(Icons.Default.Lock, contentDescription = null)
-                },
-                visualTransformation = PasswordVisualTransformation(),
+                label = stringResource(R.string.password),
                 isError = passwordError != null,
-                supportingText = passwordError?.let { { Text(it) } },
+                errorMessage = passwordError,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,
                     imeAction = ImeAction.Next
                 ),
                 keyboardActions = KeyboardActions(
                     onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                ),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                )
             )
 
             // Confirm Password field
-            OutlinedTextField(
+            AppPasswordField(
                 value = confirmPassword,
                 onValueChange = {
                     confirmPassword = it
                     confirmPasswordError = null
                 },
-                label = { Text(stringResource(R.string.confirm_password)) },
-                leadingIcon = {
-                    Icon(Icons.Default.Lock, contentDescription = null)
-                },
-                visualTransformation = PasswordVisualTransformation(),
+                label = stringResource(R.string.confirm_password),
                 isError = confirmPasswordError != null,
-                supportingText = confirmPasswordError?.let { { Text(it) } },
+                errorMessage = confirmPasswordError,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,
                     imeAction = ImeAction.Done
@@ -225,15 +207,13 @@ fun RegisterScreen(
                             onRegister(email, password, name, surname)
                         }
                     }
-                ),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                )
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             // Register button
-            Button(
+            AppButton(
                 onClick = {
                     if (validateInput(
                             name, surname, email, password, confirmPassword,
@@ -246,28 +226,18 @@ fun RegisterScreen(
                         onRegister(email, password, name, surname)
                     }
                 },
+                text = stringResource(R.string.register),
                 enabled = !uiState.isLoading,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-            ) {
-                if (uiState.isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                } else {
-                    Text(stringResource(R.string.register))
-                }
-            }
+                loading = uiState.isLoading,
+                fullWidth = true
+            )
 
             // Login link
-            TextButton(
+            AppTextButton(
                 onClick = onNavigateToLogin,
+                text = "¿Ya tienes cuenta? ${stringResource(R.string.login)}",
                 enabled = !uiState.isLoading
-            ) {
-                Text("¿Ya tienes cuenta? ${stringResource(R.string.login)}")
-            }
+            )
         }
     }
 }

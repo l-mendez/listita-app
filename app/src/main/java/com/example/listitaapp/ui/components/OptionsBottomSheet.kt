@@ -86,11 +86,12 @@ fun SheetHeaderWithDelete(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         leadingContent?.invoke()
-        TextButton(onClick = onDeleteClick) {
-            Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error)
-            Spacer(Modifier.width(8.dp))
-            Text(text = stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
-        }
+        AppTextButton(
+            onClick = onDeleteClick,
+            text = stringResource(R.string.delete),
+            icon = Icons.Default.Delete,
+            contentColor = MaterialTheme.colorScheme.error
+        )
     }
 }
 

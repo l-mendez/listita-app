@@ -27,6 +27,7 @@ import com.example.listitaapp.ui.components.AppSnackbarHost
 import com.example.listitaapp.ui.components.rememberAppSnackbarState
 import com.example.listitaapp.ui.components.appSnackTypeFromMessage
 import com.example.listitaapp.ui.components.show
+import com.example.listitaapp.ui.components.AppTextField
 
 /**
  * Shopping List Detail Screen - Following HCI Principles:
@@ -293,16 +294,14 @@ fun AddItemToListDialog(
             expanded = expanded,
             onExpandedChange = { expanded = if (products.isNotEmpty()) it else false }
         ) {
-            OutlinedTextField(
+            AppTextField(
                 value = products.find { it.id == selectedProductId }?.name ?: "",
                 onValueChange = {},
                 readOnly = true,
-                label = { Text(stringResource(R.string.product_name)) },
+                label = stringResource(R.string.product_name),
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                 enabled = products.isNotEmpty(),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor()
+                modifier = Modifier.menuAnchor()
             )
 
             ExposedDropdownMenu(
@@ -336,11 +335,10 @@ fun AddItemToListDialog(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            OutlinedTextField(
+            AppTextField(
                 value = quantity,
                 onValueChange = { quantity = it },
-                label = { Text(stringResource(R.string.quantity)) },
-                singleLine = true,
+                label = stringResource(R.string.quantity),
                 modifier = Modifier.weight(1f)
             )
 
@@ -350,14 +348,12 @@ fun AddItemToListDialog(
                 onExpandedChange = { unitExpanded = it },
                 modifier = Modifier.weight(1f)
             ) {
-                OutlinedTextField(
+                AppTextField(
                     value = unit,
                     onValueChange = { unit = it },
-                    label = { Text(stringResource(R.string.unit)) },
+                    label = stringResource(R.string.unit),
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor()
+                    modifier = Modifier.menuAnchor()
                 )
 
                 ExposedDropdownMenu(

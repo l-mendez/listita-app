@@ -104,11 +104,11 @@ fun AppSnackbarHost(
                 action = {
                     val label = data.visuals.actionLabel
                     if (label != null) {
-                        TextButton(
-                            onClick = { data.performAction() }
-                        ) {
-                            Text(label, color = actionColor)
-                        }
+                        AppTextButton(
+                            onClick = { data.performAction() },
+                            text = label,
+                            contentColor = actionColor
+                        )
                     }
                 }
             ) {

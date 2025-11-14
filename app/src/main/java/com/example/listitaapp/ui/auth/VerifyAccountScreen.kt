@@ -18,6 +18,9 @@ import androidx.compose.ui.unit.dp
 import com.example.listitaapp.R
 import com.example.listitaapp.ui.components.AppDialogType
 import com.example.listitaapp.ui.components.AppMessageDialog
+import com.example.listitaapp.ui.components.AppTextField
+import com.example.listitaapp.ui.components.AppButton
+import com.example.listitaapp.ui.components.AppTextButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -114,19 +117,17 @@ fun VerifyAccountScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Verification code field
-            OutlinedTextField(
+            AppTextField(
                 value = code,
                 onValueChange = {
                     code = it.trim()
                     codeError = null
                 },
-                label = { Text(stringResource(R.string.verification_code)) },
-                placeholder = { Text("Ingresa el código") },
-                leadingIcon = {
-                    Icon(Icons.Default.Lock, contentDescription = null)
-                },
+                label = stringResource(R.string.verification_code),
+                placeholder = "Ingresa el código",
+                leadingIcon = Icons.Default.Lock,
                 isError = codeError != null,
-                supportingText = codeError?.let { { Text(it) } },
+                errorMessage = codeError,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Text,
                     imeAction = ImeAction.Done
@@ -138,50 +139,37 @@ fun VerifyAccountScreen(
                             onVerify(code.trim())
                         }
                     }
-                ),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
+                )
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             // Verify button
-            Button(
+            AppButton(
                 onClick = {
                     if (validateCode(code.trim(), { codeError = it })) {
                         onVerify(code.trim())
                     }
                 },
+                text = "Verificar Cuenta",
                 enabled = !uiState.isLoading,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-            ) {
-                if (uiState.isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                } else {
-                    Text("Verificar Cuenta")
-                }
-            }
+                loading = uiState.isLoading,
+                fullWidth = true
+            )
 
             // Resend code button
-            TextButton(
+            AppTextButton(
                 onClick = onResendCode,
+                text = "¿No recibiste el código? Reenviar",
                 enabled = !uiState.isLoading
-            ) {
-                Text("¿No recibiste el código? Reenviar")
-            }
+            )
 
             // Back to login
-            TextButton(
+            AppTextButton(
                 onClick = onNavigateToLogin,
+                text = "Volver al inicio de sesión",
                 enabled = !uiState.isLoading
-            ) {
-                Text("Volver al inicio de sesión")
-            }
+            )
         }
     }
 }
