@@ -18,7 +18,7 @@ import com.example.listitaapp.data.model.ListItem
 import com.example.listitaapp.data.model.Product
 import com.example.listitaapp.ui.components.AppTopBar
 import com.example.listitaapp.ui.components.StandardCard
-import com.example.listitaapp.ui.components.AppExtendedFab
+import com.example.listitaapp.ui.components.AppFab
 import com.example.listitaapp.ui.components.AppConfirmDialog
 import com.example.listitaapp.ui.components.AppDialogType
 import com.example.listitaapp.ui.components.AppMessageDialog
@@ -96,10 +96,7 @@ fun ShoppingListDetailScreen(
             )
         },
         floatingActionButton = {
-            AppExtendedFab(
-                onClick = onAddItem,
-                text = stringResource(R.string.add_item)
-            )
+            AppFab(onClick = onAddItem, modifier = Modifier.size(64.dp))
         },
         snackbarHost = { AppSnackbarHost(state = appSnackbar) }
     ) { padding ->
