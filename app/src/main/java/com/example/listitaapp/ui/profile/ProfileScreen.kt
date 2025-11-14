@@ -10,8 +10,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import android.content.res.Configuration
 import com.example.listitaapp.R
 import com.example.listitaapp.ui.components.AppTopBar
 import com.example.listitaapp.ui.components.StandardCard
@@ -79,6 +81,9 @@ fun ProfileScreen(
         )
     }
 
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     Scaffold(
         topBar = {
             AppTopBar(title = stringResource(R.string.profile))
@@ -95,77 +100,149 @@ fun ProfileScreen(
                 CircularProgressIndicator()
             }
         } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                // Profile header
-                uiState.user?.let { user ->
-                    StandardCard(
+            uiState.user?.let { user ->
+                if (isLandscape) {
+                    Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 16.dp)
+                            .fillMaxSize()
+                            .padding(padding)
                     ) {
+                        StandardCard(
+                            modifier = Modifier
+                                .weight(0.5f)
+                                .fillMaxHeight()
+                                .padding(8.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(24.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.AccountCircle,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(80.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text(
+                                    text = "${user.name} ${user.surname}",
+                                    style = MaterialTheme.typography.headlineSmall
+                                )
+                                Text(
+                                    text = user.email,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.outline
+                                )
+                            }
+                        }
+
                         Column(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                                .weight(0.5f)
+                                .fillMaxHeight()
+                                .padding(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.AccountCircle,
-                                contentDescription = null,
-                                modifier = Modifier.size(80.dp),
-                                tint = MaterialTheme.colorScheme.primary
+                            SettingsItem(
+                                modifier = Modifier.weight(1f),
+                                icon = Icons.Default.Edit,
+                                title = stringResource(R.string.edit_profile),
+                                subtitle = "Update your name and information",
+                                onClick = onEditProfile,
+                                isLandscape = true
                             )
 
-                            Text(
-                                text = "${user.name} ${user.surname}",
-                                style = MaterialTheme.typography.headlineSmall
+                            SettingsItem(
+                                modifier = Modifier.weight(1f),
+                                icon = Icons.Default.Lock,
+                                title = stringResource(R.string.change_password),
+                                subtitle = "Change your account password",
+                                onClick = onChangePassword,
+                                isLandscape = true
                             )
 
-                            Text(
-                                text = user.email,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.outline
+                            SettingsItem(
+                                modifier = Modifier.weight(1f),
+                                icon = Icons.AutoMirrored.Filled.ExitToApp,
+                                title = stringResource(R.string.logout),
+                                subtitle = "Sign out of your account",
+                                onClick = { showLogoutDialog = true },
+                                tint = MaterialTheme.colorScheme.error,
+                                isLandscape = true
                             )
                         }
                     }
+                } else {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(padding)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        StandardCard(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 16.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(24.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.AccountCircle,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(80.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+
+                                Text(
+                                    text = "${user.name} ${user.surname}",
+                                    style = MaterialTheme.typography.headlineSmall
+                                )
+
+                                Text(
+                                    text = user.email,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.outline
+                                )
+                            }
+                        }
+
+                        Text(
+                            text = stringResource(R.string.settings),
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+
+                        SettingsItem(
+                            icon = Icons.Default.Edit,
+                            title = stringResource(R.string.edit_profile),
+                            subtitle = "Update your name and information",
+                            onClick = onEditProfile
+                        )
+
+                        SettingsItem(
+                            icon = Icons.Default.Lock,
+                            title = stringResource(R.string.change_password),
+                            subtitle = "Change your account password",
+                            onClick = onChangePassword
+                        )
+
+                        SettingsItem(
+                            icon = Icons.AutoMirrored.Filled.ExitToApp,
+                            title = stringResource(R.string.logout),
+                            subtitle = "Sign out of your account",
+                            onClick = { showLogoutDialog = true },
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
-
-                // Settings section
-                Text(
-                    text = stringResource(R.string.settings),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-
-                // Settings items
-                SettingsItem(
-                    icon = Icons.Default.Edit,
-                    title = stringResource(R.string.edit_profile),
-                    subtitle = "Update your name and information",
-                    onClick = onEditProfile
-                )
-
-                SettingsItem(
-                    icon = Icons.Default.Lock,
-                    title = stringResource(R.string.change_password),
-                    subtitle = "Change your account password",
-                    onClick = onChangePassword
-                )
-
-                // Logout button
-                SettingsItem(
-                    icon = Icons.AutoMirrored.Filled.ExitToApp,
-                    title = stringResource(R.string.logout),
-                    subtitle = "Sign out of your account",
-                    onClick = { showLogoutDialog = true },
-                    tint = MaterialTheme.colorScheme.error
-                )
             }
         }
     }
@@ -177,46 +254,58 @@ private fun SettingsItem(
     title: String,
     subtitle: String,
     onClick: () -> Unit,
-    tint: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.primary
+    modifier: Modifier = Modifier,
+    tint: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.primary,
+    isLandscape: Boolean = false
 ) {
-    StandardCard(
-        modifier = Modifier
+    Box(
+        modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        onClick = onClick
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = tint,
-                modifier = Modifier.size(24.dp)
+            .then(
+                if (isLandscape) {
+                    Modifier
+                } else {
+                    Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                }
             )
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium
+    ) {
+        StandardCard(
+            modifier = Modifier.fillMaxSize(),
+            onClick = onClick
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = tint,
+                    modifier = Modifier.size(24.dp)
                 )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.outline
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.outline
+                    )
+                }
+
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.outline
                 )
             }
-
-            Icon(
-                imageVector = Icons.Default.KeyboardArrowRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.outline
-            )
         }
     }
 }

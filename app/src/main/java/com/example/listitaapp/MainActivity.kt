@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -19,6 +20,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
+import android.content.res.Configuration
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -249,65 +252,128 @@ fun AppNavigation(
     }
 }
 
-/**
- * Adaptive navigation scaffold that adjusts navigation UI based on screen size
- * - On phones: Bottom navigation bar
- * - On tablets: Navigation rail or drawer
- */
 @Composable
 fun MainScreenScaffold(
     navController: NavHostController,
     currentRoute: String,
     content: @Composable () -> Unit
 ) {
-    Scaffold(
-        bottomBar = {
-            Column {
-                Divider()
-                NavigationBar(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ) {
-                    Spacer(Modifier.width(8.dp))
-                    BottomNavItem(
-                        icon = Icons.Default.List,
-                        label = "Lists",
-                        selected = currentRoute == Screen.ShoppingLists.route
-                    ) {
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+    if (isLandscape) {
+        Row(modifier = Modifier.fillMaxSize()) {
+            NavigationRail(
+                containerColor = MaterialTheme.colorScheme.surface,
+                modifier = Modifier.fillMaxHeight()
+            ) {
+                Spacer(modifier = Modifier.height(8.dp))
+                NavigationRailItem(
+                    icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Lists") },
+                    label = { Text("Lists") },
+                    selected = currentRoute == Screen.ShoppingLists.route,
+                    onClick = {
                         if (currentRoute != Screen.ShoppingLists.route) {
                             navController.navigate(Screen.ShoppingLists.route) {
                                 popUpTo(Screen.ShoppingLists.route) { inclusive = true }
                             }
                         }
-                    }
-                    BottomNavItem(
-                        icon = Icons.Default.ShoppingCart,
-                        label = "Products",
-                        selected = currentRoute == Screen.Products.route
-                    ) {
+                    },
+                    colors = NavigationRailItemDefaults.colors(
+                        indicatorColor = Color(0xFFE5E5E5),
+                        selectedIconColor = Color.Black,
+                        selectedTextColor = Color.Black
+                    )
+                )
+                NavigationRailItem(
+                    icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Products") },
+                    label = { Text("Products") },
+                    selected = currentRoute == Screen.Products.route,
+                    onClick = {
                         if (currentRoute != Screen.Products.route) {
                             navController.navigate(Screen.Products.route) {
                                 popUpTo(Screen.ShoppingLists.route) { inclusive = false }
                             }
                         }
-                    }
-                    BottomNavItem(
-                        icon = Icons.Default.Person,
-                        label = "Profile",
-                        selected = currentRoute == Screen.Profile.route
-                    ) {
+                    },
+                    colors = NavigationRailItemDefaults.colors(
+                        indicatorColor = Color(0xFFE5E5E5),
+                        selectedIconColor = Color.Black,
+                        selectedTextColor = Color.Black
+                    )
+                )
+                NavigationRailItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
+                    label = { Text("Profile") },
+                    selected = currentRoute == Screen.Profile.route,
+                    onClick = {
                         if (currentRoute != Screen.Profile.route) {
                             navController.navigate(Screen.Profile.route) {
                                 popUpTo(Screen.ShoppingLists.route) { inclusive = false }
                             }
                         }
-                    }
-                    Spacer(Modifier.width(8.dp))
-                }
+                    },
+                    colors = NavigationRailItemDefaults.colors(
+                        indicatorColor = Color(0xFFE5E5E5),
+                        selectedIconColor = Color.Black,
+                        selectedTextColor = Color.Black
+                    )
+                )
+            }
+            Box(modifier = Modifier.weight(1f)) {
+                content()
             }
         }
-    ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
-            content()
+    } else {
+        Scaffold(
+            bottomBar = {
+                Column {
+                    Divider()
+                    NavigationBar(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ) {
+                        Spacer(Modifier.width(8.dp))
+                        BottomNavItem(
+                            icon = Icons.AutoMirrored.Filled.List,
+                            label = "Lists",
+                            selected = currentRoute == Screen.ShoppingLists.route
+                        ) {
+                            if (currentRoute != Screen.ShoppingLists.route) {
+                                navController.navigate(Screen.ShoppingLists.route) {
+                                    popUpTo(Screen.ShoppingLists.route) { inclusive = true }
+                                }
+                            }
+                        }
+                        BottomNavItem(
+                            icon = Icons.Default.ShoppingCart,
+                            label = "Products",
+                            selected = currentRoute == Screen.Products.route
+                        ) {
+                            if (currentRoute != Screen.Products.route) {
+                                navController.navigate(Screen.Products.route) {
+                                    popUpTo(Screen.ShoppingLists.route) { inclusive = false }
+                                }
+                            }
+                        }
+                        BottomNavItem(
+                            icon = Icons.Default.Person,
+                            label = "Profile",
+                            selected = currentRoute == Screen.Profile.route
+                        ) {
+                            if (currentRoute != Screen.Profile.route) {
+                                navController.navigate(Screen.Profile.route) {
+                                    popUpTo(Screen.ShoppingLists.route) { inclusive = false }
+                                }
+                            }
+                        }
+                        Spacer(Modifier.width(8.dp))
+                    }
+                }
+            }
+        ) { innerPadding ->
+            Box(modifier = Modifier.padding(innerPadding)) {
+                content()
+            }
         }
     }
 }

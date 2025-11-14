@@ -77,6 +77,9 @@ dependencies {
     // Material3 Adaptive
     implementation(libs.androidx.material3.adaptive.navigation.suite)
 
+    // Extended Material Icons
+    implementation("androidx.compose.material:material-icons-extended")
+
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)

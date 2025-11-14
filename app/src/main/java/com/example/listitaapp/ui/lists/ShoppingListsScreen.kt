@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -125,7 +126,7 @@ fun ShoppingListsScreen(
                 showOptions = false
             },
             confirmEnabled = true,
-            icon = Icons.Filled.Description
+            icon = Icons.Filled.Edit
         ) {
             AppTextField(
                 value = newDescription,
@@ -195,7 +196,7 @@ fun ShoppingListsScreen(
                 actions = {
                     IconButton(onClick = onNavigateToHistory) {
                         Icon(
-                            imageVector = Icons.Default.List,
+                            imageVector = Icons.Default.History,
                             contentDescription = stringResource(R.string.history)
                         )
                     }
@@ -231,7 +232,7 @@ fun ShoppingListsScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.List,
+                            imageVector = Icons.AutoMirrored.Filled.List,
                             contentDescription = null,
                             modifier = Modifier.size(64.dp),
                             tint = MaterialTheme.colorScheme.outline
@@ -309,7 +310,7 @@ fun ShoppingListsScreen(
                                 showOptions = false
                             },
                             label = { Text(stringResource(R.string.recurrente)) },
-                            leadingIcon = { Icon(imageVector = Icons.Default.Star, contentDescription = null) }
+                            leadingIcon = { Icon(imageVector = Icons.Default.History, contentDescription = null) }
                         )
                     }
                 )
@@ -383,6 +384,16 @@ private fun ShoppingListItem(
                 .padding(horizontal = 16.dp, vertical = 20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            if (list.recurring) {
+                Icon(
+                    imageVector = Icons.Default.History,
+                    contentDescription = stringResource(R.string.recurrente),
+                    modifier = Modifier
+                        .size(40.dp)
+                        .padding(end = 12.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = list.name,
