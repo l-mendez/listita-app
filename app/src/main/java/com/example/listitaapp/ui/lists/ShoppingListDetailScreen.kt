@@ -86,7 +86,7 @@ fun ShoppingListDetailScreen(
     Scaffold(
         topBar = {
             AppTopBar(
-                title = uiState.currentList?.name ?: "Shopping List",
+                title = uiState.currentList?.name ?: "List",
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
