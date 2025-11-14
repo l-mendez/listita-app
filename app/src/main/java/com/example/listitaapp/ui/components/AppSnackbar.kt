@@ -7,6 +7,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Snackbar
@@ -67,6 +68,8 @@ fun AppSnackbarHost(
     state: AppSnackbarState,
     modifier: Modifier = Modifier
 ) {
+    val landscape = isLandscape()
+
     SnackbarHost(
         hostState = state.hostState,
         modifier = modifier
@@ -95,9 +98,15 @@ fun AppSnackbarHost(
             exit = slideOutVertically(targetOffsetY = { it / 6 }) + fadeOut()
         ) {
             Snackbar(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
-                    .fillMaxWidth(),
+                modifier = if (landscape) {
+                    Modifier
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .width(400.dp)
+                } else {
+                    Modifier
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .fillMaxWidth()
+                },
                 shape = RoundedCornerShape(16.dp),
                 containerColor = container,
                 contentColor = content,

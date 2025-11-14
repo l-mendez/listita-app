@@ -2,6 +2,9 @@ package com.example.listitaapp.ui.purchases
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -22,6 +25,8 @@ import com.example.listitaapp.ui.components.AppSnackbarHost
 import com.example.listitaapp.ui.components.rememberAppSnackbarState
 import com.example.listitaapp.ui.components.appSnackTypeFromMessage
 import com.example.listitaapp.ui.components.show
+import com.example.listitaapp.ui.components.getGridColumns
+import com.example.listitaapp.ui.components.isLandscape
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -55,6 +60,8 @@ fun PurchaseHistoryScreen(
         }
     }
 
+    val landscape = isLandscape()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -69,7 +76,11 @@ fun PurchaseHistoryScreen(
                 }
             )
         },
-        snackbarHost = { AppSnackbarHost(appSnackbar) }
+        snackbarHost = {
+            if (!landscape) {
+                AppSnackbarHost(appSnackbar)
+            }
+        }
     ) { padding ->
         if (uiState.isLoading) {
             Box(
@@ -111,20 +122,53 @@ fun PurchaseHistoryScreen(
                 }
             }
         } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(uiState.purchases.filter { it.list != null }) { purchase ->
-                    PurchaseHistoryCard(
-                        purchase = purchase,
-                        onRestore = { onRestorePurchase(purchase.id) }
-                    )
+            val columns = getGridColumns()
+            val purchases = uiState.purchases.filter { it.list != null }
+
+            if (columns == 1) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(purchases) { purchase ->
+                        PurchaseHistoryCard(
+                            purchase = purchase,
+                            onRestore = { onRestorePurchase(purchase.id) }
+                        )
+                    }
+                }
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(columns),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentPadding = PaddingValues(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(purchases) { purchase ->
+                        PurchaseHistoryCard(
+                            purchase = purchase,
+                            onRestore = { onRestorePurchase(purchase.id) }
+                        )
+                    }
                 }
             }
+        }
+    }
+
+    if (landscape) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 16.dp, end = 16.dp),
+            contentAlignment = Alignment.TopEnd
+        ) {
+            AppSnackbarHost(state = appSnackbar)
         }
     }
 }
@@ -135,7 +179,9 @@ fun PurchaseHistoryCard(
     onRestore: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 180.dp),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {

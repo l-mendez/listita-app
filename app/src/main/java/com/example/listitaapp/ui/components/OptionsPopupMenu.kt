@@ -76,16 +76,27 @@ fun OptionsPopupMenu(
     actions: List<PopupMenuAction> = emptyList()
 ) {
     val density = LocalDensity.current
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val screenWidth = with(density) { configuration.screenWidthDp.dp.toPx() }
     val menuWidth = 200.dp
-    
+
     if (expanded && anchorBounds != null) {
         val offset = with(density) {
+            val menuWidthPx = menuWidth.toPx()
+            val spacing = 8.dp.toPx()
+
+            val xPosition = if (anchorBounds.left - menuWidthPx - spacing < 0) {
+                (anchorBounds.right + spacing).toInt()
+            } else {
+                (anchorBounds.left - menuWidthPx - spacing).toInt()
+            }
+
             IntOffset(
-                x = (anchorBounds.right - menuWidth.toPx()).toInt(), // Align right edge of menu to right edge of anchor
-                y = (anchorBounds.bottom + 4.dp.toPx()).toInt() // Position below anchor with small spacing
+                x = xPosition,
+                y = (anchorBounds.top - 8.dp.toPx()).toInt()
             )
         }
-        
+
         Popup(
             onDismissRequest = onDismissRequest,
             alignment = Alignment.TopStart,

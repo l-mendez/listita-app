@@ -3,6 +3,9 @@ package com.example.listitaapp.ui.lists
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -39,6 +42,11 @@ import com.example.listitaapp.ui.components.AppTextField
 import com.example.listitaapp.ui.components.AppTextButton
 import com.example.listitaapp.ui.components.appSnackTypeFromMessage
 import com.example.listitaapp.ui.components.show
+import com.example.listitaapp.ui.components.getGridColumns
+import com.example.listitaapp.ui.components.AppSearchField
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 /**
  * Shopping Lists Screen - Following HCI Principles:
@@ -64,6 +72,7 @@ fun ShoppingListsScreen(
     onMakePrivate: (Long) -> Unit,
     onNavigateToHistory: () -> Unit,
     onRefresh: () -> Unit,
+    onSearchQueryChange: (String) -> Unit,
     onClearError: () -> Unit,
     onClearSuccess: () -> Unit
 ) {
@@ -193,6 +202,8 @@ fun ShoppingListsScreen(
         )
     }
 
+    val landscape = com.example.listitaapp.ui.components.isLandscape()
+
     Scaffold(
         topBar = {
             AppTopBar(
@@ -210,13 +221,25 @@ fun ShoppingListsScreen(
         floatingActionButton = {
             AppFab(onClick = onCreateList, modifier = Modifier.size(64.dp))
         },
-        snackbarHost = { AppSnackbarHost(state = appSnackbar) }
+        snackbarHost = {
+            if (!landscape) {
+                AppSnackbarHost(state = appSnackbar)
+            }
+        }
     ) { padding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
+            SearchBar(
+                query = uiState.searchQuery,
+                onQueryChange = onSearchQueryChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            )
+
             // Loading indicator
             if (uiState.isLoading && uiState.lists.isEmpty()) {
                 Box(
@@ -249,53 +272,119 @@ fun ShoppingListsScreen(
                     }
                 }
             } else {
-                // Lists display grouped
-                val recurrentes = remember(uiState.lists) {
-                    uiState.lists.filter { it.recurring }.sortedBy { it.name.lowercase() }
-                }
-                val activas = remember(uiState.lists) {
-                    uiState.lists.filter { !it.recurring }.sortedBy { it.name.lowercase() }
-                }
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    if (recurrentes.isNotEmpty()) {
-                        item {
-                            SectionHeader(text = stringResource(R.string.recurrentes))
-                        }
-                        items(recurrentes, key = { it.id }) { list ->
-                            ShoppingListItem(
-                                list = list,
-                                itemsCount = uiState.itemsCountByListId[list.id],
-                                onClick = { onListClick(list.id) },
-                                onSettingsClick = { bounds ->
-                                    selectedList = list
-                                    anchorBounds = bounds
-                                    showOptions = true
-                                }
-                            )
+                val columns = getGridColumns()
+                val filteredLists = remember(uiState.lists, uiState.searchQuery) {
+                    if (uiState.searchQuery.isBlank()) {
+                        uiState.lists
+                    } else {
+                        uiState.lists.filter { list ->
+                            list.name.contains(uiState.searchQuery, ignoreCase = true) ||
+                            list.description?.contains(uiState.searchQuery, ignoreCase = true) == true
                         }
                     }
-                    if (activas.isNotEmpty()) {
-                        item {
-                            SectionHeader(text = stringResource(R.string.activas))
+                }
+                val recurrentes = remember(filteredLists) {
+                    filteredLists.filter { it.recurring }.sortedBy { it.name.lowercase() }
+                }
+                val activas = remember(filteredLists) {
+                    filteredLists.filter { !it.recurring }.sortedBy { it.name.lowercase() }
+                }
+
+                if (columns == 1) {
+                    LazyColumn(
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        if (recurrentes.isNotEmpty()) {
+                            item {
+                                SectionHeader(text = stringResource(R.string.recurrentes))
+                            }
+                            items(recurrentes, key = { it.id }) { list ->
+                                ShoppingListItem(
+                                    list = list,
+                                    itemsCount = uiState.itemsCountByListId[list.id],
+                                    onClick = { onListClick(list.id) },
+                                    onSettingsClick = { bounds ->
+                                        selectedList = list
+                                        anchorBounds = bounds
+                                        showOptions = true
+                                    }
+                                )
+                            }
                         }
-                        items(activas, key = { it.id }) { list ->
-                            ShoppingListItem(
-                                list = list,
-                                itemsCount = uiState.itemsCountByListId[list.id],
-                                onClick = { onListClick(list.id) },
-                                onSettingsClick = { bounds ->
-                                    selectedList = list
-                                    anchorBounds = bounds
-                                    showOptions = true
-                                }
-                            )
+                        if (activas.isNotEmpty()) {
+                            item {
+                                SectionHeader(text = stringResource(R.string.activas))
+                            }
+                            items(activas, key = { it.id }) { list ->
+                                ShoppingListItem(
+                                    list = list,
+                                    itemsCount = uiState.itemsCountByListId[list.id],
+                                    onClick = { onListClick(list.id) },
+                                    onSettingsClick = { bounds ->
+                                        selectedList = list
+                                        anchorBounds = bounds
+                                        showOptions = true
+                                    }
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(columns),
+                        contentPadding = PaddingValues(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        if (recurrentes.isNotEmpty()) {
+                            item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(columns) }) {
+                                SectionHeader(text = stringResource(R.string.recurrentes))
+                            }
+                            items(recurrentes, key = { it.id }) { list ->
+                                ShoppingListItem(
+                                    list = list,
+                                    itemsCount = uiState.itemsCountByListId[list.id],
+                                    onClick = { onListClick(list.id) },
+                                    onSettingsClick = { bounds ->
+                                        selectedList = list
+                                        anchorBounds = bounds
+                                        showOptions = true
+                                    }
+                                )
+                            }
+                        }
+                        if (activas.isNotEmpty()) {
+                            item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(columns) }) {
+                                SectionHeader(text = stringResource(R.string.activas))
+                            }
+                            items(activas, key = { it.id }) { list ->
+                                ShoppingListItem(
+                                    list = list,
+                                    itemsCount = uiState.itemsCountByListId[list.id],
+                                    onClick = { onListClick(list.id) },
+                                    onSettingsClick = { bounds ->
+                                        selectedList = list
+                                        anchorBounds = bounds
+                                        showOptions = true
+                                    }
+                                )
+                            }
                         }
                     }
                 }
             }
+        }
+    }
+
+    if (landscape) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 16.dp, end = 16.dp),
+            contentAlignment = Alignment.TopEnd
+        ) {
+            AppSnackbarHost(state = appSnackbar)
         }
     }
 
@@ -388,8 +477,8 @@ private fun ShoppingListItem(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = 2.dp),
+            .heightIn(min = 100.dp)
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
@@ -397,7 +486,7 @@ private fun ShoppingListItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 20.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (list.recurring) {
@@ -410,7 +499,10 @@ private fun ShoppingListItem(
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
-            Column(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
                 Text(
                     text = list.name,
                     style = MaterialTheme.typography.titleLarge
@@ -604,4 +696,18 @@ fun ShareListDialog(
             icon = Icons.Default.Lock
         )
     }
+}
+
+@Composable
+private fun SearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    AppSearchField(
+        value = query,
+        onValueChange = onQueryChange,
+        placeholder = stringResource(R.string.search),
+        modifier = modifier
+    )
 }

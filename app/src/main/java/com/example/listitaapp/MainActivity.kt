@@ -424,6 +424,11 @@ fun ShoppingListsScreenWrapper(
     val uiState by viewModel.uiState.collectAsState()
     var showCreateDialog by remember { mutableStateOf(false) }
 
+    // Reload lists whenever this screen is displayed (e.g., after restoring from history)
+    LaunchedEffect(Unit) {
+        viewModel.loadShoppingLists()
+    }
+
     ShoppingListsScreen(
         uiState = uiState,
         onCreateList = { showCreateDialog = true },
@@ -442,6 +447,7 @@ fun ShoppingListsScreenWrapper(
             navController.navigate(Screen.PurchaseHistory.route)
         },
         onRefresh = { viewModel.loadShoppingLists() },
+        onSearchQueryChange = { query -> viewModel.updateSearchQuery(query) },
         onClearError = { viewModel.clearError() },
         onClearSuccess = { viewModel.clearSuccess() }
     )
@@ -577,6 +583,14 @@ fun ShoppingListDetailScreenWrapper(
 
     LaunchedEffect(listId) {
         viewModel.loadListDetails(listId)
+    }
+
+    // Handle navigation back when list is completed
+    LaunchedEffect(uiState.shouldNavigateBack) {
+        if (uiState.shouldNavigateBack) {
+            viewModel.clearNavigateBack()
+            onBack()
+        }
     }
 
     DisposableEffect(Unit) {

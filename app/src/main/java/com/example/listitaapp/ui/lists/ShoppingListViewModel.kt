@@ -21,9 +21,11 @@ data class ShoppingListUiState(
     val currentListItems: List<ListItem> = emptyList(),
     val itemsCountByListId: Map<Long, Int> = emptyMap(),
     val sharedUsers: List<User> = emptyList(),
+    val searchQuery: String = "",
     val isLoading: Boolean = false,
     val error: String? = null,
-    val successMessage: String? = null
+    val successMessage: String? = null,
+    val shouldNavigateBack: Boolean = false
 )
 
 @HiltViewModel
@@ -292,9 +294,52 @@ class ShoppingListViewModel @Inject constructor(
                 return@launch
             }
 
+            // Check if toggling this item will complete the list
+            val currentList = _uiState.value.currentList
+            val currentItems = _uiState.value.currentListItems
+            val willBeCompleted = if (currentList != null && !currentList.recurring) {
+                // After toggling, check if all items will be purchased
+                val itemsAfterToggle = currentItems.map { item ->
+                    if (item.id == itemId) !item.purchased else item.purchased
+                }
+                itemsAfterToggle.isNotEmpty() && itemsAfterToggle.all { it }
+            } else {
+                false
+            }
+
             listRepository.toggleItemPurchased(listId, itemId, currentItem.purchased).fold(
                 onSuccess = {
-                    loadListDetails(listId)
+                    if (willBeCompleted) {
+                        // Navigate back first, then complete the list
+                        _uiState.update {
+                            it.copy(
+                                currentList = null,
+                                currentListItems = emptyList(),
+                                shouldNavigateBack = true
+                            )
+                        }
+
+                        // Then move to history (after navigation happens)
+                        viewModelScope.launch {
+                            kotlinx.coroutines.delay(100) // Small delay to ensure navigation completes
+                            listRepository.purchaseList(listId).fold(
+                                onSuccess = {
+                                    _uiState.update {
+                                        it.copy(successMessage = "List completed and moved to history!")
+                                    }
+                                    loadShoppingLists()
+                                },
+                                onFailure = { exception ->
+                                    _uiState.update {
+                                        it.copy(error = exception.message ?: "Failed to complete list")
+                                    }
+                                }
+                            )
+                        }
+                    } else {
+                        // Normal case: just reload list details
+                        loadListDetails(listId)
+                    }
                 },
                 onFailure = { exception ->
                     _uiState.update {
@@ -409,6 +454,10 @@ class ShoppingListViewModel @Inject constructor(
         _uiState.update { it.copy(successMessage = null) }
     }
 
+    fun clearNavigateBack() {
+        _uiState.update { it.copy(shouldNavigateBack = false) }
+    }
+
     fun addListToListState(list: ShoppingList) {
         _uiState.update { state ->
             val updatedLists = if (state.lists.any { it.id == list.id }) {
@@ -428,6 +477,10 @@ class ShoppingListViewModel @Inject constructor(
                 onFailure = { _ -> }
             )
         }
+    }
+
+    fun updateSearchQuery(query: String) {
+        _uiState.update { it.copy(searchQuery = query) }
     }
 
 }
