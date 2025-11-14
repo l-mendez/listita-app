@@ -34,7 +34,7 @@ import com.example.listitaapp.ui.components.appSnackTypeFromMessage
 import com.example.listitaapp.ui.components.show
 import com.example.listitaapp.ui.components.AppTextField
 import com.example.listitaapp.ui.components.AppSearchField
-import com.example.listitaapp.ui.components.AppExtendedFab
+import com.example.listitaapp.ui.components.AppFab
 
 /**
  * Products Screen - Following HCI Principles:
@@ -124,11 +124,7 @@ fun ProductsScreen(
             )
         },
         floatingActionButton = {
-            AppExtendedFab(
-                onClick = onCreateProduct,
-                text = stringResource(R.string.create_product),
-                icon = Icons.Default.Add
-            )
+            AppFab(onClick = onCreateProduct, modifier = Modifier.size(64.dp))
         },
         snackbarHost = { AppSnackbarHost(state = appSnackbar) }
     ) { padding ->

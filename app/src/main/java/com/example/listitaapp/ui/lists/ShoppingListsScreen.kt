@@ -317,18 +317,26 @@ fun ShoppingListsScreen(
                         // Pass the CURRENT recurring value, repository will toggle it
                         onToggleRecurring(it.id, it.recurring)
                         showOptions = false
+<<<<<<< HEAD
+=======
+                        showDeleteDialog = selectedList
+                    },
+                    leadingContent = {
+                        FilterChip(
+                            selected = selectedList!!.recurring,
+                            onClick = {
+                                onToggleRecurring(selectedList!!.id, selectedList!!.recurring)
+                                showOptions = false
+                            },
+                            label = { Text(stringResource(R.string.recurrente)) },
+                            leadingIcon = { Icon(imageVector = Icons.Default.History, contentDescription = null) }
+                        )
+>>>>>>> 366043889ad68d37ba922131bc6c9fd94cda8ac4
                     }
-                }
-            )
-            PopupHeaderDeleteButton(
-                onClick = {
-                    showOptions = false
-                    showDeleteDialog = selectedList
-                }
-            )
-        },
-        actions = listOf(
-            PopupMenuAction(
+                )
+            }
+        ) {
+            SheetActionItem(
                 text = stringResource(R.string.edit),
                 icon = Icons.Default.Edit,
                 onClick = {
