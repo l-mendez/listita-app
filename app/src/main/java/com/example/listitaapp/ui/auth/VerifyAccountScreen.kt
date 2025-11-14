@@ -95,7 +95,7 @@ fun VerifyAccountScreen(
 
             // Info text
             Text(
-                text = "Hemos enviado un código de verificación a:",
+                text = stringResource(R.string.verification_info),
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center
             )
@@ -108,7 +108,7 @@ fun VerifyAccountScreen(
             )
 
             Text(
-                text = "Revisa tu correo electrónico y la consola del API para obtener el código.",
+                text = stringResource(R.string.check_spam),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -124,7 +124,7 @@ fun VerifyAccountScreen(
                     codeError = null
                 },
                 label = stringResource(R.string.verification_code),
-                placeholder = "Ingresa el código",
+                placeholder = stringResource(R.string.code_placeholder),
                 leadingIcon = Icons.Default.Lock,
                 isError = codeError != null,
                 errorMessage = codeError,
@@ -151,7 +151,7 @@ fun VerifyAccountScreen(
                         onVerify(code.trim())
                     }
                 },
-                text = "Verificar Cuenta",
+                text = stringResource(R.string.verify_account_title),
                 enabled = !uiState.isLoading,
                 loading = uiState.isLoading,
                 fullWidth = true
@@ -160,14 +160,14 @@ fun VerifyAccountScreen(
             // Resend code button
             AppTextButton(
                 onClick = onResendCode,
-                text = "¿No recibiste el código? Reenviar",
+                text = stringResource(R.string.resend_code),
                 enabled = !uiState.isLoading
             )
 
             // Back to login
             AppTextButton(
                 onClick = onNavigateToLogin,
-                text = "Volver al inicio de sesión",
+                text = stringResource(R.string.back_to_login),
                 enabled = !uiState.isLoading
             )
         }
@@ -180,12 +180,12 @@ private fun validateCode(
     setCodeError: (String?) -> Unit
 ): Boolean {
     if (code.isBlank()) {
-        setCodeError("El código es requerido")
+        setCodeError("Verification code is required")
         return false
     }
 
     if (code.length < 6) {
-        setCodeError("El código debe tener al menos 6 caracteres")
+        setCodeError("Code must be at least 6 characters")
         return false
     }
 
