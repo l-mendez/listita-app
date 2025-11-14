@@ -5,6 +5,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -577,8 +583,7 @@ fun ShoppingListDetailScreenWrapper(
     val uiState by viewModel.uiState.collectAsState()
     val productUiState by productViewModel.uiState.collectAsState()
     val categoryUiState by categoryViewModel.uiState.collectAsState()
-    var showAddItemDialog by remember { mutableStateOf(false) }
-    var showAddProductDialog by remember { mutableStateOf(false) }
+    var addItemDialogState by remember { mutableStateOf(AddItemDialogState.None) }
     var resumeAddItemAfterProduct by remember { mutableStateOf(false) }
 
     LaunchedEffect(listId) {
@@ -604,7 +609,8 @@ fun ShoppingListDetailScreenWrapper(
         uiState = uiState,
         onBack = onBack,
         onAddItem = {
-            showAddItemDialog = true
+            resumeAddItemAfterProduct = false
+            addItemDialogState = AddItemDialogState.AddItem
         },
         onToggleItem = { itemId ->
             viewModel.toggleItemPurchased(listId, itemId)
@@ -616,7 +622,17 @@ fun ShoppingListDetailScreenWrapper(
         onClearSuccess = { viewModel.clearSuccess() }
     )
 
-    if (showAddItemDialog) {
+    AnimatedVisibility(
+        visible = addItemDialogState == AddItemDialogState.AddItem,
+        enter = fadeIn(animationSpec = tween(200)) + scaleIn(
+            initialScale = 0.95f,
+            animationSpec = tween(200)
+        ),
+        exit = fadeOut(animationSpec = tween(150)) + scaleOut(
+            targetScale = 0.95f,
+            animationSpec = tween(150)
+        )
+    ) {
         AddItemToListDialog(
             products = productUiState.products,
             recentProduct = productUiState.recentlyCreatedProduct,
@@ -624,34 +640,45 @@ fun ShoppingListDetailScreenWrapper(
                 productViewModel.loadProducts()
                 categoryViewModel.loadCategories()
                 resumeAddItemAfterProduct = true
-                showAddItemDialog = false
-                showAddProductDialog = true
+                addItemDialogState = AddItemDialogState.CreateProduct
             },
             onClearRecentProduct = { productViewModel.clearRecentlyCreatedProduct() },
-            onDismiss = { showAddItemDialog = false },
+            onDismiss = { addItemDialogState = AddItemDialogState.None },
             onAdd = { productId, quantity, unit ->
                 viewModel.addItemToList(listId, productId, quantity, unit)
-                showAddItemDialog = false
+                addItemDialogState = AddItemDialogState.None
             }
         )
     }
 
-    if (showAddProductDialog) {
+    AnimatedVisibility(
+        visible = addItemDialogState == AddItemDialogState.CreateProduct,
+        enter = fadeIn(animationSpec = tween(200)) + scaleIn(
+            initialScale = 0.95f,
+            animationSpec = tween(200)
+        ),
+        exit = fadeOut(animationSpec = tween(150)) + scaleOut(
+            targetScale = 0.95f,
+            animationSpec = tween(150)
+        )
+    ) {
         AddProductDialog(
             categories = categoryUiState.categories,
             onDismiss = {
-                showAddProductDialog = false
-                if (resumeAddItemAfterProduct) {
+                addItemDialogState = if (resumeAddItemAfterProduct) {
                     resumeAddItemAfterProduct = false
-                    showAddItemDialog = true
+                    AddItemDialogState.AddItem
+                } else {
+                    AddItemDialogState.None
                 }
             },
             onCreateProduct = { name, categoryId ->
                 productViewModel.createProduct(name, categoryId)
-                showAddProductDialog = false
-                if (resumeAddItemAfterProduct) {
+                addItemDialogState = if (resumeAddItemAfterProduct) {
                     resumeAddItemAfterProduct = false
-                    showAddItemDialog = true
+                    AddItemDialogState.AddItem
+                } else {
+                    AddItemDialogState.None
                 }
             },
             onCreateCategory = { name, onCreated ->
@@ -661,6 +688,12 @@ fun ShoppingListDetailScreenWrapper(
             }
         )
     }
+}
+
+private enum class AddItemDialogState {
+    None,
+    AddItem,
+    CreateProduct
 }
 
 @Composable
