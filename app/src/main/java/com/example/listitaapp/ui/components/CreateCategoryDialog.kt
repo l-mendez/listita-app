@@ -7,7 +7,8 @@ import com.example.listitaapp.R
 @Composable
 fun CreateCategoryDialog(
     onDismiss: () -> Unit,
-    onCreate: (String) -> Unit
+    onCreate: (String) -> Unit,
+    autoDismiss: Boolean = true
 ) {
     var categoryName by remember { mutableStateOf("") }
 
@@ -19,7 +20,9 @@ fun CreateCategoryDialog(
         onConfirm = {
             if (categoryName.isNotBlank()) {
                 onCreate(categoryName)
-                onDismiss()
+                if (autoDismiss) {
+                    onDismiss()
+                }
             }
         }
     ) {

@@ -10,6 +10,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.listitaapp.R
@@ -17,9 +21,9 @@ import com.example.listitaapp.data.model.Product
 import com.example.listitaapp.data.model.Category
 import com.example.listitaapp.ui.components.AppTopBar
 import com.example.listitaapp.ui.components.StandardCard
-import com.example.listitaapp.ui.components.OptionsBottomSheet
-import com.example.listitaapp.ui.components.SheetActionItem
-import com.example.listitaapp.ui.components.SheetHeaderWithDelete
+import com.example.listitaapp.ui.components.OptionsPopupMenu
+import com.example.listitaapp.ui.components.PopupMenuAction
+import com.example.listitaapp.ui.components.PopupHeaderDeleteButton
 import com.example.listitaapp.ui.components.AppConfirmDialog
 import com.example.listitaapp.ui.components.AppDialogType
 import com.example.listitaapp.ui.components.AppMessageDialog
@@ -60,6 +64,7 @@ fun ProductsScreen(
     var editingProduct by remember { mutableStateOf<Product?>(null) }
     var selectedProduct by remember { mutableStateOf<Product?>(null) }
     var showOptions by remember { mutableStateOf(false) }
+    var anchorBounds by remember { mutableStateOf<Rect?>(null) }
 
     // Error dialog (standardized)
     uiState.error?.let {
@@ -183,8 +188,9 @@ fun ProductsScreen(
                             it.category?.name?.lowercase()?.contains(uiState.searchQuery.lowercase()) == true
                         }
                     },
-                    onSettingsClick = {
-                        selectedProduct = it
+                    onSettingsClick = { product, bounds ->
+                        selectedProduct = product
+                        anchorBounds = bounds
                         showOptions = true
                     },
                     modifier = Modifier.fillMaxSize()
@@ -193,29 +199,30 @@ fun ProductsScreen(
         }
     }
 
-    // Options bottom sheet for products
-    if (showOptions && selectedProduct != null) {
-        OptionsBottomSheet(
-            onDismissRequest = { showOptions = false },
-            headerContent = {
-                SheetHeaderWithDelete(
-                    onDeleteClick = {
-                        showOptions = false
-                        showDeleteDialog = selectedProduct
-                    }
-                )
-            }
-        ) {
-            SheetActionItem(
-                text = "Edit",
+    // Options popup menu for products
+    OptionsPopupMenu(
+        expanded = showOptions && selectedProduct != null,
+        onDismissRequest = { showOptions = false },
+        anchorBounds = anchorBounds,
+        headerButtons = null, // No header buttons for products
+        actions = listOf(
+            PopupMenuAction(
+                text = stringResource(R.string.edit),
                 icon = Icons.Default.Edit,
                 onClick = {
                     editingProduct = selectedProduct
-                    showOptions = false
                 }
+            ),
+            PopupMenuAction(
+                text = stringResource(R.string.delete),
+                icon = Icons.Default.Delete,
+                onClick = {
+                    showDeleteDialog = selectedProduct
+                },
+                destructive = true
             )
-        }
-    }
+        )
+    )
 }
 
 @Composable
@@ -295,7 +302,7 @@ private fun EditProductDialog(
 @Composable
 private fun ProductsList(
     products: List<Product>,
-    onSettingsClick: (Product) -> Unit,
+    onSettingsClick: (Product, Rect) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -306,7 +313,7 @@ private fun ProductsList(
         items(products, key = { it.id }) { product ->
             ProductItem(
                 product = product,
-                onSettingsClick = { onSettingsClick(product) }
+                onSettingsClick = { bounds -> onSettingsClick(product, bounds) }
             )
         }
     }
@@ -315,7 +322,7 @@ private fun ProductsList(
 @Composable
 private fun ProductItem(
     product: Product,
-    onSettingsClick: () -> Unit
+    onSettingsClick: (Rect) -> Unit
 ) {
     StandardCard(
         modifier = Modifier.fillMaxWidth()
@@ -342,7 +349,27 @@ private fun ProductItem(
                 }
             }
 
-            IconButton(onClick = onSettingsClick) {
+            var buttonPosition by remember { mutableStateOf<Offset?>(null) }
+            var buttonSize by remember { mutableStateOf<IntSize?>(null) }
+            IconButton(
+                onClick = {
+                    buttonPosition?.let { pos ->
+                        buttonSize?.let { size ->
+                            val bounds = Rect(
+                                left = pos.x,
+                                top = pos.y,
+                                right = pos.x + size.width,
+                                bottom = pos.y + size.height
+                            )
+                            onSettingsClick(bounds)
+                        }
+                    }
+                },
+                modifier = Modifier.onGloballyPositioned { coordinates ->
+                    buttonPosition = coordinates.localToRoot(Offset.Zero)
+                    buttonSize = coordinates.size
+                }
+            ) {
                 Icon(
                     Icons.Default.MoreVert,
                     contentDescription = "Settings"
