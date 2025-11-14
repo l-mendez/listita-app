@@ -46,6 +46,7 @@ class MainActivity : ComponentActivity() {
     private val productViewModel: ProductViewModel by viewModels()
     private val shoppingListViewModel: ShoppingListViewModel by viewModels()
     private val profileViewModel: ProfileViewModel by viewModels()
+    private val purchaseHistoryViewModel: com.example.listitaapp.ui.purchases.PurchaseHistoryViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,7 +58,8 @@ class MainActivity : ComponentActivity() {
                     authViewModel = authViewModel,
                     productViewModel = productViewModel,
                     shoppingListViewModel = shoppingListViewModel,
-                    profileViewModel = profileViewModel
+                    profileViewModel = profileViewModel,
+                    purchaseHistoryViewModel = purchaseHistoryViewModel
                 )
             }
         }
@@ -69,7 +71,8 @@ fun AppNavigation(
     authViewModel: AuthViewModel,
     productViewModel: ProductViewModel,
     shoppingListViewModel: ShoppingListViewModel,
-    profileViewModel: ProfileViewModel
+    profileViewModel: ProfileViewModel,
+    purchaseHistoryViewModel: com.example.listitaapp.ui.purchases.PurchaseHistoryViewModel
 ) {
     val navController = rememberNavController()
     val authUiState by authViewModel.uiState.collectAsState()
@@ -93,14 +96,23 @@ fun AppNavigation(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        NavHost(
-            navController = navController,
-            startDestination = if (authUiState.isAuthenticated) {
-                Screen.ShoppingLists.route
-            } else {
-                Screen.Login.route
+        if (!authUiState.isInitialAuthCheckComplete) {
+            // Show loading screen while checking authentication
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
             }
-        ) {
+        } else {
+            NavHost(
+                navController = navController,
+                startDestination = if (authUiState.isAuthenticated) {
+                    Screen.ShoppingLists.route
+                } else {
+                    Screen.Login.route
+                }
+            ) {
             composable(Screen.Login.route) {
                 LaunchedEffect(Unit) {
                     authViewModel.resetRegistrationState()
@@ -216,6 +228,15 @@ fun AppNavigation(
                     viewModel = shoppingListViewModel,
                     onBack = { navController.popBackStack() }
                 )
+            }
+
+            composable(Screen.PurchaseHistory.route) {
+                PurchaseHistoryScreenWrapper(
+                    purchaseHistoryViewModel = purchaseHistoryViewModel,
+                    shoppingListViewModel = shoppingListViewModel,
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
             }
         }
     }
@@ -344,6 +365,9 @@ fun ShoppingListsScreenWrapper(
         onLoadSharedUsers = { id -> viewModel.loadSharedUsers(id) },
         onRevokeShare = { id, userId -> viewModel.revokeUserAccess(id, userId) },
         onMakePrivate = { id -> viewModel.makeListPrivate(id) },
+        onNavigateToHistory = {
+            navController.navigate(Screen.PurchaseHistory.route)
+        },
         onRefresh = { viewModel.loadShoppingLists() },
         onClearError = { viewModel.clearError() },
         onClearSuccess = { viewModel.clearSuccess() }
@@ -539,4 +563,29 @@ fun ShoppingListDetailScreenWrapper(
             }
         )
     }
+}
+
+@Composable
+fun PurchaseHistoryScreenWrapper(
+    purchaseHistoryViewModel: com.example.listitaapp.ui.purchases.PurchaseHistoryViewModel,
+    shoppingListViewModel: ShoppingListViewModel,
+    onNavigateBack: () -> Unit
+) {
+    val uiState by purchaseHistoryViewModel.uiState.collectAsState()
+
+    // Reload purchase history whenever this screen is displayed
+    LaunchedEffect(Unit) {
+        purchaseHistoryViewModel.loadPurchaseHistory()
+    }
+
+    com.example.listitaapp.ui.purchases.PurchaseHistoryScreen(
+        uiState = uiState,
+        onNavigateBack = onNavigateBack,
+        onRestorePurchase = { purchaseId ->
+            purchaseHistoryViewModel.restorePurchase(purchaseId, shoppingListViewModel)
+        },
+        onRefresh = { purchaseHistoryViewModel.loadPurchaseHistory() },
+        onClearError = { purchaseHistoryViewModel.clearError() },
+        onClearSuccess = { purchaseHistoryViewModel.clearSuccess() }
+    )
 }

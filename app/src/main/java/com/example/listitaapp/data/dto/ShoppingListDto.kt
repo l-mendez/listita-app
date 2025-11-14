@@ -102,3 +102,17 @@ data class ToggleItemPurchasedRequest(
     @Json(name = "purchased")
     val purchased: Boolean
 )
+
+// Purchase List Request
+@JsonClass(generateAdapter = true)
+data class PurchaseListRequest(
+    @Json(name = "metadata")
+    val metadata: Map<String, Any>? = null
+)
+
+// Restore Purchase Response
+@JsonClass(generateAdapter = true)
+data class RestorePurchaseResponse(
+    @Json(name = "list")
+    val list: com.example.listitaapp.data.model.ShoppingList
+)

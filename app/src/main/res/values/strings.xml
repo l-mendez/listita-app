@@ -127,4 +127,14 @@
     <!-- Additional Messages -->
     <string name="list_updated">List updated</string>
     <string name="failed_to_update">Failed to update</string>
+
+    <!-- Purchase History -->
+    <string name="purchase_history">Purchase History</string>
+    <string name="history">History</string>
+    <string name="empty_purchase_history">No purchase history yet</string>
+    <string name="empty_purchase_history_subtitle">Completed lists will appear here</string>
+    <string name="recurring_badge">Recurrente</string>
+    <string name="items_count">%1$d productos</string>
+    <string name="restore_list">Restaurar Lista</string>
+    <string name="cannot_restore_recurring">Las listas recurrentes no se pueden restaurar</string>
 </resources>

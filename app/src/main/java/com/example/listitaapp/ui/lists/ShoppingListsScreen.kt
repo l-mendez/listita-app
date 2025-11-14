@@ -58,6 +58,7 @@ fun ShoppingListsScreen(
     onLoadSharedUsers: (Long) -> Unit,
     onRevokeShare: (Long, Long) -> Unit,
     onMakePrivate: (Long) -> Unit,
+    onNavigateToHistory: () -> Unit,
     onRefresh: () -> Unit,
     onClearError: () -> Unit,
     onClearSuccess: () -> Unit
@@ -220,7 +221,17 @@ fun ShoppingListsScreen(
 
     Scaffold(
         topBar = {
-            AppTopBar(title = stringResource(R.string.shopping_lists))
+            AppTopBar(
+                title = stringResource(R.string.shopping_lists),
+                actions = {
+                    IconButton(onClick = onNavigateToHistory) {
+                        Icon(
+                            imageVector = Icons.Default.List,
+                            contentDescription = stringResource(R.string.history)
+                        )
+                    }
+                }
+            )
         },
         floatingActionButton = {
             AppFab(onClick = onCreateList, modifier = Modifier.size(64.dp))

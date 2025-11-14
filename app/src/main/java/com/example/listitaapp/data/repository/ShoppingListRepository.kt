@@ -235,4 +235,15 @@ class ShoppingListRepository @Inject constructor(
     } catch (e: Exception) {
         Result.failure(e)
     }
+
+    suspend fun purchaseList(listId: Long): Result<Unit> = try {
+        val response = apiService.purchaseList(listId)
+        if (response.isSuccessful) {
+            Result.success(Unit)
+        } else {
+            Result.failure(Exception(response.message()))
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
 }

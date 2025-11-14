@@ -159,4 +159,26 @@ interface ApiService {
         @Path("id") listId: Long,
         @Path("item_id") itemId: Long
     ): Response<Unit>
+
+    // ========== Purchase History Endpoints ==========
+
+    @GET("api/purchases")
+    suspend fun getPurchases(
+        @Query("page") page: Int = 1,
+        @Query("per_page") perPage: Int = 20,
+        @Query("sort_by") sortBy: String = "createdAt",
+        @Query("order") order: String = "DESC"
+    ): Response<PaginatedResponse<Purchase>>
+
+    @GET("api/purchases/{id}")
+    suspend fun getPurchaseById(@Path("id") id: Long): Response<Purchase>
+
+    @POST("api/purchases/{id}/restore")
+    suspend fun restorePurchase(@Path("id") id: Long): Response<RestorePurchaseResponse>
+
+    @POST("api/shopping-lists/{id}/purchase")
+    suspend fun purchaseList(
+        @Path("id") listId: Long,
+        @Body request: PurchaseListRequest = PurchaseListRequest()
+    ): Response<Unit>
 }

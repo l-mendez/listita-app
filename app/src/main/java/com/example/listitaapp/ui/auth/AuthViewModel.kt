@@ -14,6 +14,7 @@ import javax.inject.Inject
 data class AuthUiState(
     val isLoading: Boolean = false,
     val isAuthenticated: Boolean = false,
+    val isInitialAuthCheckComplete: Boolean = false,
     val error: String? = null,
     val successMessage: String? = null,
     val email: String = "",
@@ -39,7 +40,12 @@ class AuthViewModel @Inject constructor(
     private fun checkAuthentication() {
         viewModelScope.launch {
             val isAuth = repository.isAuthenticated()
-            _uiState.update { it.copy(isAuthenticated = isAuth) }
+            _uiState.update { 
+                it.copy(
+                    isAuthenticated = isAuth,
+                    isInitialAuthCheckComplete = true
+                )
+            }
         }
     }
 

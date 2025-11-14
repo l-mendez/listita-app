@@ -509,4 +509,26 @@ class ShoppingListViewModel @Inject constructor(
     fun clearRecentlyCreatedProduct() {
         _uiState.update { it.copy(recentlyCreatedProduct = null) }
     }
+
+    fun addListToListState(list: ShoppingList) {
+        _uiState.update { state ->
+            val existingLists = state.lists.toMutableList()
+            if (!existingLists.any { it.id == list.id }) {
+                existingLists.add(list)
+                state.copy(lists = existingLists)
+            } else {
+                state
+            }
+        }
+        viewModelScope.launch {
+            listRepository.getListItemsCount(list.id).fold(
+                onSuccess = { count ->
+                    _uiState.update { state ->
+                        state.copy(itemsCountByListId = state.itemsCountByListId + (list.id to count))
+                    }
+                },
+                onFailure = { _ -> }
+            )
+        }
+    }
 }
