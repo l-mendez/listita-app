@@ -200,11 +200,11 @@ class ShoppingListViewModel @Inject constructor(
         viewModelScope.launch {
             listRepository.updateShoppingListName(id, name).fold(
                 onSuccess = {
-                    _uiState.update { it.copy(successMessage = "Lista actualizada") }
+                    _uiState.update { it.copy(successMessage = "List updated") }
                     loadShoppingLists()
                 },
                 onFailure = { exception ->
-                    _uiState.update { it.copy(error = exception.message ?: "No se pudo actualizar") }
+                    _uiState.update { it.copy(error = exception.message ?: "Failed to update") }
                 }
             )
         }
@@ -214,11 +214,11 @@ class ShoppingListViewModel @Inject constructor(
         viewModelScope.launch {
             listRepository.updateShoppingListDescription(id, description).fold(
                 onSuccess = {
-                    _uiState.update { it.copy(successMessage = "Lista actualizada") }
+                    _uiState.update { it.copy(successMessage = "List updated") }
                     loadShoppingLists()
                 },
                 onFailure = { exception ->
-                    _uiState.update { it.copy(error = exception.message ?: "No se pudo actualizar") }
+                    _uiState.update { it.copy(error = exception.message ?: "Failed to update") }
                 }
             )
         }
@@ -228,11 +228,11 @@ class ShoppingListViewModel @Inject constructor(
         viewModelScope.launch {
             listRepository.toggleShoppingListRecurring(id, currentRecurring).fold(
                 onSuccess = {
-                    _uiState.update { it.copy(successMessage = "Lista actualizada") }
+                    _uiState.update { it.copy(successMessage = "List updated") }
                     loadShoppingLists()
                 },
                 onFailure = { exception ->
-                    _uiState.update { it.copy(error = exception.message ?: "No se pudo actualizar") }
+                    _uiState.update { it.copy(error = exception.message ?: "Failed to update") }
                 }
             )
         }

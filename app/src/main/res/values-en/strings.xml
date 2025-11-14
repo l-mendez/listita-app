@@ -84,7 +84,46 @@
     <string name="confirm_logout">Log out?</string>
     <string name="confirm_remove_item_from_list">Remove %1$s from list?</string>
     <string name="this_item">this item</string>
+    <string name="recurrentes">Recurring</string>
+    <string name="activas">Active</string>
+    <string name="solo_tu">Just you</string>
+    <string name="personas">%1$d people</string>
+    <string name="productos">%1$d products</string>
+    <string name="configuracion">Settings</string>
+    <string name="recurrente">Recurring</string>
+    <string name="cambiar_nombre">Change name</string>
+    <string name="cambiar_descripcion">Change description</string>
+    <string name="hacer_privada">Make private</string>
+    <string name="compartir">Share</string>
+    <string name="guardar_cambios">Save changes</string>
+    <string name="nuevo_nombre">New name</string>
+    <string name="nueva_descripcion">New description</string>
     <string name="edit_list">Edit list</string>
     <string name="compartido_con">Shared with</string>
     <string name="remove">Remove</string>
+
+    <!-- Login/Register Screen Texts -->
+    <string name="email_placeholder">example@email.com</string>
+    <string name="no_account">Don\'t have an account?</string>
+    <string name="already_have_account">Already have an account?</string>
+    <string name="email_required">Email is required</string>
+    <string name="password_required">Password is required</string>
+    <string name="name_required">First name is required</string>
+    <string name="surname_required">Last name is required</string>
+    <string name="name_too_short">First name must be at least 2 characters</string>
+    <string name="surname_too_short">Last name must be at least 2 characters</string>
+
+    <!-- Verification Screen -->
+    <string name="verification_info">We\'ve sent a verification code to your email</string>
+    <string name="check_spam">If you don\'t see it, please check your spam folder</string>
+    <string name="code_placeholder">Enter code</string>
+    <string name="verify_account_title">Verify Account</string>
+    <string name="resend_code">Resend code</string>
+    <string name="back_to_login">Back to login</string>
+    <string name="code_required">Verification code is required</string>
+    <string name="code_invalid">Code must be 6 digits</string>
+
+    <!-- Additional Messages -->
+    <string name="list_updated">List updated</string>
+    <string name="failed_to_update">Failed to update</string>
 </resources>

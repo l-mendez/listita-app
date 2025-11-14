@@ -147,7 +147,7 @@ fun RegisterScreen(
                     emailError = null
                 },
                 label = stringResource(R.string.email),
-                placeholder = "ejemplo@correo.com",
+                placeholder = stringResource(R.string.email_placeholder),
                 leadingIcon = Icons.Default.Email,
                 isError = emailError != null,
                 errorMessage = emailError,
@@ -235,7 +235,7 @@ fun RegisterScreen(
             // Login link
             AppTextButton(
                 onClick = onNavigateToLogin,
-                text = "¿Ya tienes cuenta? ${stringResource(R.string.login)}",
+                text = "${stringResource(R.string.already_have_account)} ${stringResource(R.string.login)}",
                 enabled = !uiState.isLoading
             )
         }
@@ -258,36 +258,36 @@ private fun validateInput(
     var isValid = true
 
     if (name.isBlank()) {
-        setNameError("El nombre es requerido")
+        setNameError("First name is required")
         isValid = false
     }
 
     if (surname.isBlank()) {
-        setSurnameError("El apellido es requerido")
+        setSurnameError("Last name is required")
         isValid = false
     }
 
     if (email.isBlank()) {
-        setEmailError("El correo es requerido")
+        setEmailError("Email is required")
         isValid = false
     } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-        setEmailError("Correo electrónico inválido")
+        setEmailError("Invalid email address")
         isValid = false
     }
 
     if (password.isBlank()) {
-        setPasswordError("La contraseña es requerida")
+        setPasswordError("Password is required")
         isValid = false
     } else if (password.length < 6) {
-        setPasswordError("La contraseña debe tener al menos 6 caracteres")
+        setPasswordError("Password must be at least 6 characters")
         isValid = false
     }
 
     if (confirmPassword.isBlank()) {
-        setConfirmPasswordError("Confirma tu contraseña")
+        setConfirmPasswordError("Confirm your password")
         isValid = false
     } else if (password != confirmPassword) {
-        setConfirmPasswordError("Las contraseñas no coinciden")
+        setConfirmPasswordError("Passwords don't match")
         isValid = false
     }
 

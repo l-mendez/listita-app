@@ -99,7 +99,7 @@ fun LoginScreen(
                     emailError = null // Clear error on input
                 },
                 label = stringResource(R.string.email),
-                placeholder = "ejemplo@correo.com",
+                placeholder = stringResource(R.string.email_placeholder),
                 leadingIcon = Icons.Default.Email,
                 isError = emailError != null,
                 errorMessage = emailError,
@@ -158,7 +158,7 @@ fun LoginScreen(
             // Register link (Gestalt: Continuity)
             AppTextButton(
                 onClick = onNavigateToRegister,
-                text = "¿No tienes cuenta? ${stringResource(R.string.register)}",
+                text = "${stringResource(R.string.no_account)} ${stringResource(R.string.register)}",
                 enabled = !uiState.isLoading
             )
         }
@@ -175,18 +175,18 @@ private fun validateInput(
     var isValid = true
 
     if (email.isBlank()) {
-        setEmailError("El correo es requerido")
+        setEmailError("Email is required")
         isValid = false
     } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-        setEmailError("Correo electrónico inválido")
+        setEmailError("Invalid email address")
         isValid = false
     }
 
     if (password.isBlank()) {
-        setPasswordError("La contraseña es requerida")
+        setPasswordError("Password is required")
         isValid = false
     } else if (password.length < 6) {
-        setPasswordError("La contraseña debe tener al menos 6 caracteres")
+        setPasswordError("Password must be at least 6 characters")
         isValid = false
     }
 
