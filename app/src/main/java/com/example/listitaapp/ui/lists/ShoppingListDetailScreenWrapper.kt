@@ -63,6 +63,30 @@ fun ShoppingListDetailScreenWrapper(
         onDeleteItem = { itemId ->
             viewModel.deleteListItem(listId, itemId)
         },
+        onUpdateListName = { id, name ->
+            viewModel.updateListName(id, name)
+        },
+        onUpdateListDescription = { id, description ->
+            viewModel.updateListDescription(id, description)
+        },
+        onDeleteList = { id ->
+            viewModel.deleteShoppingList(id)
+        },
+        onToggleRecurring = { id, currentRecurring ->
+            viewModel.toggleListRecurring(id, currentRecurring)
+        },
+        onShareByEmail = { id, email ->
+            viewModel.shareListByEmail(id, email)
+        },
+        onLoadSharedUsers = { id ->
+            viewModel.loadSharedUsers(id)
+        },
+        onRevokeShare = { id, userId ->
+            viewModel.revokeUserAccess(id, userId)
+        },
+        onMakePrivate = { id ->
+            viewModel.makeListPrivate(id)
+        },
         onClearError = { viewModel.clearError() },
         onClearSuccess = { viewModel.clearSuccess() }
     )
