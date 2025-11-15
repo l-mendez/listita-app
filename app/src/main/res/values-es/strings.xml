@@ -131,4 +131,35 @@
   <!-- Additional Messages -->
   <string name="list_updated">Lista actualizada</string>
   <string name="failed_to_update">Fallo al actualizar</string>
+  
+  <!-- Purchase History -->
+  <string name="purchase_history">Historial de Compras</string>
+  <string name="history">Historial</string>
+  <string name="empty_purchase_history">Aún no hay historial de compras</string>
+  <string name="empty_purchase_history_subtitle">Las listas completadas aparecerán aquí</string>
+  <string name="recurring_badge">Recurrente</string>
+  <string name="items_count">%1$d productos</string>
+  <string name="restore_list">Restaurar Lista</string>
+  <string name="cannot_restore_recurring">Las listas recurrentes no se pueden restaurar</string>
+  <string name="unknown_list">Lista Desconocida</string>
+  
+  <!-- Units -->
+  <string name="unit_units">unidades</string>
+  <string name="unit_kg">kg</string>
+  <string name="unit_g">g</string>
+  <string name="unit_l">l</string>
+  <string name="unit_ml">ml</string>
+  <string name="unit_pcs">piezas</string>
+  
+  <!-- Progress -->
+  <string name="progress_text">Progreso: %1$d / %2$d productos</string>
+  
+  <!-- Settings descriptions -->
+  <string name="settings_edit_profile_desc">Actualiza tu nombre e información</string>
+  <string name="settings_change_password_desc">Cambia la contraseña de tu cuenta</string>
+  <string name="settings_logout_desc">Cerrar sesión de tu cuenta</string>
+  
+  <!-- List Detail Empty State -->
+  <string name="empty_list_items">No hay productos en esta lista</string>
+  <string name="empty_list_items_subtitle">Toca + para agregar productos</string>
 </resources>

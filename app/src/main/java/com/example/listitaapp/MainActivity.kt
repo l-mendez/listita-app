@@ -22,6 +22,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import android.content.res.Configuration
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -41,6 +42,7 @@ import com.example.listitaapp.ui.navigation.Screen
 import com.example.listitaapp.ui.products.*
 import com.example.listitaapp.ui.profile.*
 import com.example.listitaapp.ui.theme.ListitaAppTheme
+import com.example.listitaapp.R
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -295,7 +297,7 @@ fun MainScreenScaffold(
                 Spacer(modifier = Modifier.height(8.dp))
                 CustomNavigationRailItem(
                     icon = Icons.AutoMirrored.Filled.List,
-                    label = "Lists",
+                    label = stringResource(R.string.shopping_lists),
                     selected = currentRoute == Screen.ShoppingLists.route,
                     onClick = {
                         if (currentRoute != Screen.ShoppingLists.route) {
@@ -307,7 +309,7 @@ fun MainScreenScaffold(
                 )
                 CustomNavigationRailItem(
                     icon = Icons.Default.ShoppingCart,
-                    label = "Products",
+                    label = stringResource(R.string.products),
                     selected = currentRoute == Screen.Products.route,
                     onClick = {
                         if (currentRoute != Screen.Products.route) {
@@ -319,7 +321,7 @@ fun MainScreenScaffold(
                 )
                 CustomNavigationRailItem(
                     icon = Icons.Default.Person,
-                    label = "Profile",
+                    label = stringResource(R.string.profile),
                     selected = currentRoute == Screen.Profile.route,
                     onClick = {
                         if (currentRoute != Screen.Profile.route) {
@@ -342,7 +344,7 @@ fun MainScreenScaffold(
                         Spacer(Modifier.width(8.dp))
                         BottomNavItem(
                             icon = Icons.AutoMirrored.Filled.List,
-                            label = "Lists",
+                            label = stringResource(R.string.shopping_lists),
                             selected = currentRoute == Screen.ShoppingLists.route
                         ) {
                             if (currentRoute != Screen.ShoppingLists.route) {
@@ -353,7 +355,7 @@ fun MainScreenScaffold(
                         }
                         BottomNavItem(
                             icon = Icons.Default.ShoppingCart,
-                            label = "Products",
+                            label = stringResource(R.string.products),
                             selected = currentRoute == Screen.Products.route
                         ) {
                             if (currentRoute != Screen.Products.route) {
@@ -364,7 +366,7 @@ fun MainScreenScaffold(
                         }
                         BottomNavItem(
                             icon = Icons.Default.Person,
-                            label = "Profile",
+                            label = stringResource(R.string.profile),
                             selected = currentRoute == Screen.Profile.route
                         ) {
                             if (currentRoute != Screen.Profile.route) {

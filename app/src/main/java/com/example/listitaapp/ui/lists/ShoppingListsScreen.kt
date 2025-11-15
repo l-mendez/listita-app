@@ -47,6 +47,8 @@ import com.example.listitaapp.ui.components.AppTextButton
 import com.example.listitaapp.ui.components.appSnackTypeFromMessage
 import com.example.listitaapp.ui.components.show
 import com.example.listitaapp.ui.components.getGridColumns
+import com.example.listitaapp.ui.components.rememberWindowSize
+import com.example.listitaapp.ui.components.WindowSizeClass
 import com.example.listitaapp.ui.components.AppSearchField
 import com.example.listitaapp.ui.components.AppSearchButton
 import java.time.Instant
@@ -236,11 +238,13 @@ fun ShoppingListsScreen(
             // Only show search bar in compact/portrait mode
             val columns = getGridColumns()
             val landscape = com.example.listitaapp.ui.components.isLandscape()
+            val windowSize = rememberWindowSize()
 
             // Calculate responsive padding based on screen size
+            // Mobile horizontal should use 16.dp like listdetails
             val horizontalPadding = when {
-                columns == 1 -> 16.dp
-                landscape -> 120.dp
+                columns == 1 -> 16.dp // Mobile (both portrait and horizontal)
+                landscape && windowSize.width != WindowSizeClass.Compact -> 120.dp // Tablet horizontal
                 else -> 90.dp // Tablet portrait
             }
 
@@ -510,16 +514,6 @@ private fun ShoppingListItem(
                 .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (list.recurring) {
-                Icon(
-                    imageVector = Icons.Default.History,
-                    contentDescription = stringResource(R.string.recurrente),
-                    modifier = Modifier
-                        .size(40.dp)
-                        .padding(end = 12.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
             if (list.description.isNullOrBlank()) {
                 Column(
                     modifier = Modifier

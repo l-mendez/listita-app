@@ -183,7 +183,7 @@ fun PurchaseHistoryCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = purchase.list?.name ?: "Unknown List",
+                        text = purchase.list?.name ?: stringResource(R.string.unknown_list),
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.weight(1f),
                         maxLines = 1,

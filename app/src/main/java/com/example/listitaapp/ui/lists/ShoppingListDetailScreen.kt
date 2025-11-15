@@ -241,12 +241,12 @@ fun ShoppingListDetailScreen(
                             tint = MaterialTheme.colorScheme.outline
                         )
                         Text(
-                            text = "No items in this list",
+                            text = stringResource(R.string.empty_list_items),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.outline
                         )
                         Text(
-                            text = "Tap + to add products",
+                            text = stringResource(R.string.empty_list_items_subtitle),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.outline
                         )
@@ -267,7 +267,7 @@ fun ShoppingListDetailScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "Progress: $purchasedCount / $totalCount items",
+                            text = stringResource(R.string.progress_text, purchasedCount, totalCount),
                             style = MaterialTheme.typography.titleMedium
                         )
                         LinearProgressIndicator(
@@ -506,10 +506,18 @@ fun AddItemToListDialog(
 ) {
     var selectedProductId by remember { mutableStateOf<Long?>(null) }
     var quantity by remember { mutableStateOf("1") }
-    var unit by remember { mutableStateOf("units") }
+    val defaultUnit = stringResource(R.string.unit_units)
+    var unit by remember { mutableStateOf(defaultUnit) }
     var expanded by remember { mutableStateOf(false) }
 
-    val commonUnits = listOf("units", "kg", "g", "l", "ml", "pcs")
+    val commonUnits = listOf(
+        stringResource(R.string.unit_units),
+        stringResource(R.string.unit_kg),
+        stringResource(R.string.unit_g),
+        stringResource(R.string.unit_l),
+        stringResource(R.string.unit_ml),
+        stringResource(R.string.unit_pcs)
+    )
 
     LaunchedEffect(recentProduct?.id) {
         if (recentProduct != null) {
@@ -649,7 +657,14 @@ private fun EditListItemDialog(
     var quantity by rememberSaveable(item.id) { mutableStateOf(item.quantity.toString()) }
     var unit by rememberSaveable(item.id) { mutableStateOf(item.unit) }
     var unitExpanded by remember { mutableStateOf(false) }
-    val commonUnits = listOf("units", "kg", "g", "l", "ml", "pcs")
+    val commonUnits = listOf(
+        stringResource(R.string.unit_units),
+        stringResource(R.string.unit_kg),
+        stringResource(R.string.unit_g),
+        stringResource(R.string.unit_l),
+        stringResource(R.string.unit_ml),
+        stringResource(R.string.unit_pcs)
+    )
 
     AppFormDialog(
         title = stringResource(R.string.edit_item),

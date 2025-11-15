@@ -226,7 +226,7 @@ fun RowScope.PopupHeaderButton(
             contentDescription = null,
             modifier = Modifier.size(24.dp),
             tint = if (selected) {
-                Color(0xFFFFD700) // Gold/Yellow color for selected star
+                MaterialTheme.colorScheme.primary
             } else {
                 MaterialTheme.colorScheme.onSurfaceVariant
             }
@@ -235,7 +235,7 @@ fun RowScope.PopupHeaderButton(
             text = text,
             style = MaterialTheme.typography.labelSmall,
             color = if (selected) {
-                Color(0xFFFFD700) // Gold/Yellow color for selected text
+                MaterialTheme.colorScheme.primary
             } else {
                 MaterialTheme.colorScheme.onSurfaceVariant
             }

@@ -141,4 +141,25 @@
     <string name="items_count">%1$d items</string>
     <string name="restore_list">Restore List</string>
     <string name="cannot_restore_recurring">Recurring lists cannot be restored</string>
+    <string name="unknown_list">Unknown List</string>
+    
+    <!-- Units -->
+    <string name="unit_units">units</string>
+    <string name="unit_kg">kg</string>
+    <string name="unit_g">g</string>
+    <string name="unit_l">l</string>
+    <string name="unit_ml">ml</string>
+    <string name="unit_pcs">pcs</string>
+    
+    <!-- Progress -->
+    <string name="progress_text">Progress: %1$d / %2$d items</string>
+    
+    <!-- Settings descriptions -->
+    <string name="settings_edit_profile_desc">Update your name and information</string>
+    <string name="settings_change_password_desc">Change your account password</string>
+    <string name="settings_logout_desc">Sign out of your account</string>
+    
+    <!-- List Detail Empty State -->
+    <string name="empty_list_items">No items in this list</string>
+    <string name="empty_list_items_subtitle">Tap + to add products</string>
 </resources>

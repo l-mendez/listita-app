@@ -139,9 +139,10 @@ fun ProductsScreen(
             val landscape = isLandscape()
 
             // Calculate responsive padding based on screen size
+            // Mobile horizontal should use 16.dp like listdetails
             val horizontalPadding = when {
-                windowSize.width == WindowSizeClass.Compact -> 16.dp
-                landscape -> 120.dp
+                windowSize.width == WindowSizeClass.Compact -> 16.dp // Mobile (both portrait and horizontal)
+                landscape && windowSize.width != WindowSizeClass.Compact -> 120.dp // Tablet horizontal
                 else -> 90.dp // Tablet portrait
             }
 

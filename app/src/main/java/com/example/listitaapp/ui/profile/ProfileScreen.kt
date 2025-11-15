@@ -143,7 +143,7 @@ fun ProfileScreen(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Default.Edit,
                                 title = stringResource(R.string.edit_profile),
-                                subtitle = "Update your name and information",
+                                subtitle = stringResource(R.string.settings_edit_profile_desc),
                                 onClick = onEditProfile,
                                 isLandscape = true
                             )
@@ -152,7 +152,7 @@ fun ProfileScreen(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Default.Lock,
                                 title = stringResource(R.string.change_password),
-                                subtitle = "Change your account password",
+                                subtitle = stringResource(R.string.settings_change_password_desc),
                                 onClick = onChangePassword,
                                 isLandscape = true
                             )
@@ -161,7 +161,7 @@ fun ProfileScreen(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.AutoMirrored.Filled.ExitToApp,
                                 title = stringResource(R.string.logout),
-                                subtitle = "Sign out of your account",
+                                subtitle = stringResource(R.string.settings_logout_desc),
                                 onClick = { showLogoutDialog = true },
                                 tint = MaterialTheme.colorScheme.error,
                                 isLandscape = true
@@ -216,21 +216,21 @@ fun ProfileScreen(
                         SettingsItem(
                             icon = Icons.Default.Edit,
                             title = stringResource(R.string.edit_profile),
-                            subtitle = "Update your name and information",
+                            subtitle = stringResource(R.string.settings_edit_profile_desc),
                             onClick = onEditProfile
                         )
 
                         SettingsItem(
                             icon = Icons.Default.Lock,
                             title = stringResource(R.string.change_password),
-                            subtitle = "Change your account password",
+                            subtitle = stringResource(R.string.settings_change_password_desc),
                             onClick = onChangePassword
                         )
 
                         SettingsItem(
                             icon = Icons.AutoMirrored.Filled.ExitToApp,
                             title = stringResource(R.string.logout),
-                            subtitle = "Sign out of your account",
+                            subtitle = stringResource(R.string.settings_logout_desc),
                             onClick = { showLogoutDialog = true },
                             tint = MaterialTheme.colorScheme.error
                         )
