@@ -63,6 +63,9 @@ fun ShoppingListDetailScreenWrapper(
         onDeleteItem = { itemId ->
             viewModel.deleteListItem(listId, itemId)
         },
+        onUpdateItem = { itemId, quantity, unit ->
+            viewModel.updateListItem(listId, itemId, quantity, unit)
+        },
         onUpdateListName = { id, name ->
             viewModel.updateListName(id, name)
         },
