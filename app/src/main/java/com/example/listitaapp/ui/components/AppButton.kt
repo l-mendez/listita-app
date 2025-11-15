@@ -1,6 +1,9 @@
 package com.example.listitaapp.ui.components
 
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -65,7 +68,8 @@ fun AppTextButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     icon: ImageVector? = null,
-    contentColor: Color? = null
+    contentColor: Color? = null,
+    contentPadding: PaddingValues = ButtonDefaults.TextButtonContentPadding
 ) {
     TextButton(
         onClick = onClick,
@@ -75,6 +79,7 @@ fun AppTextButton(
             contentColor = contentColor ?: AppComponentDefaults.ButtonEnabledColor,
             disabledContentColor = AppComponentDefaults.ButtonDisabledColor
         ),
+        contentPadding = contentPadding,
         modifier = modifier
     ) {
         icon?.let {
@@ -83,6 +88,7 @@ fun AppTextButton(
                 contentDescription = null,
                 modifier = Modifier.size(18.dp)
             )
+            Spacer(modifier = Modifier.width(8.dp))
         }
         Text(text)
     }

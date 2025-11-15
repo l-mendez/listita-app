@@ -723,7 +723,7 @@ fun ShareListDialog(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         } else {
-            sharedUsers.forEach { user ->
+            sharedUsers.forEachIndexed { index, user ->
                 ListItem(
                     headlineContent = { Text(text = "${user.name} ${user.surname}") },
                     supportingContent = { Text(text = user.email) },
@@ -735,7 +735,9 @@ fun ShareListDialog(
                         )
                     }
                 )
-                Divider()
+                if (index < sharedUsers.lastIndex) {
+                    Divider()
+                }
             }
         }
 
@@ -744,7 +746,8 @@ fun ShareListDialog(
             enabled = !isLoading,
             onClick = onMakePrivate,
             text = stringResource(R.string.hacer_privada),
-            icon = Icons.Default.Lock
+            icon = Icons.Default.Lock,
+            contentPadding = PaddingValues(horizontal = 0.dp)
         )
     }
 }
