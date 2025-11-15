@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -21,6 +22,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 enum class AppSnackType { Create, Edit, Delete }
@@ -75,21 +77,24 @@ fun AppSnackbarHost(
         modifier = modifier
     ) { data ->
         val type = state.currentType.value
-        val (container, content, actionColor) = when (type) {
-            AppSnackType.Create -> Triple(
-                MaterialTheme.colorScheme.primaryContainer,
-                MaterialTheme.colorScheme.onPrimaryContainer,
-                MaterialTheme.colorScheme.primary
+        val (container, content, actionColor, borderColor) = when (type) {
+            AppSnackType.Create -> listOf(
+                Color(0xFFE8F5E9),
+                Color(0xFF2E7D32),
+                Color(0xFF66BB6A),
+                Color(0xFFA5D6A7).copy(alpha = 0.5f)
             )
-            AppSnackType.Edit -> Triple(
-                MaterialTheme.colorScheme.secondaryContainer,
-                MaterialTheme.colorScheme.onSecondaryContainer,
-                MaterialTheme.colorScheme.secondary
+            AppSnackType.Edit -> listOf(
+                Color(0xFFF5F5F5),
+                Color(0xFF424242),
+                Color(0xFF757575),
+                Color(0xFFBDBDBD).copy(alpha = 0.5f)
             )
-            AppSnackType.Delete -> Triple(
-                MaterialTheme.colorScheme.errorContainer,
-                MaterialTheme.colorScheme.onErrorContainer,
-                MaterialTheme.colorScheme.error
+            AppSnackType.Delete -> listOf(
+                Color(0xFFFFEBEE),
+                Color(0xFFC62828),
+                Color(0xFFEF5350),
+                Color(0xFFEF9A9A).copy(alpha = 0.5f)
             )
         }
         AnimatedVisibility(
@@ -100,14 +105,16 @@ fun AppSnackbarHost(
             Snackbar(
                 modifier = if (landscape) {
                     Modifier
-                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .padding(start = 16.dp, end = 16.dp, bottom = 6.dp)
                         .width(400.dp)
+                        .border(1.dp, borderColor, RoundedCornerShape(12.dp))
                 } else {
                     Modifier
-                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .padding(start = 16.dp, end = 16.dp, bottom = 6.dp)
                         .fillMaxWidth()
+                        .border(1.dp, borderColor, RoundedCornerShape(12.dp))
                 },
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(12.dp),
                 containerColor = container,
                 contentColor = content,
                 action = {

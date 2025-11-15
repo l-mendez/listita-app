@@ -22,9 +22,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.listitaapp.R
@@ -205,6 +205,7 @@ fun ShoppingListsScreen(
     val landscape = com.example.listitaapp.ui.components.isLandscape()
 
     Scaffold(
+        containerColor = Color.White,
         topBar = {
             AppTopBar(
                 title = stringResource(R.string.shopping_lists),
@@ -301,7 +302,7 @@ fun ShoppingListsScreen(
                         start = horizontalPadding,
                         end = horizontalPadding,
                         top = 8.dp,
-                        bottom = 96.dp // Extra bottom padding to avoid FAB overlap
+                        bottom = 0.dp
                     ),
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
@@ -338,6 +339,10 @@ fun ShoppingListsScreen(
                                 }
                             )
                         }
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.height(80.dp))
                     }
                 }
             }

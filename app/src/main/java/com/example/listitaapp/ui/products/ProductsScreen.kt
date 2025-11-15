@@ -118,6 +118,7 @@ fun ProductsScreen(
     }
 
     Scaffold(
+        containerColor = androidx.compose.ui.graphics.Color.White,
         topBar = {
             AppTopBar(
                 title = stringResource(R.string.products)
@@ -402,7 +403,7 @@ private fun ProductsList(
             start = horizontalPadding,
             end = horizontalPadding,
             top = 8.dp,
-            bottom = 96.dp // Extra bottom padding to avoid FAB overlap
+            bottom = 0.dp
         ),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
@@ -411,6 +412,10 @@ private fun ProductsList(
                 product = product,
                 onSettingsClick = { bounds -> onSettingsClick(product, bounds) }
             )
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(80.dp))
         }
     }
 }
