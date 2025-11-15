@@ -21,19 +21,21 @@ fun CreateProductDialog(
     selectedCategoryId: Long?,
     onCategorySelected: (Long?) -> Unit,
     onDismiss: () -> Unit,
-    onCreate: (String, Long?) -> Unit,
-    onRequestCreateCategory: () -> Unit
+    onConfirm: (String, Long?) -> Unit,
+    onRequestCreateCategory: () -> Unit,
+    titleResId: Int = R.string.create_product,
+    confirmLabelResId: Int = R.string.create_product
 ) {
     var expanded by remember { mutableStateOf(false) }
 
     AppFormDialog(
-        title = stringResource(R.string.create_product),
+        title = stringResource(titleResId),
         onDismiss = onDismiss,
-        confirmLabel = stringResource(R.string.create_product),
+        confirmLabel = stringResource(confirmLabelResId),
         confirmEnabled = productName.isNotBlank(),
         onConfirm = {
             if (productName.isNotBlank()) {
-                onCreate(productName, selectedCategoryId)
+                onConfirm(productName, selectedCategoryId)
                 onDismiss()
             }
         }

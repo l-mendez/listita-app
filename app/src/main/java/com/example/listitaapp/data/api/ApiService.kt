@@ -83,7 +83,7 @@ interface ApiService {
     suspend fun updateProduct(
         @Path("id") id: Long,
         @Body request: UpdateProductRequest
-    ): Response<Product>
+    ): Response<UpdateProductResponse>
 
     @DELETE("api/products/{id}")
     suspend fun deleteProduct(@Path("id") id: Long): Response<Unit>

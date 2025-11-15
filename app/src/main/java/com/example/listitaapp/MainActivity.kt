@@ -532,9 +532,13 @@ fun ProductsScreenWrapper(
         categories = categoryUiState.categories,
         onCreateProduct = { showAddProductDialog = true },
         onDeleteProduct = { viewModel.deleteProduct(it) },
-        onUpdateProduct = { id, name, price, categoryId ->
-            val metadata = if (price.isNullOrBlank()) null else mapOf<String, Any>("price" to price)
-            viewModel.updateProduct(id, name, categoryId, metadata)
+        onUpdateProduct = { id, name, categoryId ->
+            viewModel.updateProduct(id, name, categoryId)
+        },
+        onCreateCategory = { name, onCreated ->
+            categoryViewModel.createCategory(name) { category ->
+                onCreated(category)
+            }
         },
         onSearchQueryChange = { viewModel.updateSearchQuery(it) },
         onSearch = { viewModel.searchProducts() },

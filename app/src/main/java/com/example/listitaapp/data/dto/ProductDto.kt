@@ -1,5 +1,6 @@
 package com.example.listitaapp.data.dto
 
+import com.example.listitaapp.data.model.Product
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
@@ -33,6 +34,12 @@ data class UpdateProductRequest(
 
     @Json(name = "metadata")
     val metadata: Map<String, Any>? = null
+)
+
+@JsonClass(generateAdapter = true)
+data class UpdateProductResponse(
+    @Json(name = "product")
+    val product: Product
 )
 
 // Create Category Request

@@ -43,17 +43,15 @@ class ProductRepository @Inject constructor(
     suspend fun updateProduct(
         id: Long,
         name: String?,
-        categoryId: Long?,
-        metadata: Map<String, Any>?
+        categoryId: Long?
     ): Result<Product> = try {
         val request = UpdateProductRequest(
             name = name,
-            category = categoryId?.let { ProductCategory(it) },
-            metadata = metadata
+            category = categoryId?.let { ProductCategory(it) }
         )
         val response = apiService.updateProduct(id, request)
         if (response.isSuccessful && response.body() != null) {
-            Result.success(response.body()!!)
+            Result.success(response.body()!!.product)
         } else {
             Result.failure(Exception(response.message()))
         }

@@ -59,7 +59,7 @@ fun AddProductDialog(
                 selectedCategoryId = null
                 onDismiss()
             },
-            onCreate = { name, categoryId ->
+            onConfirm = { name, categoryId ->
                 onCreateProduct(name, categoryId)
                 productName = ""
                 selectedCategoryId = null

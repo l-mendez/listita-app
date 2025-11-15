@@ -1,5 +1,11 @@
 package com.example.listitaapp.ui.products
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -19,6 +26,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 import com.example.listitaapp.R
 import com.example.listitaapp.data.model.Product
 import com.example.listitaapp.data.model.Category
@@ -26,7 +34,6 @@ import com.example.listitaapp.ui.components.AppTopBar
 import com.example.listitaapp.ui.components.StandardCard
 import com.example.listitaapp.ui.components.OptionsPopupMenu
 import com.example.listitaapp.ui.components.PopupMenuAction
-import com.example.listitaapp.ui.components.PopupHeaderDeleteButton
 import com.example.listitaapp.ui.components.AppConfirmDialog
 import com.example.listitaapp.ui.components.AppDialogType
 import com.example.listitaapp.ui.components.AppMessageDialog
@@ -39,6 +46,8 @@ import com.example.listitaapp.ui.components.AppTextField
 import com.example.listitaapp.ui.components.AppSearchField
 import com.example.listitaapp.ui.components.AppSearchButton
 import com.example.listitaapp.ui.components.AppFab
+import com.example.listitaapp.ui.components.CreateCategoryDialog
+import com.example.listitaapp.ui.components.CreateProductDialog
 import com.example.listitaapp.ui.components.rememberWindowSize
 import com.example.listitaapp.ui.components.WindowSizeClass
 import com.example.listitaapp.ui.components.isLandscape
@@ -50,7 +59,8 @@ fun ProductsScreen(
     categories: List<Category>,
     onCreateProduct: () -> Unit,
     onDeleteProduct: (Long) -> Unit,
-    onUpdateProduct: (Long, String?, String?, Long?) -> Unit,
+    onUpdateProduct: (Long, String?, Long?) -> Unit,
+    onCreateCategory: (String, (Category) -> Unit) -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
     onClearError: () -> Unit,
@@ -100,10 +110,10 @@ fun ProductsScreen(
             product = product,
             categories = categories,
             onDismiss = { editingProduct = null },
-            onApply = { name, price, categoryId ->
-                onUpdateProduct(product.id, name, price, categoryId)
-                editingProduct = null
-            }
+            onApply = { name, categoryId ->
+                onUpdateProduct(product.id, name, categoryId)
+            },
+            onCreateCategory = onCreateCategory
         )
     }
 
@@ -284,63 +294,98 @@ private fun SearchBar(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun EditProductDialog(
     product: Product,
     categories: List<Category>,
     onDismiss: () -> Unit,
-    onApply: (name: String?, price: String?, categoryId: Long?) -> Unit
+    onApply: (name: String?, categoryId: Long?) -> Unit,
+    onCreateCategory: (String, (Category) -> Unit) -> Unit
 ) {
-    var name by remember { mutableStateOf(product.name) }
-    var price by remember { mutableStateOf(product.metadata?.get("price")?.toString() ?: "") }
-    var selectedCategoryId by remember { mutableStateOf(product.category?.id) }
-    var expanded by remember { mutableStateOf(false) }
+    var showCreateCategoryDialog by remember { mutableStateOf(false) }
+    var productName by rememberSaveable(product.id) { mutableStateOf(product.name) }
+    var selectedCategoryId by rememberSaveable(product.id) { mutableStateOf(product.category?.id) }
+    var pendingCategoryId by remember { mutableStateOf<Long?>(null) }
 
-    AppFormDialog(
-        title = stringResource(R.string.edit),
-        onDismiss = onDismiss,
-        confirmLabel = stringResource(R.string.save),
-        onConfirm = { onApply(name.ifBlank { null }, price.ifBlank { null }, selectedCategoryId) },
-        confirmEnabled = name.isNotBlank()
-    ) {
-        AppTextField(
-            value = name,
-            onValueChange = { name = it },
-            label = stringResource(R.string.product_name)
-        )
-        AppTextField(
-            value = price,
-            onValueChange = { price = it.filter { ch -> ch.isDigit() || ch == '.' || ch == ',' } },
-            label = "Price"
-        )
-        ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = it }
+    LaunchedEffect(categories) {
+        if (
+            selectedCategoryId != null &&
+            categories.isNotEmpty() &&
+            categories.none { it.id == selectedCategoryId }
         ) {
-            AppTextField(
-                value = categories.find { it.id == selectedCategoryId }?.name ?: "",
-                onValueChange = {},
-                readOnly = true,
-                label = stringResource(R.string.category),
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                modifier = Modifier.menuAnchor()
-            )
-            ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
-                categories.forEach { category ->
-                    DropdownMenuItem(
-                        text = { Text(category.name) },
-                        onClick = {
-                            selectedCategoryId = category.id
-                            expanded = false
-                        }
-                    )
-                }
-            }
+            selectedCategoryId = null
         }
+    }
+
+    LaunchedEffect(pendingCategoryId) {
+        if (pendingCategoryId != null) {
+            selectedCategoryId = pendingCategoryId
+            delay(150)
+            pendingCategoryId = null
+            showCreateCategoryDialog = false
+        }
+    }
+
+    AnimatedVisibility(
+        visible = !showCreateCategoryDialog,
+        enter = fadeIn(animationSpec = tween(200)) + scaleIn(
+            initialScale = 0.95f,
+            animationSpec = tween(200)
+        ),
+        exit = fadeOut(animationSpec = tween(150)) + scaleOut(
+            targetScale = 0.95f,
+            animationSpec = tween(150)
+        )
+    ) {
+        CreateProductDialog(
+            categories = categories,
+            productName = productName,
+            onProductNameChange = { productName = it },
+            selectedCategoryId = selectedCategoryId,
+            onCategorySelected = { selectedCategoryId = it },
+            onDismiss = {
+                productName = product.name
+                selectedCategoryId = product.category?.id
+                showCreateCategoryDialog = false
+                pendingCategoryId = null
+                onDismiss()
+            },
+            onConfirm = { name, categoryId ->
+                onApply(name.ifBlank { null }, categoryId)
+            },
+            onRequestCreateCategory = {
+                pendingCategoryId = null
+                showCreateCategoryDialog = true
+            },
+            titleResId = R.string.edit,
+            confirmLabelResId = R.string.save
+        )
+    }
+
+    AnimatedVisibility(
+        visible = showCreateCategoryDialog,
+        enter = fadeIn(animationSpec = tween(200)) + scaleIn(
+            initialScale = 0.95f,
+            animationSpec = tween(200)
+        ),
+        exit = fadeOut(animationSpec = tween(150)) + scaleOut(
+            targetScale = 0.95f,
+            animationSpec = tween(150)
+        )
+    ) {
+        CreateCategoryDialog(
+            onDismiss = {
+                if (pendingCategoryId == null) {
+                    showCreateCategoryDialog = false
+                }
+            },
+            onCreate = { name ->
+                onCreateCategory(name) { category ->
+                    pendingCategoryId = category.id
+                }
+            },
+            autoDismiss = false
+        )
     }
 }
 
@@ -390,10 +435,6 @@ private fun ProductItem(
                     style = MaterialTheme.typography.titleMedium
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    val price = product.metadata?.get("price")?.toString()
-                    if (!price.isNullOrBlank()) {
-                        AssistChip(onClick = {}, label = { Text("$$price") })
-                    }
                     product.category?.let { category ->
                         AssistChip(onClick = {}, label = { Text(category.name) })
                     }
