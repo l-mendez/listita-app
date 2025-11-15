@@ -36,7 +36,6 @@ import com.example.listitaapp.ui.auth.RegisterScreen
 import com.example.listitaapp.ui.auth.VerifyAccountScreen
 import com.example.listitaapp.ui.categories.CategoryViewModel
 import com.example.listitaapp.ui.components.AddProductDialog
-import com.example.listitaapp.ui.components.CreateCategoryDialog
 import com.example.listitaapp.ui.lists.*
 import com.example.listitaapp.ui.navigation.Screen
 import com.example.listitaapp.ui.products.*
@@ -527,7 +526,6 @@ fun ProductsScreenWrapper(
     val uiState by viewModel.uiState.collectAsState()
     val categoryUiState by categoryViewModel.uiState.collectAsState()
     var showAddProductDialog by remember { mutableStateOf(false) }
-    var showCreateCategoryDialog by remember { mutableStateOf(false) }
 
     ProductsScreen(
         uiState = uiState,
@@ -537,11 +535,6 @@ fun ProductsScreenWrapper(
         onUpdateProduct = { id, name, price, categoryId ->
             val metadata = if (price.isNullOrBlank()) null else mapOf<String, Any>("price" to price)
             viewModel.updateProduct(id, name, categoryId, metadata)
-        },
-        onCreateCategory = { showCreateCategoryDialog = true },
-        onRefresh = {
-            viewModel.loadProducts()
-            categoryViewModel.loadCategories()
         },
         onSearchQueryChange = { viewModel.updateSearchQuery(it) },
         onSearch = { viewModel.searchProducts() },
@@ -561,16 +554,6 @@ fun ProductsScreenWrapper(
                 categoryViewModel.createCategory(name) { category ->
                     onCreated(category)
                 }
-            }
-        )
-    }
-
-    if (showCreateCategoryDialog) {
-        CreateCategoryDialog(
-            onDismiss = { showCreateCategoryDialog = false },
-            onCreate = { name ->
-                categoryViewModel.createCategory(name)
-                showCreateCategoryDialog = false
             }
         )
     }

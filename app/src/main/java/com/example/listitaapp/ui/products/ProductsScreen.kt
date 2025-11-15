@@ -51,8 +51,6 @@ fun ProductsScreen(
     onCreateProduct: () -> Unit,
     onDeleteProduct: (Long) -> Unit,
     onUpdateProduct: (Long, String?, String?, Long?) -> Unit,
-    onCreateCategory: () -> Unit,
-    onRefresh: () -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
     onClearError: () -> Unit,
@@ -112,15 +110,7 @@ fun ProductsScreen(
     Scaffold(
         topBar = {
             AppTopBar(
-                title = stringResource(R.string.products),
-                actions = {
-                    IconButton(onClick = onCreateCategory) {
-                        Icon(Icons.Default.Add, contentDescription = "Create category")
-                    }
-                    IconButton(onClick = onRefresh) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
-                    }
-                }
+                title = stringResource(R.string.products)
             )
         },
         floatingActionButton = {
