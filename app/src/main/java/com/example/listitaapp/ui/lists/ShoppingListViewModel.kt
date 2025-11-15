@@ -223,6 +223,10 @@ class ShoppingListViewModel @Inject constructor(
                 onSuccess = {
                     _uiState.update { it.copy(successMessage = "List updated") }
                     loadShoppingLists()
+                    // Reload current list details if viewing detail page
+                    if (_uiState.value.currentList?.id == id) {
+                        loadListDetails(id)
+                    }
                 },
                 onFailure = { exception ->
                     _uiState.update { it.copy(error = exception.message ?: "Failed to update") }
@@ -237,6 +241,10 @@ class ShoppingListViewModel @Inject constructor(
                 onSuccess = {
                     _uiState.update { it.copy(successMessage = "List updated") }
                     loadShoppingLists()
+                    // Reload current list details if viewing detail page
+                    if (_uiState.value.currentList?.id == id) {
+                        loadListDetails(id)
+                    }
                 },
                 onFailure = { exception ->
                     _uiState.update { it.copy(error = exception.message ?: "Failed to update") }

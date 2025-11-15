@@ -136,6 +136,14 @@ fun ProductsScreen(
             // Search bar
             val windowSize = rememberWindowSize()
             val landscape = isLandscape()
+
+            // Calculate responsive padding based on screen size
+            val horizontalPadding = when {
+                windowSize.width == WindowSizeClass.Compact -> 16.dp
+                landscape -> 120.dp
+                else -> 90.dp // Tablet portrait
+            }
+
             if (windowSize.width == WindowSizeClass.Compact && !landscape) {
                 SearchBar(
                     query = uiState.searchQuery,
@@ -143,7 +151,7 @@ fun ProductsScreen(
                     onSearch = onSearch,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
+                        .padding(horizontalPadding)
                 )
             }
 
@@ -187,6 +195,7 @@ fun ProductsScreen(
                         anchorBounds = bounds
                         showOptions = true
                     },
+                    horizontalPadding = horizontalPadding,
                     modifier = Modifier.fillMaxSize()
                 )
             }
@@ -217,8 +226,7 @@ fun ProductsScreen(
             onDismiss = { showSearchDialog = false },
             confirmLabel = stringResource(R.string.ok),
             onConfirm = { showSearchDialog = false },
-            confirmEnabled = true,
-            icon = Icons.Default.Search
+            confirmEnabled = true
         ) {
             AppSearchField(
                 value = uiState.searchQuery,
@@ -350,11 +358,17 @@ private fun EditProductDialog(
 private fun ProductsList(
     products: List<Product>,
     onSettingsClick: (Product, Rect) -> Unit,
+    horizontalPadding: androidx.compose.ui.unit.Dp,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
         modifier = modifier,
-        contentPadding = PaddingValues(horizontal = 120.dp, vertical = 8.dp),
+        contentPadding = PaddingValues(
+            start = horizontalPadding,
+            end = horizontalPadding,
+            top = 8.dp,
+            bottom = 96.dp // Extra bottom padding to avoid FAB overlap
+        ),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         items(products, key = { it.id }) { product ->

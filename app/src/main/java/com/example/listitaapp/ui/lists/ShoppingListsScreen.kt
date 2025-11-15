@@ -235,6 +235,15 @@ fun ShoppingListsScreen(
         ) {
             // Only show search bar in compact/portrait mode
             val columns = getGridColumns()
+            val landscape = com.example.listitaapp.ui.components.isLandscape()
+
+            // Calculate responsive padding based on screen size
+            val horizontalPadding = when {
+                columns == 1 -> 16.dp
+                landscape -> 120.dp
+                else -> 90.dp // Tablet portrait
+            }
+
             if (columns == 1) {
                 SearchBar(
                     query = uiState.searchQuery,
@@ -242,7 +251,7 @@ fun ShoppingListsScreen(
                     onSearch = onSearch,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
+                        .padding(horizontalPadding)
                 )
             }
 
@@ -289,7 +298,12 @@ fun ShoppingListsScreen(
 
                 // Always use single column layout
                 LazyColumn(
-                    contentPadding = PaddingValues(horizontal = 120.dp, vertical = 8.dp),
+                    contentPadding = PaddingValues(
+                        start = horizontalPadding,
+                        end = horizontalPadding,
+                        top = 8.dp,
+                        bottom = 96.dp // Extra bottom padding to avoid FAB overlap
+                    ),
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
                     if (recurrentes.isNotEmpty()) {

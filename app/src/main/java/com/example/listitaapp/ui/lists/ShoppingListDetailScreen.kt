@@ -10,6 +10,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -28,6 +32,11 @@ import com.example.listitaapp.ui.components.rememberAppSnackbarState
 import com.example.listitaapp.ui.components.appSnackTypeFromMessage
 import com.example.listitaapp.ui.components.show
 import com.example.listitaapp.ui.components.AppTextField
+import com.example.listitaapp.ui.components.OptionsPopupMenu
+import com.example.listitaapp.ui.components.PopupMenuAction
+import com.example.listitaapp.ui.components.PopupHeaderButton
+import com.example.listitaapp.ui.components.PopupHeaderDeleteButton
+import com.example.listitaapp.ui.components.AppTextButton
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,11 +48,24 @@ fun ShoppingListDetailScreen(
     onAddItem: () -> Unit,
     onToggleItem: (Long) -> Unit,
     onDeleteItem: (Long) -> Unit,
+    onUpdateListName: (Long, String) -> Unit,
+    onUpdateListDescription: (Long, String) -> Unit,
+    onDeleteList: (Long) -> Unit,
+    onToggleRecurring: (Long, Boolean) -> Unit,
+    onShareByEmail: (Long, String) -> Unit,
+    onLoadSharedUsers: (Long) -> Unit,
+    onRevokeShare: (Long, Long) -> Unit,
+    onMakePrivate: (Long) -> Unit,
     onClearError: () -> Unit,
     onClearSuccess: () -> Unit
 ) {
     val appSnackbar = rememberAppSnackbarState()
     var showDeleteDialog by remember { mutableStateOf<ListItem?>(null) }
+    var showDeleteListDialog by remember { mutableStateOf(false) }
+    var showEditListDialog by remember { mutableStateOf(false) }
+    var showShareDialog by remember { mutableStateOf(false) }
+    var showOptions by remember { mutableStateOf(false) }
+    var anchorBounds by remember { mutableStateOf<Rect?>(null) }
 
     // Error dialog (standardized)
     uiState.error?.let {
@@ -62,7 +84,7 @@ fun ShoppingListDetailScreen(
         }
     }
 
-    // Delete confirmation dialog (standardized)
+    // Delete item confirmation dialog
     showDeleteDialog?.let { item ->
         val productName = item.product?.name ?: stringResource(R.string.this_item)
         AppConfirmDialog(
@@ -76,6 +98,56 @@ fun ShoppingListDetailScreen(
         )
     }
 
+    // Delete list confirmation dialog
+    if (showDeleteListDialog) {
+        AppConfirmDialog(
+            message = stringResource(R.string.confirm_delete_list),
+            onConfirm = {
+                onDeleteList(listId)
+                showDeleteListDialog = false
+                onBack() // Navigate back after deleting list
+            },
+            onDismiss = { showDeleteListDialog = false },
+            destructive = true
+        )
+    }
+
+    // Edit list dialog (name + description)
+    if (showEditListDialog && uiState.currentList != null) {
+        var newName by remember { mutableStateOf(uiState.currentList!!.name) }
+        var newDescription by remember { mutableStateOf(uiState.currentList!!.description ?: "") }
+        AppFormDialog(
+            title = stringResource(R.string.edit_list),
+            onDismiss = { showEditListDialog = false },
+            confirmLabel = stringResource(R.string.save),
+            onConfirm = {
+                if (newName != uiState.currentList!!.name) {
+                    onUpdateListName(listId, newName.trim())
+                }
+                if (newDescription != (uiState.currentList!!.description ?: "")) {
+                    onUpdateListDescription(listId, newDescription)
+                }
+                showEditListDialog = false
+            },
+            confirmEnabled = newName.isNotBlank(),
+            icon = Icons.Filled.Edit
+        ) {
+            AppTextField(
+                value = newName,
+                onValueChange = { if (it.length <= 50) newName = it },
+                label = stringResource(R.string.list_name)
+            )
+            AppTextField(
+                value = newDescription,
+                onValueChange = { if (it.length <= 200) newDescription = it },
+                label = stringResource(R.string.list_description),
+                singleLine = false,
+                minLines = 2,
+                maxLines = 4
+            )
+        }
+    }
+
     Scaffold(
         topBar = {
             AppTopBar(
@@ -85,7 +157,32 @@ fun ShoppingListDetailScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
-                actions = {}
+                actions = {
+                    var buttonPosition by remember { mutableStateOf<Offset?>(null) }
+                    var buttonSize by remember { mutableStateOf<IntSize?>(null) }
+                    IconButton(
+                        onClick = {
+                            buttonPosition?.let { pos ->
+                                buttonSize?.let { size ->
+                                    val bounds = Rect(
+                                        left = pos.x,
+                                        top = pos.y,
+                                        right = pos.x + size.width,
+                                        bottom = pos.y + size.height
+                                    )
+                                    anchorBounds = bounds
+                                    showOptions = true
+                                }
+                            }
+                        },
+                        modifier = Modifier.onGloballyPositioned { coordinates ->
+                            buttonPosition = coordinates.localToRoot(Offset.Zero)
+                            buttonSize = coordinates.size
+                        }
+                    ) {
+                        Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.configuracion))
+                    }
+                }
             )
         },
         floatingActionButton = {
@@ -93,11 +190,27 @@ fun ShoppingListDetailScreen(
         },
         snackbarHost = { AppSnackbarHost(state = appSnackbar) }
     ) { padding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
+            // Description (if available) - always show at top
+            if (!uiState.currentList?.description.isNullOrBlank()) {
+                StandardCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Text(
+                        text = uiState.currentList?.description ?: "",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+
             if (uiState.isLoading) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -134,48 +247,126 @@ fun ShoppingListDetailScreen(
                     }
                 }
             } else {
-                // Items list with progress summary
-                Column {
-                    // Progress summary card
-                    val purchasedCount = uiState.currentListItems.count { it.purchased }
-                    val totalCount = uiState.currentListItems.size
+                // Progress summary card
+                val purchasedCount = uiState.currentListItems.count { it.purchased }
+                val totalCount = uiState.currentListItems.size
 
-                    StandardCard(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = "Progress: $purchasedCount / $totalCount items",
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            LinearProgressIndicator(
-                                progress = { if (totalCount > 0) purchasedCount.toFloat() / totalCount else 0f },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                    }
-
-                    // Items list
-                    LazyColumn(
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                StandardCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(uiState.currentListItems, key = { it.id }) { item ->
-                            ListItemCard(
-                                item = item,
-                                onToggle = { onToggleItem(item.id) },
-                                onDelete = { showDeleteDialog = item }
-                            )
-                        }
+                        Text(
+                            text = "Progress: $purchasedCount / $totalCount items",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        LinearProgressIndicator(
+                            progress = { if (totalCount > 0) purchasedCount.toFloat() / totalCount else 0f },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+
+                // Items list
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 8.dp,
+                        bottom = 96.dp // Extra bottom padding to avoid FAB overlap
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(uiState.currentListItems, key = { it.id }) { item ->
+                        ListItemCard(
+                            item = item,
+                            onToggle = { onToggleItem(item.id) },
+                            onDelete = { showDeleteDialog = item }
+                        )
                     }
                 }
             }
         }
+    }
+
+    // Options popup menu for the list
+    OptionsPopupMenu(
+        expanded = showOptions && uiState.currentList != null,
+        onDismissRequest = { showOptions = false },
+        anchorBounds = anchorBounds,
+        headerButtons = {
+            PopupHeaderButton(
+                text = stringResource(R.string.recurrente),
+                icon = Icons.Default.History,
+                selected = uiState.currentList?.recurring == true,
+                onClick = {
+                    uiState.currentList?.let {
+                        onToggleRecurring(it.id, it.recurring)
+                        showOptions = false
+                    }
+                }
+            )
+            PopupHeaderDeleteButton(
+                onClick = {
+                    showDeleteListDialog = true
+                    showOptions = false
+                }
+            )
+        },
+        actions = listOf(
+            PopupMenuAction(
+                text = stringResource(R.string.edit),
+                icon = Icons.Default.Edit,
+                onClick = {
+                    showEditListDialog = true
+                }
+            ),
+            PopupMenuAction(
+                text = stringResource(R.string.hacer_privada),
+                icon = Icons.Default.Lock,
+                onClick = {
+                    uiState.currentList?.let {
+                        onMakePrivate(it.id)
+                    }
+                }
+            ),
+            PopupMenuAction(
+                text = stringResource(R.string.compartir),
+                icon = Icons.Default.Share,
+                onClick = {
+                    uiState.currentList?.let {
+                        onLoadSharedUsers(it.id)
+                        showShareDialog = true
+                    }
+                }
+            )
+        )
+    )
+
+    // Share dialog
+    if (showShareDialog && uiState.currentList != null) {
+        ShareListDialog(
+            sharedUsers = uiState.sharedUsers,
+            isLoading = uiState.isLoading,
+            onDismiss = {
+                showShareDialog = false
+                showOptions = false
+            },
+            onShare = { email ->
+                onShareByEmail(listId, email)
+            },
+            onRevoke = { userId ->
+                onRevokeShare(listId, userId)
+            },
+            onMakePrivate = {
+                onMakePrivate(listId)
+            }
+        )
     }
 }
 
