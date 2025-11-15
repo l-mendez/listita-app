@@ -50,13 +50,7 @@ fun LoginScreen(
         )
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.login)) }
-            )
-        }
-    ) { padding ->
+    Scaffold { padding ->
         // Gestalt: Proximity - Related elements grouped together
         Column(
             modifier = Modifier

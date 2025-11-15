@@ -63,36 +63,32 @@ fun RegisterScreen(
 
     val emailRequiredMessage = stringResource(R.string.email_required)
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.register)) },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateToLogin) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
+    Scaffold { padding ->
+        val verificationEmail = uiState.email.trim()
+        val arrangement = if (verificationEmail.isBlank()) {
+            Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
+        } else {
+            Arrangement.spacedBy(16.dp)
         }
-    ) { padding ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = arrangement
         ) {
             Icon(
                 imageVector = Icons.Default.ShoppingCart,
                 contentDescription = null,
-                modifier = Modifier.size(64.dp),
+                modifier = Modifier.size(72.dp),
                 tint = MaterialTheme.colorScheme.primary
             )
 
             Text(
-                text = stringResource(R.string.register),
-                style = MaterialTheme.typography.headlineMedium,
+                text = stringResource(R.string.app_name),
+                style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.primary
             )
 
