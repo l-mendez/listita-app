@@ -17,3 +17,4 @@ local.properties
 *.md
 node_modules
 .env
+api/

@@ -2,9 +2,6 @@ package com.example.listitaapp.ui.purchases
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -14,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -27,6 +25,8 @@ import com.example.listitaapp.ui.components.appSnackTypeFromMessage
 import com.example.listitaapp.ui.components.show
 import com.example.listitaapp.ui.components.getGridColumns
 import com.example.listitaapp.ui.components.isLandscape
+import com.example.listitaapp.ui.components.AppTopBar
+import com.example.listitaapp.ui.components.StandardCard
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -35,9 +35,8 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun PurchaseHistoryScreen(
     uiState: PurchaseHistoryUiState,
-    onNavigateBack: () -> Unit,
     onRestorePurchase: (Long) -> Unit,
-    onRefresh: () -> Unit,
+    onNavigateBack: () -> Unit,
     onClearError: () -> Unit,
     onClearSuccess: () -> Unit
 ) {
@@ -64,8 +63,8 @@ fun PurchaseHistoryScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.purchase_history)) },
+            AppTopBar(
+                title = stringResource(R.string.purchase_history),
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
@@ -125,37 +124,22 @@ fun PurchaseHistoryScreen(
             val columns = getGridColumns()
             val purchases = uiState.purchases.filter { it.list != null }
 
-            if (columns == 1) {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(purchases) { purchase ->
-                        PurchaseHistoryCard(
-                            purchase = purchase,
-                            onRestore = { onRestorePurchase(purchase.id) }
-                        )
-                    }
-                }
-            } else {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(columns),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding),
-                    contentPadding = PaddingValues(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(purchases) { purchase ->
-                        PurchaseHistoryCard(
-                            purchase = purchase,
-                            onRestore = { onRestorePurchase(purchase.id) }
-                        )
-                    }
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentPadding = if (columns > 1) {
+                    PaddingValues(horizontal = 120.dp, vertical = 8.dp)
+                } else {
+                    PaddingValues(16.dp)
+                },
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                items(purchases) { purchase ->
+                    PurchaseHistoryCard(
+                        purchase = purchase,
+                        onRestore = { onRestorePurchase(purchase.id) }
+                    )
                 }
             }
         }
@@ -178,123 +162,130 @@ fun PurchaseHistoryCard(
     purchase: Purchase,
     onRestore: () -> Unit
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 180.dp),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    StandardCard(
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Header with list name and recurring badge
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    text = purchase.list?.name ?: "Unknown List",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                // Header with list name and recurring badge
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = purchase.list?.name ?: "Unknown List",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.weight(1f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
 
-                if (purchase.list?.recurring == true) {
-                    Surface(
-                        color = MaterialTheme.colorScheme.tertiaryContainer,
-                        shape = RoundedCornerShape(4.dp)
-                    ) {
+                    if (purchase.list?.recurring == true) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.tertiaryContainer,
+                            shape = RoundedCornerShape(4.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.recurring_badge),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
+                    }
+                }
+
+                // Description (if available)
+                purchase.list?.description?.let { description ->
+                    if (description.isNotBlank()) {
                         Text(
-                            text = stringResource(R.string.recurring_badge),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onTertiaryContainer,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            text = description,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
-            }
 
-            // Description (if available)
-            purchase.list?.description?.let { description ->
-                if (description.isNotBlank()) {
+                // Purchase date and items count
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = formatPurchaseDate(purchase.createdAt),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ShoppingCart,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = stringResource(R.string.items_count, purchase.items.size),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                // "Cannot restore" message for recurring lists
+                if (purchase.list?.recurring == true) {
                     Text(
-                        text = description,
-                        style = MaterialTheme.typography.bodyMedium,
+                        text = stringResource(R.string.cannot_restore_recurring),
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
+                        modifier = Modifier.padding(top = 4.dp)
                     )
                 }
             }
 
-            // Purchase date and items count
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.DateRange,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = formatPurchaseDate(purchase.createdAt),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ShoppingCart,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = stringResource(R.string.items_count, purchase.items.size),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            // Restore button (only for non-recurring lists)
+            // Restore button (only for non-recurring lists) - icon only, right-aligned, vertically centered
             if (purchase.list?.recurring != true) {
-                FilledTonalButton(
+                IconButton(
                     onClick = onRestore,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.padding(start = 16.dp),
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = Color.Black,
+                        contentColor = Color.White
+                    )
                 ) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
+                        contentDescription = stringResource(R.string.restore_list),
+                        tint = Color.White
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(stringResource(R.string.restore_list))
                 }
-            } else {
-                Text(
-                    text = stringResource(R.string.cannot_restore_recurring),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
             }
         }
     }

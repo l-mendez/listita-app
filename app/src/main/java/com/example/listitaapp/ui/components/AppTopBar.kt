@@ -4,6 +4,7 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.RowScope
@@ -18,7 +19,10 @@ fun AppTopBar(
     CenterAlignedTopAppBar(
         title = { Text(title, style = MaterialTheme.typography.titleLarge) },
         actions = actions,
-        navigationIcon = { navigationIcon?.invoke() }
+        navigationIcon = { navigationIcon?.invoke() },
+        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+            containerColor = MaterialTheme.colorScheme.background
+        )
     )
 }
 

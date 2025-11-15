@@ -11,7 +11,7 @@ private val LightColorScheme = lightColorScheme(
     // Used by default FAB
     primaryContainer = Neutral100,
     onPrimaryContainer = BrandPrimary,
-    background = SurfaceDefault,
+    background = BackgroundDefault,
     surface = SurfaceDefault,
     surfaceVariant = SurfaceVariantLight,
     onSurface = BrandPrimary,

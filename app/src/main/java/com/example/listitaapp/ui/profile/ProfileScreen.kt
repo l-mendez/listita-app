@@ -28,14 +28,7 @@ import com.example.listitaapp.ui.components.show
 import com.example.listitaapp.ui.components.AppTextField
 import com.example.listitaapp.ui.components.AppPasswordField
 
-/**
- * Profile Screen - Following HCI Principles:
- * - Visibility of system status
- * - User control and freedom
- * - Recognition over recall
- * - Consistency and standards
- * - Aesthetic and minimalist design
- */
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(

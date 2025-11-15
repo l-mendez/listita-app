@@ -37,17 +37,12 @@ import com.example.listitaapp.ui.components.appSnackTypeFromMessage
 import com.example.listitaapp.ui.components.show
 import com.example.listitaapp.ui.components.AppTextField
 import com.example.listitaapp.ui.components.AppSearchField
+import com.example.listitaapp.ui.components.AppSearchButton
 import com.example.listitaapp.ui.components.AppFab
+import com.example.listitaapp.ui.components.rememberWindowSize
+import com.example.listitaapp.ui.components.WindowSizeClass
+import com.example.listitaapp.ui.components.isLandscape
 
-/**
- * Products Screen - Following HCI Principles:
- * - Visibility of system status (loading, error states)
- * - User control and freedom (search, filter, delete)
- * - Recognition over recall (clear labels, icons)
- * - Flexibility and efficiency (search, quick actions)
- * - Aesthetic and minimalist design
- * - Error prevention and recovery
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductsScreen(
@@ -69,6 +64,7 @@ fun ProductsScreen(
     var selectedProduct by remember { mutableStateOf<Product?>(null) }
     var showOptions by remember { mutableStateOf(false) }
     var anchorBounds by remember { mutableStateOf<Rect?>(null) }
+    var showSearchDialog by remember { mutableStateOf(false) }
 
     // Error dialog (standardized)
     uiState.error?.let {
@@ -137,17 +133,21 @@ fun ProductsScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Search bar (HCI: Flexibility and efficiency)
-            SearchBar(
-                query = uiState.searchQuery,
-                onQueryChange = onSearchQueryChange,
-                onSearch = onSearch,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            )
+            // Search bar
+            val windowSize = rememberWindowSize()
+            val landscape = isLandscape()
+            if (windowSize.width == WindowSizeClass.Compact && !landscape) {
+                SearchBar(
+                    query = uiState.searchQuery,
+                    onQueryChange = onSearchQueryChange,
+                    onSearch = onSearch,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                )
+            }
 
-            // Loading indicator (HCI: Visibility of system status)
+            // Loading indicator
             if (uiState.isLoading && uiState.products.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -156,7 +156,7 @@ fun ProductsScreen(
                     CircularProgressIndicator()
                 }
             } else if (uiState.products.isEmpty()) {
-                // Empty state (HCI: Visibility of system status)
+                // Empty state
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -190,6 +190,41 @@ fun ProductsScreen(
                     modifier = Modifier.fillMaxSize()
                 )
             }
+        }
+    }
+
+    // Search button overlay for tablet/landscape mode (positioned above FAB)
+    val windowSize = rememberWindowSize()
+    val landscape = isLandscape()
+    if (windowSize.width != WindowSizeClass.Compact || landscape) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(end = 16.dp, bottom = 148.dp),
+            contentAlignment = Alignment.BottomEnd
+        ) {
+            AppSearchButton(
+                onClick = { showSearchDialog = true },
+                modifier = Modifier.size(64.dp)
+            )
+        }
+    }
+
+    // Search dialog for tablet/landscape mode
+    if (showSearchDialog) {
+        AppFormDialog(
+            title = stringResource(R.string.search),
+            onDismiss = { showSearchDialog = false },
+            confirmLabel = stringResource(R.string.ok),
+            onConfirm = { showSearchDialog = false },
+            confirmEnabled = true,
+            icon = Icons.Default.Search
+        ) {
+            AppSearchField(
+                value = uiState.searchQuery,
+                onValueChange = onSearchQueryChange,
+                placeholder = stringResource(R.string.search)
+            )
         }
     }
 
@@ -319,8 +354,8 @@ private fun ProductsList(
 ) {
     LazyColumn(
         modifier = modifier,
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        contentPadding = PaddingValues(horizontal = 120.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         items(products, key = { it.id }) { product ->
             ProductItem(

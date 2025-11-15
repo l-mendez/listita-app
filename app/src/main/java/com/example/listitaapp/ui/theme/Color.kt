@@ -27,3 +27,4 @@ val OnBrandPrimary = Color.White
 val SurfaceDefault = Color.White
 val SurfaceVariantLight = Neutral050
 val OutlineNeutral = Neutral500
+val BackgroundDefault = Color(0xFFFAFAFA)

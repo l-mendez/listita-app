@@ -29,14 +29,7 @@ import com.example.listitaapp.ui.components.appSnackTypeFromMessage
 import com.example.listitaapp.ui.components.show
 import com.example.listitaapp.ui.components.AppTextField
 
-/**
- * Shopping List Detail Screen - Following HCI Principles:
- * - Visibility of system status
- * - User control and freedom (back navigation, delete items)
- * - Consistency and standards (checkboxes for completion)
- * - Error prevention
- * - Recognition over recall
- */
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShoppingListDetailScreen(

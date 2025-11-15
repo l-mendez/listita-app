@@ -25,16 +25,7 @@ import com.example.listitaapp.ui.components.AppPasswordField
 import com.example.listitaapp.ui.components.AppButton
 import com.example.listitaapp.ui.components.AppTextButton
 
-/**
- * Login Screen
- * Demonstrates HCI principles:
- * - Visibility of system status (loading indicators, error messages)
- * - Error prevention (input validation)
- * - Recognition over recall (clear labels, placeholders)
- * - Aesthetic and minimalist design
- * - Consistency (Material 3 design system)
- * - Gestalt principles (proximity, similarity, continuity)
- */
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(

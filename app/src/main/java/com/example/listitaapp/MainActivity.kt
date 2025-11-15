@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
@@ -231,21 +232,31 @@ fun AppNavigation(
                 arguments = listOf(navArgument("listId") { type = NavType.LongType })
             ) { backStackEntry ->
                 val listId = backStackEntry.arguments?.getLong("listId") ?: 0L
-                ShoppingListDetailScreenWrapper(
-                    listId = listId,
-                    viewModel = shoppingListViewModel,
-                    productViewModel = productViewModel,
-                    categoryViewModel = categoryViewModel,
-                    onBack = { navController.popBackStack() }
-                )
+                MainScreenScaffold(
+                    navController = navController,
+                    currentRoute = Screen.ListDetail.route
+                ) {
+                    ShoppingListDetailScreenWrapper(
+                        listId = listId,
+                        viewModel = shoppingListViewModel,
+                        productViewModel = productViewModel,
+                        categoryViewModel = categoryViewModel,
+                        navController = navController
+                    )
+                }
             }
 
             composable(Screen.PurchaseHistory.route) {
-                PurchaseHistoryScreenWrapper(
-                    purchaseHistoryViewModel = purchaseHistoryViewModel,
-                    shoppingListViewModel = shoppingListViewModel,
-                    onNavigateBack = { navController.popBackStack() }
-                )
+                MainScreenScaffold(
+                    navController = navController,
+                    currentRoute = Screen.PurchaseHistory.route
+                ) {
+                    PurchaseHistoryScreenWrapper(
+                        purchaseHistoryViewModel = purchaseHistoryViewModel,
+                        shoppingListViewModel = shoppingListViewModel,
+                        navController = navController
+                    )
+                }
             }
             }
         }
@@ -262,15 +273,30 @@ fun MainScreenScaffold(
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     if (isLandscape) {
-        Row(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Row(modifier = Modifier.fillMaxSize()) {
+                Spacer(modifier = Modifier.width(232.dp))
+                Box(modifier = Modifier.weight(1f)) {
+                    content()
+                }
+            }
             NavigationRail(
                 containerColor = MaterialTheme.colorScheme.surface,
-                modifier = Modifier.fillMaxHeight()
+                modifier = Modifier
+                    .padding(start = 16.dp, top = 20.dp, bottom = 20.dp)
+                    .width(200.dp)
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(16.dp))
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
+                        shape = RoundedCornerShape(16.dp)
+                    )
             ) {
                 Spacer(modifier = Modifier.height(8.dp))
-                NavigationRailItem(
-                    icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Lists") },
-                    label = { Text("Lists") },
+                CustomNavigationRailItem(
+                    icon = Icons.AutoMirrored.Filled.List,
+                    label = "Lists",
                     selected = currentRoute == Screen.ShoppingLists.route,
                     onClick = {
                         if (currentRoute != Screen.ShoppingLists.route) {
@@ -278,16 +304,11 @@ fun MainScreenScaffold(
                                 popUpTo(Screen.ShoppingLists.route) { inclusive = true }
                             }
                         }
-                    },
-                    colors = NavigationRailItemDefaults.colors(
-                        indicatorColor = Color(0xFFE5E5E5),
-                        selectedIconColor = Color.Black,
-                        selectedTextColor = Color.Black
-                    )
+                    }
                 )
-                NavigationRailItem(
-                    icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Products") },
-                    label = { Text("Products") },
+                CustomNavigationRailItem(
+                    icon = Icons.Default.ShoppingCart,
+                    label = "Products",
                     selected = currentRoute == Screen.Products.route,
                     onClick = {
                         if (currentRoute != Screen.Products.route) {
@@ -295,16 +316,11 @@ fun MainScreenScaffold(
                                 popUpTo(Screen.ShoppingLists.route) { inclusive = false }
                             }
                         }
-                    },
-                    colors = NavigationRailItemDefaults.colors(
-                        indicatorColor = Color(0xFFE5E5E5),
-                        selectedIconColor = Color.Black,
-                        selectedTextColor = Color.Black
-                    )
+                    }
                 )
-                NavigationRailItem(
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
-                    label = { Text("Profile") },
+                CustomNavigationRailItem(
+                    icon = Icons.Default.Person,
+                    label = "Profile",
                     selected = currentRoute == Screen.Profile.route,
                     onClick = {
                         if (currentRoute != Screen.Profile.route) {
@@ -312,16 +328,8 @@ fun MainScreenScaffold(
                                 popUpTo(Screen.ShoppingLists.route) { inclusive = false }
                             }
                         }
-                    },
-                    colors = NavigationRailItemDefaults.colors(
-                        indicatorColor = Color(0xFFE5E5E5),
-                        selectedIconColor = Color.Black,
-                        selectedTextColor = Color.Black
-                    )
+                    }
                 )
-            }
-            Box(modifier = Modifier.weight(1f)) {
-                content()
             }
         }
     } else {
@@ -374,6 +382,53 @@ fun MainScreenScaffold(
             Box(modifier = Modifier.padding(innerPadding)) {
                 content()
             }
+        }
+    }
+}
+
+@Composable
+private fun CustomNavigationRailItem(
+    icon: ImageVector,
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    val backgroundColor = if (selected) {
+        Color(0xFFE5E5E5)
+    } else {
+        Color.Transparent
+    }
+    val contentColor = if (selected) {
+        Color.Black
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(backgroundColor)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                icon,
+                contentDescription = label,
+                tint = contentColor,
+                modifier = Modifier.size(24.dp)
+            )
+            Text(
+                text = label,
+                color = contentColor,
+                style = MaterialTheme.typography.labelMedium
+            )
         }
     }
 }
@@ -569,10 +624,107 @@ fun ProfileScreenWrapper(
 }
 
 @Composable
+fun ShoppingListDetailScreenWrapper(
+    listId: Long,
+    viewModel: ShoppingListViewModel,
+    productViewModel: ProductViewModel,
+    categoryViewModel: CategoryViewModel,
+    navController: NavHostController
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    val productUiState by productViewModel.uiState.collectAsState()
+    val categoryUiState by categoryViewModel.uiState.collectAsState()
+    var showAddItemDialog by remember { mutableStateOf(false) }
+    var showAddProductDialog by remember { mutableStateOf(false) }
+    var resumeAddItemAfterProduct by remember { mutableStateOf(false) }
+
+    LaunchedEffect(listId) {
+        viewModel.loadListDetails(listId)
+    }
+
+    // Handle navigation back when list is completed
+    LaunchedEffect(uiState.shouldNavigateBack) {
+        if (uiState.shouldNavigateBack) {
+            viewModel.clearNavigateBack()
+            navController.popBackStack()
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.clearCurrentList()
+        }
+    }
+
+    ShoppingListDetailScreen(
+        listId = listId,
+        uiState = uiState,
+        onBack = { navController.popBackStack() },
+        onAddItem = {
+            showAddItemDialog = true
+        },
+        onToggleItem = { itemId ->
+            viewModel.toggleItemPurchased(listId, itemId)
+        },
+        onDeleteItem = { itemId ->
+            viewModel.deleteListItem(listId, itemId)
+        },
+        onClearError = { viewModel.clearError() },
+        onClearSuccess = { viewModel.clearSuccess() }
+    )
+
+    if (showAddItemDialog) {
+        AddItemToListDialog(
+            products = productUiState.products,
+            recentProduct = productUiState.recentlyCreatedProduct,
+            onCreateNewProduct = {
+                productViewModel.loadProducts()
+                categoryViewModel.loadCategories()
+                resumeAddItemAfterProduct = true
+                showAddItemDialog = false
+                showAddProductDialog = true
+            },
+            onClearRecentProduct = { productViewModel.clearRecentlyCreatedProduct() },
+            onDismiss = { showAddItemDialog = false },
+            onAdd = { productId, quantity, unit ->
+                viewModel.addItemToList(listId, productId, quantity, unit)
+                showAddItemDialog = false
+            }
+        )
+    }
+
+    if (showAddProductDialog) {
+        AddProductDialog(
+            categories = categoryUiState.categories,
+            onDismiss = {
+                showAddProductDialog = false
+                if (resumeAddItemAfterProduct) {
+                    resumeAddItemAfterProduct = false
+                    showAddItemDialog = true
+                }
+            },
+            onCreateProduct = { name, categoryId ->
+                productViewModel.createProduct(name, categoryId)
+                showAddProductDialog = false
+                if (resumeAddItemAfterProduct) {
+                    resumeAddItemAfterProduct = false
+                    showAddItemDialog = true
+                }
+            },
+            onCreateCategory = { name, onCreated ->
+                categoryViewModel.createCategory(name) { category ->
+                    onCreated(category)
+                }
+            }
+        )
+    }
+}
+
+@Composable
 fun PurchaseHistoryScreenWrapper(
     purchaseHistoryViewModel: com.example.listitaapp.ui.purchases.PurchaseHistoryViewModel,
     shoppingListViewModel: ShoppingListViewModel,
-    onNavigateBack: () -> Unit
+    navController: NavHostController
 ) {
     val uiState by purchaseHistoryViewModel.uiState.collectAsState()
 
@@ -583,11 +735,14 @@ fun PurchaseHistoryScreenWrapper(
 
     com.example.listitaapp.ui.purchases.PurchaseHistoryScreen(
         uiState = uiState,
-        onNavigateBack = onNavigateBack,
         onRestorePurchase = { purchaseId ->
             purchaseHistoryViewModel.restorePurchase(purchaseId, shoppingListViewModel)
         },
-        onRefresh = { purchaseHistoryViewModel.loadPurchaseHistory() },
+        onNavigateBack = {
+            navController.navigate(Screen.ShoppingLists.route) {
+                popUpTo(Screen.ShoppingLists.route) { inclusive = false }
+            }
+        },
         onClearError = { purchaseHistoryViewModel.clearError() },
         onClearSuccess = { purchaseHistoryViewModel.clearSuccess() }
     )
