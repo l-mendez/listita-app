@@ -219,6 +219,29 @@ class ShoppingListRepository @Inject constructor(
         Result.failure(e)
     }
 
+    suspend fun updateListItem(
+        listId: Long,
+        itemId: Long,
+        quantity: Double,
+        unit: String,
+        metadata: Map<String, Any>? = null
+    ): Result<ListItem> = try {
+        val request = UpdateListItemRequest(
+            quantity = quantity,
+            unit = unit,
+            metadata = metadata
+        )
+        val response = apiService.updateListItem(listId, itemId, request)
+        if (response.isSuccessful && response.body() != null) {
+            Result.success(response.body()!!)
+        } else {
+            val errorMessage = getErrorMessage(response, "Failed to update item")
+            Result.failure(Exception(errorMessage))
+        }
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
     suspend fun toggleItemPurchased(listId: Long, itemId: Long, currentPurchasedStatus: Boolean): Result<ListItem> = try {
         val request = ToggleItemPurchasedRequest(!currentPurchasedStatus)
         val response = apiService.toggleItemPurchased(listId, itemId, request)

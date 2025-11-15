@@ -102,6 +102,8 @@
   <string name="edit_list">Editar lista</string>
   <string name="compartido_con">Compartido con</string>
   <string name="remove">Quitar</string>
+  <string name="edit_item">Editar producto</string>
+  <string name="update_item">Actualizar producto</string>
 
   <!-- Login/Register Screen Texts -->
   <string name="email_placeholder">ejemplo@correo.com</string>

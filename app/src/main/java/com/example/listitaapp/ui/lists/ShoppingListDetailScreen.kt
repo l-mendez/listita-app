@@ -8,6 +8,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -48,6 +49,7 @@ fun ShoppingListDetailScreen(
     onAddItem: () -> Unit,
     onToggleItem: (Long) -> Unit,
     onDeleteItem: (Long) -> Unit,
+    onUpdateItem: (Long, Double, String) -> Unit,
     onUpdateListName: (Long, String) -> Unit,
     onUpdateListDescription: (Long, String) -> Unit,
     onDeleteList: (Long) -> Unit,
@@ -66,6 +68,10 @@ fun ShoppingListDetailScreen(
     var showShareDialog by remember { mutableStateOf(false) }
     var showOptions by remember { mutableStateOf(false) }
     var anchorBounds by remember { mutableStateOf<Rect?>(null) }
+    var showItemOptions by remember { mutableStateOf(false) }
+    var selectedItem by remember { mutableStateOf<ListItem?>(null) }
+    var itemAnchorBounds by remember { mutableStateOf<Rect?>(null) }
+    var editingItem by remember { mutableStateOf<ListItem?>(null) }
 
     // Error dialog (standardized)
     uiState.error?.let {
@@ -286,7 +292,11 @@ fun ShoppingListDetailScreen(
                         ListItemCard(
                             item = item,
                             onToggle = { onToggleItem(item.id) },
-                            onDelete = { showDeleteDialog = item }
+                            onShowOptions = { bounds ->
+                                selectedItem = item
+                                itemAnchorBounds = bounds
+                                showItemOptions = true
+                            }
                         )
                     }
                 }
@@ -368,17 +378,57 @@ fun ShoppingListDetailScreen(
             }
         )
     }
+
+    OptionsPopupMenu(
+        expanded = showItemOptions && selectedItem != null,
+        onDismissRequest = {
+            showItemOptions = false
+            selectedItem = null
+            itemAnchorBounds = null
+        },
+        anchorBounds = itemAnchorBounds,
+        actions = listOf(
+            PopupMenuAction(
+                text = stringResource(R.string.edit),
+                icon = Icons.Default.Edit,
+                onClick = {
+                    editingItem = selectedItem
+                }
+            ),
+            PopupMenuAction(
+                text = stringResource(R.string.delete),
+                icon = Icons.Default.Delete,
+                onClick = {
+                    showDeleteDialog = selectedItem
+                },
+                destructive = true
+            )
+        )
+    )
+
+    editingItem?.let { item ->
+        EditListItemDialog(
+            item = item,
+            onDismiss = { editingItem = null },
+            onUpdate = { quantity, unit ->
+                onUpdateItem(item.id, quantity, unit)
+                editingItem = null
+            }
+        )
+    }
 }
 
 @Composable
 private fun ListItemCard(
     item: ListItem,
     onToggle: () -> Unit,
-    onDelete: () -> Unit
+    onShowOptions: (Rect) -> Unit
 ) {
     StandardCard(
         modifier = Modifier.fillMaxWidth()
     ) {
+        var buttonPosition by remember { mutableStateOf<Offset?>(null) }
+        var buttonSize by remember { mutableStateOf<IntSize?>(null) }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -416,11 +466,28 @@ private fun ListItemCard(
                 )
             }
 
-            IconButton(onClick = onDelete) {
+            IconButton(
+                onClick = {
+                    val position = buttonPosition
+                    val size = buttonSize
+                    if (position != null && size != null) {
+                        val bounds = Rect(
+                            left = position.x,
+                            top = position.y,
+                            right = position.x + size.width,
+                            bottom = position.y + size.height
+                        )
+                        onShowOptions(bounds)
+                    }
+                },
+                modifier = Modifier.onGloballyPositioned { coordinates ->
+                    buttonPosition = coordinates.localToRoot(Offset.Zero)
+                    buttonSize = coordinates.size
+                }
+            ) {
                 Icon(
-                    Icons.Default.Delete,
-                    contentDescription = "Remove",
-                    tint = MaterialTheme.colorScheme.error
+                    Icons.Default.MoreVert,
+                    contentDescription = "Options"
                 )
             }
         }
@@ -568,6 +635,63 @@ fun AddItemToListDialog(
             modifier = Modifier.align(Alignment.End)
         ) {
             Text(text = stringResource(R.string.create_new_product))
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun EditListItemDialog(
+    item: ListItem,
+    onDismiss: () -> Unit,
+    onUpdate: (Double, String) -> Unit
+) {
+    var quantity by rememberSaveable(item.id) { mutableStateOf(item.quantity.toString()) }
+    var unit by rememberSaveable(item.id) { mutableStateOf(item.unit) }
+    var unitExpanded by remember { mutableStateOf(false) }
+    val commonUnits = listOf("units", "kg", "g", "l", "ml", "pcs")
+
+    AppFormDialog(
+        title = stringResource(R.string.edit_item),
+        onDismiss = onDismiss,
+        confirmLabel = stringResource(R.string.update_item),
+        confirmEnabled = quantity.toDoubleOrNull() != null && unit.isNotBlank(),
+        onConfirm = {
+            val qty = quantity.toDoubleOrNull() ?: return@AppFormDialog
+            onUpdate(qty, unit)
+        }
+    ) {
+        AppTextField(
+            value = quantity,
+            onValueChange = { quantity = it },
+            label = stringResource(R.string.quantity)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        ExposedDropdownMenuBox(
+            expanded = unitExpanded,
+            onExpandedChange = { unitExpanded = it }
+        ) {
+            AppTextField(
+                value = unit,
+                onValueChange = { unit = it },
+                label = stringResource(R.string.unit),
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded) },
+                modifier = Modifier.menuAnchor()
+            )
+            ExposedDropdownMenu(
+                expanded = unitExpanded,
+                onDismissRequest = { unitExpanded = false }
+            ) {
+                commonUnits.forEach { commonUnit ->
+                    DropdownMenuItem(
+                        text = { Text(commonUnit) },
+                        onClick = {
+                            unit = commonUnit
+                            unitExpanded = false
+                        }
+                    )
+                }
+            }
         }
     }
 }

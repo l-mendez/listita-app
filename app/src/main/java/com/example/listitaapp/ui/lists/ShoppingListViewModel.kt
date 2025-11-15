@@ -293,6 +293,32 @@ class ShoppingListViewModel @Inject constructor(
         }
     }
 
+    fun updateListItem(listId: Long, itemId: Long, quantity: Double, unit: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+
+            val currentItem = _uiState.value.currentListItems.find { it.id == itemId }
+            val metadata = currentItem?.metadata
+
+            listRepository.updateListItem(listId, itemId, quantity, unit, metadata).fold(
+                onSuccess = {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            successMessage = "Item updated"
+                        )
+                    }
+                    loadListDetails(listId)
+                },
+                onFailure = { exception ->
+                    _uiState.update {
+                        it.copy(isLoading = false, error = exception.message ?: "Failed to update item")
+                    }
+                }
+            )
+        }
+    }
+
     fun toggleItemPurchased(listId: Long, itemId: Long) {
         viewModelScope.launch {
             // Find the current item to get its purchased status
