@@ -22,7 +22,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 fun AppTextField(
     value: String,
     onValueChange: (String) -> Unit,
-    label: String,
+    label: String? = null,
     modifier: Modifier = Modifier,
     placeholder: String? = null,
     leadingIcon: ImageVector? = null,
@@ -41,7 +41,7 @@ fun AppTextField(
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text(label) },
+        label = label?.let { { Text(it) } },
         placeholder = placeholder?.let { { Text(it) } },
         leadingIcon = leadingIcon?.let { { Icon(it, contentDescription = null) } },
         trailingIcon = trailingIcon,
@@ -115,7 +115,7 @@ fun AppSearchField(
     AppTextField(
         value = value,
         onValueChange = onValueChange,
-        label = "",
+        label = null,
         modifier = modifier,
         placeholder = placeholder,
         leadingIcon = Icons.Default.Search,

@@ -10,8 +10,15 @@ class ProductRepository @Inject constructor(
     private val apiService: ApiService
 ) {
 
-    suspend fun getProducts(): Result<List<Product>> = try {
-        val response = apiService.getProducts()
+    suspend fun getProducts(
+        name: String? = null,
+        categoryId: Long? = null,
+        page: Int = 1,
+        perPage: Int = 10,
+        sortBy: String = "name",
+        order: String = "ASC"
+    ): Result<List<Product>> = try {
+        val response = apiService.getProducts(name, categoryId, page, perPage, sortBy, order)
         if (response.isSuccessful && response.body() != null) {
             Result.success(response.body()!!.data)
         } else {

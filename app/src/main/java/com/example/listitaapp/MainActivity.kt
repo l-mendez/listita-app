@@ -448,6 +448,7 @@ fun ShoppingListsScreenWrapper(
         },
         onRefresh = { viewModel.loadShoppingLists() },
         onSearchQueryChange = { query -> viewModel.updateSearchQuery(query) },
+        onSearch = { viewModel.searchShoppingLists() },
         onClearError = { viewModel.clearError() },
         onClearSuccess = { viewModel.clearSuccess() }
     )
@@ -488,6 +489,7 @@ fun ProductsScreenWrapper(
             categoryViewModel.loadCategories()
         },
         onSearchQueryChange = { viewModel.updateSearchQuery(it) },
+        onSearch = { viewModel.searchProducts() },
         onClearError = { viewModel.clearError() },
         onClearSuccess = { viewModel.clearSuccess() }
     )

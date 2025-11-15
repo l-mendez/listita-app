@@ -25,8 +25,16 @@ class ShoppingListRepository @Inject constructor(
         }
     }
 
-    suspend fun getShoppingLists(): Result<List<ShoppingList>> = try {
-        val response = apiService.getShoppingLists()
+    suspend fun getShoppingLists(
+        name: String? = null,
+        owner: Boolean? = null,
+        recurring: Boolean? = null,
+        page: Int = 1,
+        perPage: Int = 10,
+        sortBy: String = "name",
+        order: String = "ASC"
+    ): Result<List<ShoppingList>> = try {
+        val response = apiService.getShoppingLists(name, owner, recurring, page, perPage, sortBy, order)
         if (response.isSuccessful && response.body() != null) {
             Result.success(response.body()!!.data)
         } else {

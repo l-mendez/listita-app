@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
@@ -18,6 +19,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.graphics.Color
@@ -73,6 +76,7 @@ fun ShoppingListsScreen(
     onNavigateToHistory: () -> Unit,
     onRefresh: () -> Unit,
     onSearchQueryChange: (String) -> Unit,
+    onSearch: () -> Unit,
     onClearError: () -> Unit,
     onClearSuccess: () -> Unit
 ) {
@@ -235,6 +239,7 @@ fun ShoppingListsScreen(
             SearchBar(
                 query = uiState.searchQuery,
                 onQueryChange = onSearchQueryChange,
+                onSearch = onSearch,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
@@ -273,16 +278,7 @@ fun ShoppingListsScreen(
                 }
             } else {
                 val columns = getGridColumns()
-                val filteredLists = remember(uiState.lists, uiState.searchQuery) {
-                    if (uiState.searchQuery.isBlank()) {
-                        uiState.lists
-                    } else {
-                        uiState.lists.filter { list ->
-                            list.name.contains(uiState.searchQuery, ignoreCase = true) ||
-                            list.description?.contains(uiState.searchQuery, ignoreCase = true) == true
-                        }
-                    }
-                }
+                val filteredLists = uiState.lists
                 val recurrentes = remember(filteredLists) {
                     filteredLists.filter { it.recurring }.sortedBy { it.name.lowercase() }
                 }
@@ -702,12 +698,30 @@ fun ShareListDialog(
 private fun SearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
+    onSearch: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val focusManager = LocalFocusManager.current
+    var hadFocus by remember { mutableStateOf(false) }
+    var ignoreNextBlur by remember { mutableStateOf(false) }
     AppSearchField(
         value = query,
         onValueChange = onQueryChange,
         placeholder = stringResource(R.string.search),
-        modifier = modifier
+        modifier = modifier.onFocusChanged { state ->
+            if (hadFocus && !state.isFocused) {
+                if (ignoreNextBlur) {
+                    ignoreNextBlur = false
+                } else {
+                    onSearch()
+                }
+            }
+            hadFocus = state.isFocused
+        },
+        keyboardActions = KeyboardActions(onSearch = {
+            ignoreNextBlur = true
+            focusManager.clearFocus()
+            onSearch()
+        })
     )
 }

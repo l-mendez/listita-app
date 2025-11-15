@@ -51,10 +51,11 @@ class ProductViewModel @Inject constructor(
         _uiState.update { ProductUiState() }
     }
 
-    fun loadProducts() {
+    fun loadProducts(query: String? = null) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            repository.getProducts().fold(
+            val trimmedQuery = query?.takeIf { it.isNotBlank() }
+            repository.getProducts(name = trimmedQuery).fold(
                 onSuccess = { products ->
                     _uiState.update {
                         it.copy(products = products, isLoading = false)
@@ -157,16 +158,9 @@ class ProductViewModel @Inject constructor(
         _uiState.update { it.copy(searchQuery = query) }
     }
 
-    fun getFilteredProducts(): List<Product> {
-        val query = _uiState.value.searchQuery.lowercase()
-        return if (query.isEmpty()) {
-            _uiState.value.products
-        } else {
-            _uiState.value.products.filter {
-                it.name.lowercase().contains(query) ||
-                it.category?.name?.lowercase()?.contains(query) == true
-            }
-        }
+    fun searchProducts() {
+        val query = _uiState.value.searchQuery.trim()
+        loadProducts(query.takeIf { it.isNotEmpty() })
     }
 
     fun clearError() {

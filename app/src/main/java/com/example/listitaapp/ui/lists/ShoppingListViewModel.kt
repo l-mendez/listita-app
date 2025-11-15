@@ -76,11 +76,13 @@ class ShoppingListViewModel @Inject constructor(
         }
     }
 
-    fun loadShoppingLists() {
+    fun loadShoppingLists(query: String? = null) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            listRepository.getShoppingLists().fold(
+            val trimmedQuery = query?.takeIf { it.isNotBlank() }
+
+            listRepository.getShoppingLists(name = trimmedQuery).fold(
                 onSuccess = { lists ->
                     _uiState.update {
                         it.copy(
@@ -481,6 +483,11 @@ class ShoppingListViewModel @Inject constructor(
 
     fun updateSearchQuery(query: String) {
         _uiState.update { it.copy(searchQuery = query) }
+    }
+
+    fun searchShoppingLists() {
+        val query = _uiState.value.searchQuery.trim()
+        loadShoppingLists(query.takeIf { it.isNotEmpty() })
     }
 
 }

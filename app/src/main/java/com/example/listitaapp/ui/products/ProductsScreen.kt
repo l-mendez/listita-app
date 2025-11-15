@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -12,8 +13,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.listitaapp.R
@@ -56,6 +59,7 @@ fun ProductsScreen(
     onCreateCategory: () -> Unit,
     onRefresh: () -> Unit,
     onSearchQueryChange: (String) -> Unit,
+    onSearch: () -> Unit,
     onClearError: () -> Unit,
     onClearSuccess: () -> Unit
 ) {
@@ -137,6 +141,7 @@ fun ProductsScreen(
             SearchBar(
                 query = uiState.searchQuery,
                 onQueryChange = onSearchQueryChange,
+                onSearch = onSearch,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
@@ -176,14 +181,7 @@ fun ProductsScreen(
             } else {
                 // Products list (uses filtered products if search query exists)
                 ProductsList(
-                    products = if (uiState.searchQuery.isEmpty()) {
-                        uiState.products
-                    } else {
-                        uiState.products.filter {
-                            it.name.lowercase().contains(uiState.searchQuery.lowercase()) ||
-                            it.category?.name?.lowercase()?.contains(uiState.searchQuery.lowercase()) == true
-                        }
-                    },
+                    products = uiState.products,
                     onSettingsClick = { product, bounds ->
                         selectedProduct = product
                         anchorBounds = bounds
@@ -225,13 +223,31 @@ fun ProductsScreen(
 private fun SearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
+    onSearch: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val focusManager = LocalFocusManager.current
+    var hadFocus by remember { mutableStateOf(false) }
+    var ignoreNextBlur by remember { mutableStateOf(false) }
     AppSearchField(
         value = query,
         onValueChange = onQueryChange,
         placeholder = stringResource(R.string.search),
-        modifier = modifier
+        modifier = modifier.onFocusChanged { state ->
+            if (hadFocus && !state.isFocused) {
+                if (ignoreNextBlur) {
+                    ignoreNextBlur = false
+                } else {
+                    onSearch()
+                }
+            }
+            hadFocus = state.isFocused
+        },
+        keyboardActions = KeyboardActions(onSearch = {
+            ignoreNextBlur = true
+            focusManager.clearFocus()
+            onSearch()
+        })
     )
 }
 
