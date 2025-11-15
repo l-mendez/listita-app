@@ -107,6 +107,8 @@
     <string name="email_placeholder">example@email.com</string>
     <string name="no_account">Don\'t have an account?</string>
     <string name="already_have_account">Already have an account?</string>
+    <string name="already_have_verification_code">Already have a verification code?</string>
+    <string name="verify_now">Verify now</string>
     <string name="email_required">Email is required</string>
     <string name="password_required">Password is required</string>
     <string name="name_required">First name is required</string>

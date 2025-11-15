@@ -47,14 +47,12 @@ fun RegisterScreen(
 
     val focusManager = LocalFocusManager.current
 
-    // Navigate to verify screen after successful registration
     LaunchedEffect(uiState.registrationComplete) {
         if (uiState.registrationComplete) {
             onNavigateToVerify(uiState.email)
         }
     }
 
-    // Show error dialog (standardized)
     uiState.error?.let {
         AppMessageDialog(
             type = AppDialogType.Error,
@@ -62,6 +60,8 @@ fun RegisterScreen(
             onDismiss = onClearError
         )
     }
+
+    val emailRequiredMessage = stringResource(R.string.email_required)
 
     Scaffold(
         topBar = {
@@ -81,9 +81,8 @@ fun RegisterScreen(
                 .padding(padding)
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // App branding
             Icon(
                 imageVector = Icons.Default.ShoppingCart,
                 contentDescription = null,
@@ -99,7 +98,6 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Name field
             AppTextField(
                 value = name,
                 onValueChange = {
@@ -119,7 +117,6 @@ fun RegisterScreen(
                 )
             )
 
-            // Surname field
             AppTextField(
                 value = surname,
                 onValueChange = {
@@ -139,7 +136,6 @@ fun RegisterScreen(
                 )
             )
 
-            // Email field
             AppTextField(
                 value = email,
                 onValueChange = {
@@ -160,7 +156,6 @@ fun RegisterScreen(
                 )
             )
 
-            // Password field
             AppPasswordField(
                 value = password,
                 onValueChange = {
@@ -179,7 +174,6 @@ fun RegisterScreen(
                 )
             )
 
-            // Confirm Password field
             AppPasswordField(
                 value = confirmPassword,
                 onValueChange = {
@@ -212,7 +206,6 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Register button
             AppButton(
                 onClick = {
                     if (validateInput(
@@ -232,17 +225,32 @@ fun RegisterScreen(
                 fullWidth = true
             )
 
-            // Login link
-            AppTextButton(
-                onClick = onNavigateToLogin,
-                text = "${stringResource(R.string.already_have_account)} ${stringResource(R.string.login)}",
-                enabled = !uiState.isLoading
-            )
+            val verificationEmail = uiState.email.trim()
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                if (verificationEmail.isNotBlank()) {
+                    AppTextButton(
+                        onClick = { onNavigateToVerify(verificationEmail) },
+                        text = "${stringResource(R.string.already_have_verification_code)} ${stringResource(R.string.verify_now)}",
+                        enabled = !uiState.isLoading
+                    )
+                }
+
+                AppTextButton(
+                    onClick = onNavigateToLogin,
+                    text = "${stringResource(R.string.already_have_account)} ${stringResource(R.string.login)}",
+                    enabled = !uiState.isLoading
+                )
+            }
         }
     }
 }
 
-// Input validation
 private fun validateInput(
     name: String,
     surname: String,
