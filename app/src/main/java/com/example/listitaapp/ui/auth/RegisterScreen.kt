@@ -1,5 +1,6 @@
 package com.example.listitaapp.ui.auth
 
+import android.util.Patterns
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -104,6 +105,33 @@ fun RegisterScreen(
     val confirmPasswordRequiredMessage = stringResource(R.string.confirm_password_required)
     val passwordsDontMatchMessage = stringResource(R.string.passwords_dont_match)
 
+    fun validateForm(): Boolean {
+        val newNameError = requiredFieldError(name, nameRequiredMessage)
+        val newSurnameError = requiredFieldError(surname, surnameRequiredMessage)
+        val newEmailError = emailValidationError(email, emailRequiredMessage, invalidEmailMessage)
+        val newPasswordError = passwordValidationError(password, passwordRequiredMessage, passwordTooShortMessage)
+        val newConfirmPasswordError = confirmPasswordValidationError(
+            password,
+            confirmPassword,
+            confirmPasswordRequiredMessage,
+            passwordsDontMatchMessage
+        )
+
+        nameError = newNameError
+        surnameError = newSurnameError
+        emailError = newEmailError
+        passwordError = newPasswordError
+        confirmPasswordError = newConfirmPasswordError
+
+        return listOf(
+            newNameError,
+            newSurnameError,
+            newEmailError,
+            newPasswordError,
+            newConfirmPasswordError
+        ).all { it == null }
+    }
+
     Scaffold { padding ->
         val verificationEmail = uiState.email.trim()
         val columnArrangement = if (verificationEmail.isBlank()) {
@@ -202,7 +230,7 @@ fun RegisterScreen(
                             value = name,
                             onValueChange = {
                                 name = it
-                                nameError = null
+                                nameError = requiredFieldError(it, nameRequiredMessage)
                             },
                             label = stringResource(R.string.name),
                             leadingIcon = Icons.Default.Person,
@@ -222,7 +250,7 @@ fun RegisterScreen(
                             value = surname,
                             onValueChange = {
                                 surname = it
-                                surnameError = null
+                                surnameError = requiredFieldError(it, surnameRequiredMessage)
                             },
                             label = stringResource(R.string.surname),
                             leadingIcon = Icons.Default.Person,
@@ -242,7 +270,11 @@ fun RegisterScreen(
                             value = email,
                             onValueChange = {
                                 email = it
-                                emailError = null
+                                emailError = emailValidationError(
+                                    it,
+                                    emailRequiredMessage,
+                                    invalidEmailMessage
+                                )
                             },
                             label = stringResource(R.string.email),
                             placeholder = stringResource(R.string.email_placeholder),
@@ -263,7 +295,17 @@ fun RegisterScreen(
                             value = password,
                             onValueChange = {
                                 password = it
-                                passwordError = null
+                                passwordError = passwordValidationError(
+                                    it,
+                                    passwordRequiredMessage,
+                                    passwordTooShortMessage
+                                )
+                                confirmPasswordError = confirmPasswordValidationError(
+                                    it,
+                                    confirmPassword,
+                                    confirmPasswordRequiredMessage,
+                                    passwordsDontMatchMessage
+                                )
                             },
                             label = stringResource(R.string.password),
                             isError = passwordError != null,
@@ -282,7 +324,12 @@ fun RegisterScreen(
                             value = confirmPassword,
                             onValueChange = {
                                 confirmPassword = it
-                                confirmPasswordError = null
+                                confirmPasswordError = confirmPasswordValidationError(
+                                    password,
+                                    it,
+                                    confirmPasswordRequiredMessage,
+                                    passwordsDontMatchMessage
+                                )
                             },
                             label = stringResource(R.string.confirm_password),
                             isError = confirmPasswordError != null,
@@ -294,28 +341,8 @@ fun RegisterScreen(
                             keyboardActions = KeyboardActions(
                                 onDone = {
                                     focusManager.clearFocus()
-                                    if (validateInput(
-                                            name,
-                                            surname,
-                                            email,
-                                            password,
-                                            confirmPassword,
-                                            nameRequiredMessage,
-                                            surnameRequiredMessage,
-                                            emailRequiredMessage,
-                                            invalidEmailMessage,
-                                            passwordRequiredMessage,
-                                            passwordTooShortMessage,
-                                            confirmPasswordRequiredMessage,
-                                            passwordsDontMatchMessage,
-                                            { nameError = it },
-                                            { surnameError = it },
-                                            { emailError = it },
-                                            { passwordError = it },
-                                            { confirmPasswordError = it }
-                                        )
-                                    ) {
-                                        onRegister(email, password, name, surname)
+                                    if (validateForm()) {
+                                        onRegister(email.trim(), password, name, surname)
                                     }
                                 }
                             ),
@@ -326,28 +353,8 @@ fun RegisterScreen(
 
                         AppButton(
                             onClick = {
-                                if (validateInput(
-                                        name,
-                                        surname,
-                                        email,
-                                        password,
-                                        confirmPassword,
-                                        nameRequiredMessage,
-                                        surnameRequiredMessage,
-                                        emailRequiredMessage,
-                                        invalidEmailMessage,
-                                        passwordRequiredMessage,
-                                        passwordTooShortMessage,
-                                        confirmPasswordRequiredMessage,
-                                        passwordsDontMatchMessage,
-                                        { nameError = it },
-                                        { surnameError = it },
-                                        { emailError = it },
-                                        { passwordError = it },
-                                        { confirmPasswordError = it }
-                                    )
-                                ) {
-                                    onRegister(email, password, name, surname)
+                                if (validateForm()) {
+                                    onRegister(email.trim(), password, name, surname)
                                 }
                             },
                             text = stringResource(R.string.register),
@@ -413,7 +420,7 @@ fun RegisterScreen(
                         value = name,
                         onValueChange = {
                             name = it
-                            nameError = null
+                            nameError = requiredFieldError(it, nameRequiredMessage)
                         },
                         label = stringResource(R.string.name),
                         leadingIcon = Icons.Default.Person,
@@ -433,7 +440,7 @@ fun RegisterScreen(
                         value = surname,
                         onValueChange = {
                             surname = it
-                            surnameError = null
+                            surnameError = requiredFieldError(it, surnameRequiredMessage)
                         },
                         label = stringResource(R.string.surname),
                         leadingIcon = Icons.Default.Person,
@@ -453,7 +460,11 @@ fun RegisterScreen(
                         value = email,
                         onValueChange = {
                             email = it
-                            emailError = null
+                            emailError = emailValidationError(
+                                it,
+                                emailRequiredMessage,
+                                invalidEmailMessage
+                            )
                         },
                         label = stringResource(R.string.email),
                         placeholder = stringResource(R.string.email_placeholder),
@@ -474,7 +485,17 @@ fun RegisterScreen(
                         value = password,
                         onValueChange = {
                             password = it
-                            passwordError = null
+                            passwordError = passwordValidationError(
+                                it,
+                                passwordRequiredMessage,
+                                passwordTooShortMessage
+                            )
+                            confirmPasswordError = confirmPasswordValidationError(
+                                it,
+                                confirmPassword,
+                                confirmPasswordRequiredMessage,
+                                passwordsDontMatchMessage
+                            )
                         },
                         label = stringResource(R.string.password),
                         isError = passwordError != null,
@@ -493,7 +514,12 @@ fun RegisterScreen(
                         value = confirmPassword,
                         onValueChange = {
                             confirmPassword = it
-                            confirmPasswordError = null
+                            confirmPasswordError = confirmPasswordValidationError(
+                                password,
+                                it,
+                                confirmPasswordRequiredMessage,
+                                passwordsDontMatchMessage
+                            )
                         },
                         label = stringResource(R.string.confirm_password),
                         isError = confirmPasswordError != null,
@@ -502,34 +528,14 @@ fun RegisterScreen(
                             keyboardType = KeyboardType.Password,
                             imeAction = ImeAction.Done
                         ),
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                focusManager.clearFocus()
-                            if (validateInput(
-                                    name,
-                                    surname,
-                                    email,
-                                    password,
-                                    confirmPassword,
-                                    nameRequiredMessage,
-                                    surnameRequiredMessage,
-                                    emailRequiredMessage,
-                                    invalidEmailMessage,
-                                    passwordRequiredMessage,
-                                    passwordTooShortMessage,
-                                    confirmPasswordRequiredMessage,
-                                    passwordsDontMatchMessage,
-                                    { nameError = it },
-                                    { surnameError = it },
-                                    { emailError = it },
-                                    { passwordError = it },
-                                    { confirmPasswordError = it }
-                                )
-                            ) {
-                                onRegister(email, password, name, surname)
-                            }
-                        }
-                    ),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    focusManager.clearFocus()
+                                    if (validateForm()) {
+                                        onRegister(email.trim(), password, name, surname)
+                                    }
+                                }
+                            ),
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -537,30 +543,10 @@ fun RegisterScreen(
 
                     AppButton(
                         onClick = {
-                        if (validateInput(
-                                name,
-                                surname,
-                                email,
-                                password,
-                                confirmPassword,
-                                nameRequiredMessage,
-                                surnameRequiredMessage,
-                                emailRequiredMessage,
-                                invalidEmailMessage,
-                                passwordRequiredMessage,
-                                passwordTooShortMessage,
-                                confirmPasswordRequiredMessage,
-                                passwordsDontMatchMessage,
-                                { nameError = it },
-                                { surnameError = it },
-                                { emailError = it },
-                                { passwordError = it },
-                                { confirmPasswordError = it }
-                            )
-                        ) {
-                            onRegister(email, password, name, surname)
-                        }
-                    },
+                            if (validateForm()) {
+                                onRegister(email.trim(), password, name, surname)
+                            }
+                        },
                         text = stringResource(R.string.register),
                         enabled = !uiState.isLoading,
                         loading = uiState.isLoading,
@@ -595,61 +581,36 @@ fun RegisterScreen(
 
 }
 
-private fun validateInput(
-    name: String,
-    surname: String,
+private fun requiredFieldError(value: String, message: String): String? =
+    if (value.isBlank()) message else null
+
+private fun emailValidationError(
     email: String,
+    requiredMessage: String,
+    invalidMessage: String
+): String? = when {
+    email.isBlank() -> requiredMessage
+    !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> invalidMessage
+    else -> null
+}
+
+private fun passwordValidationError(
+    password: String,
+    requiredMessage: String,
+    tooShortMessage: String
+): String? = when {
+    password.isBlank() -> requiredMessage
+    password.length < 6 -> tooShortMessage
+    else -> null
+}
+
+private fun confirmPasswordValidationError(
     password: String,
     confirmPassword: String,
-    nameRequiredMessage: String,
-    surnameRequiredMessage: String,
-    emailRequiredMessage: String,
-    invalidEmailMessage: String,
-    passwordRequiredMessage: String,
-    passwordTooShortMessage: String,
-    confirmPasswordRequiredMessage: String,
-    passwordsDontMatchMessage: String,
-    setNameError: (String?) -> Unit,
-    setSurnameError: (String?) -> Unit,
-    setEmailError: (String?) -> Unit,
-    setPasswordError: (String?) -> Unit,
-    setConfirmPasswordError: (String?) -> Unit
-): Boolean {
-    var isValid = true
-
-    if (name.isBlank()) {
-        setNameError(nameRequiredMessage)
-        isValid = false
-    }
-
-    if (surname.isBlank()) {
-        setSurnameError(surnameRequiredMessage)
-        isValid = false
-    }
-
-    if (email.isBlank()) {
-        setEmailError(emailRequiredMessage)
-        isValid = false
-    } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-        setEmailError(invalidEmailMessage)
-        isValid = false
-    }
-
-    if (password.isBlank()) {
-        setPasswordError(passwordRequiredMessage)
-        isValid = false
-    } else if (password.length < 6) {
-        setPasswordError(passwordTooShortMessage)
-        isValid = false
-    }
-
-    if (confirmPassword.isBlank()) {
-        setConfirmPasswordError(confirmPasswordRequiredMessage)
-        isValid = false
-    } else if (password != confirmPassword) {
-        setConfirmPasswordError(passwordsDontMatchMessage)
-        isValid = false
-    }
-
-    return isValid
+    requiredMessage: String,
+    mismatchMessage: String
+): String? = when {
+    confirmPassword.isBlank() -> requiredMessage
+    password != confirmPassword -> mismatchMessage
+    else -> null
 }

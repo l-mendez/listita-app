@@ -1,5 +1,6 @@
 package com.example.listitaapp.ui.auth
 
+import android.util.Patterns
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -65,7 +66,6 @@ fun LoginScreen(
     val headerSpacerHeight = if (isTabletLandscape) 8.dp else 16.dp
     val buttonSpacerHeight = if (isTabletLandscape) 4.dp else 8.dp
 
-    // Show error dialog (standardized)
     uiState.error?.let {
         AppMessageDialog(
             type = AppDialogType.Error,
@@ -128,7 +128,11 @@ fun LoginScreen(
                             value = email,
                             onValueChange = {
                                 email = it
-                                emailError = null
+                                emailError = emailValidationError(
+                                    it,
+                                    emailRequiredMessage,
+                                    invalidEmailMessage
+                                )
                             },
                             label = stringResource(R.string.email),
                             placeholder = stringResource(R.string.email_placeholder),
@@ -149,7 +153,11 @@ fun LoginScreen(
                             value = password,
                             onValueChange = {
                                 password = it
-                                passwordError = null
+                                passwordError = passwordValidationError(
+                                    it,
+                                    passwordRequiredMessage,
+                                    passwordTooShortMessage
+                                )
                             },
                             label = stringResource(R.string.password),
                             isError = passwordError != null,
@@ -161,17 +169,20 @@ fun LoginScreen(
                             keyboardActions = KeyboardActions(
                                 onDone = {
                                     focusManager.clearFocus()
-                                    if (validateInput(
-                                            email,
-                                            password,
-                                            emailRequiredMessage,
-                                            invalidEmailMessage,
-                                            passwordRequiredMessage,
-                                            passwordTooShortMessage,
-                                            { emailError = it },
-                                            { passwordError = it }
-                                        )) {
-                                        onLogin(email, password)
+                                    val updatedEmailError = emailValidationError(
+                                        email,
+                                        emailRequiredMessage,
+                                        invalidEmailMessage
+                                    )
+                                    val updatedPasswordError = passwordValidationError(
+                                        password,
+                                        passwordRequiredMessage,
+                                        passwordTooShortMessage
+                                    )
+                                    emailError = updatedEmailError
+                                    passwordError = updatedPasswordError
+                                    if (updatedEmailError == null && updatedPasswordError == null) {
+                                        onLogin(email.trim(), password)
                                     }
                                 }
                             ),
@@ -182,17 +193,20 @@ fun LoginScreen(
 
                         AppButton(
                             onClick = {
-                                if (validateInput(
-                                        email,
-                                        password,
-                                        emailRequiredMessage,
-                                        invalidEmailMessage,
-                                        passwordRequiredMessage,
-                                        passwordTooShortMessage,
-                                        { emailError = it },
-                                        { passwordError = it }
-                                    )) {
-                                    onLogin(email, password)
+                                val updatedEmailError = emailValidationError(
+                                    email,
+                                    emailRequiredMessage,
+                                    invalidEmailMessage
+                                )
+                                val updatedPasswordError = passwordValidationError(
+                                    password,
+                                    passwordRequiredMessage,
+                                    passwordTooShortMessage
+                                )
+                                emailError = updatedEmailError
+                                passwordError = updatedPasswordError
+                                if (updatedEmailError == null && updatedPasswordError == null) {
+                                    onLogin(email.trim(), password)
                                 }
                             },
                             text = stringResource(R.string.login),
@@ -219,7 +233,6 @@ fun LoginScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(verticalSpacing, Alignment.CenterVertically)
                 ) {
-                    // App branding
                     Icon(
                         imageVector = Icons.Default.ShoppingCart,
                         contentDescription = null,
@@ -235,12 +248,15 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(headerSpacerHeight))
 
-                    // Email field (Nielsen: Recognition over recall)
                     AppTextField(
                         value = email,
                         onValueChange = {
                             email = it
-                            emailError = null // Clear error on input
+                            emailError = emailValidationError(
+                                it,
+                                emailRequiredMessage,
+                                invalidEmailMessage
+                            )
                         },
                         label = stringResource(R.string.email),
                         placeholder = stringResource(R.string.email_placeholder),
@@ -257,12 +273,15 @@ fun LoginScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    // Password field
                     AppPasswordField(
                         value = password,
                         onValueChange = {
                             password = it
-                            passwordError = null
+                            passwordError = passwordValidationError(
+                                it,
+                                passwordRequiredMessage,
+                                passwordTooShortMessage
+                            )
                         },
                         label = stringResource(R.string.password),
                         isError = passwordError != null,
@@ -274,17 +293,20 @@ fun LoginScreen(
                         keyboardActions = KeyboardActions(
                             onDone = {
                                 focusManager.clearFocus()
-                                if (validateInput(
-                                        email,
-                                        password,
-                                        emailRequiredMessage,
-                                        invalidEmailMessage,
-                                        passwordRequiredMessage,
-                                        passwordTooShortMessage,
-                                        { emailError = it },
-                                        { passwordError = it }
-                                    )) {
-                                    onLogin(email, password)
+                                val updatedEmailError = emailValidationError(
+                                    email,
+                                    emailRequiredMessage,
+                                    invalidEmailMessage
+                                )
+                                val updatedPasswordError = passwordValidationError(
+                                    password,
+                                    passwordRequiredMessage,
+                                    passwordTooShortMessage
+                                )
+                                emailError = updatedEmailError
+                                passwordError = updatedPasswordError
+                                if (updatedEmailError == null && updatedPasswordError == null) {
+                                    onLogin(email.trim(), password)
                                 }
                             }
                         ),
@@ -293,20 +315,22 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(buttonSpacerHeight))
 
-                    // Login button (Nielsen: Visibility of system status)
                     AppButton(
                         onClick = {
-                            if (validateInput(
-                                    email,
-                                    password,
-                                    emailRequiredMessage,
-                                    invalidEmailMessage,
-                                    passwordRequiredMessage,
-                                    passwordTooShortMessage,
-                                    { emailError = it },
-                                    { passwordError = it }
-                                )) {
-                                onLogin(email, password)
+                            val updatedEmailError = emailValidationError(
+                                email,
+                                emailRequiredMessage,
+                                invalidEmailMessage
+                            )
+                            val updatedPasswordError = passwordValidationError(
+                                password,
+                                passwordRequiredMessage,
+                                passwordTooShortMessage
+                            )
+                            emailError = updatedEmailError
+                            passwordError = updatedPasswordError
+                            if (updatedEmailError == null && updatedPasswordError == null) {
+                                onLogin(email.trim(), password)
                             }
                         },
                         text = stringResource(R.string.login),
@@ -316,7 +340,6 @@ fun LoginScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    // Register link (Gestalt: Continuity)
                     AppTextButton(
                         onClick = onNavigateToRegister,
                         text = "${stringResource(R.string.no_account)} ${stringResource(R.string.register)}",
@@ -328,34 +351,22 @@ fun LoginScreen(
     }
 }
 
-// Error prevention: Input validation
-private fun validateInput(
+private fun emailValidationError(
     email: String,
+    requiredMessage: String,
+    invalidMessage: String
+): String? = when {
+    email.isBlank() -> requiredMessage
+    !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> invalidMessage
+    else -> null
+}
+
+private fun passwordValidationError(
     password: String,
-    emailRequiredMessage: String,
-    invalidEmailMessage: String,
-    passwordRequiredMessage: String,
-    passwordTooShortMessage: String,
-    setEmailError: (String?) -> Unit,
-    setPasswordError: (String?) -> Unit
-): Boolean {
-    var isValid = true
-
-    if (email.isBlank()) {
-        setEmailError(emailRequiredMessage)
-        isValid = false
-    } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-        setEmailError(invalidEmailMessage)
-        isValid = false
-    }
-
-    if (password.isBlank()) {
-        setPasswordError(passwordRequiredMessage)
-        isValid = false
-    } else if (password.length < 6) {
-        setPasswordError(passwordTooShortMessage)
-        isValid = false
-    }
-
-    return isValid
+    requiredMessage: String,
+    tooShortMessage: String
+): String? = when {
+    password.isBlank() -> requiredMessage
+    password.length < 6 -> tooShortMessage
+    else -> null
 }

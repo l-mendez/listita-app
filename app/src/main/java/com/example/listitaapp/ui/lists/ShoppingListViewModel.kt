@@ -43,26 +43,18 @@ class ShoppingListViewModel @Inject constructor(
         observeAuthState()
     }
 
-    /**
-     * Observe authentication state changes and reload/clear data accordingly
-     */
     private fun observeAuthState() {
         viewModelScope.launch {
             authRepository.authState().collect { isAuthenticated ->
                 if (isAuthenticated) {
-                    // User logged in - load fresh data for the authenticated user
                     loadShoppingLists()
                 } else {
-                    // User logged out - clear all cached data
                     clearAllData()
                 }
             }
         }
     }
 
-    /**
-     * Clear all cached data when user logs out
-     */
     private fun clearAllData() {
         _uiState.update {
             ShoppingListUiState(
@@ -92,11 +84,9 @@ class ShoppingListViewModel @Inject constructor(
                             isLoading = false
                         )
                     }
-                    // Load item counts in parallel without blocking UI
                     viewModelScope.launch {
                         val countsMutable = mutableMapOf<Long, Int>()
                         lists.forEach { list ->
-                            // Fire and collect sequentially to avoid too many parallel calls
                             listRepository.getListItemsCount(list.id).fold(
                                 onSuccess = { count -> countsMutable[list.id] = count },
                                 onFailure = { _ -> }
@@ -123,7 +113,6 @@ class ShoppingListViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            // Load list details and items
             val listResult = listRepository.getShoppingListById(listId)
             val itemsResult = listRepository.getListItems(listId)
 
@@ -131,7 +120,6 @@ class ShoppingListViewModel @Inject constructor(
                 onSuccess = { list ->
                     itemsResult.fold(
                         onSuccess = { items ->
-                            // Filter out items with deleted products (product is null)
                             val validItems = items.filter { it.product != null }
 
                             _uiState.update {
@@ -139,7 +127,6 @@ class ShoppingListViewModel @Inject constructor(
                                     currentList = list,
                                     currentListItems = validItems,
                                     isLoading = false,
-                                    // Keep lists screen counters in sync while user is on detail
                                     itemsCountByListId = it.itemsCountByListId + (list.id to validItems.size)
                                 )
                             }
@@ -225,7 +212,6 @@ class ShoppingListViewModel @Inject constructor(
                 onSuccess = {
                     _uiState.update { it.copy(successMessage = UiMessage(resId = R.string.list_updated)) }
                     loadShoppingLists()
-                    // Reload current list details if viewing detail page
                     if (_uiState.value.currentList?.id == id) {
                         loadListDetails(id)
                     }
@@ -243,7 +229,6 @@ class ShoppingListViewModel @Inject constructor(
                 onSuccess = {
                     _uiState.update { it.copy(successMessage = UiMessage(resId = R.string.list_updated)) }
                     loadShoppingLists()
-                    // Reload current list details if viewing detail page
                     if (_uiState.value.currentList?.id == id) {
                         loadListDetails(id)
                     }
@@ -323,7 +308,6 @@ class ShoppingListViewModel @Inject constructor(
 
     fun toggleItemPurchased(listId: Long, itemId: Long) {
         viewModelScope.launch {
-            // Find the current item to get its purchased status
             val currentItem = _uiState.value.currentListItems.find { it.id == itemId }
             if (currentItem == null) {
                 _uiState.update {
@@ -332,11 +316,9 @@ class ShoppingListViewModel @Inject constructor(
                 return@launch
             }
 
-            // Check if toggling this item will complete the list
             val currentList = _uiState.value.currentList
             val currentItems = _uiState.value.currentListItems
             val willBeCompleted = if (currentList != null && !currentList.recurring) {
-                // After toggling, check if all items will be purchased
                 val itemsAfterToggle = currentItems.map { item ->
                     if (item.id == itemId) !item.purchased else item.purchased
                 }
@@ -348,7 +330,6 @@ class ShoppingListViewModel @Inject constructor(
             listRepository.toggleItemPurchased(listId, itemId, currentItem.purchased).fold(
                 onSuccess = {
                     if (willBeCompleted) {
-                        // Navigate back first, then complete the list
                         _uiState.update {
                             it.copy(
                                 currentList = null,
@@ -357,9 +338,8 @@ class ShoppingListViewModel @Inject constructor(
                             )
                         }
 
-                        // Then move to history (after navigation happens)
                         viewModelScope.launch {
-                            kotlinx.coroutines.delay(100) // Small delay to ensure navigation completes
+                            kotlinx.coroutines.delay(100)
                             listRepository.purchaseList(listId).fold(
                                 onSuccess = {
                                     _uiState.update {
@@ -375,7 +355,6 @@ class ShoppingListViewModel @Inject constructor(
                             )
                         }
                     } else {
-                        // Normal case: just reload list details
                         loadListDetails(listId)
                     }
                 },
@@ -410,7 +389,6 @@ class ShoppingListViewModel @Inject constructor(
         }
     }
 
-    // ====== Sharing / Privacy ======
     fun loadSharedUsers(listId: Long) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
