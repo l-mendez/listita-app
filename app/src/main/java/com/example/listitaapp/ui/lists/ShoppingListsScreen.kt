@@ -49,6 +49,7 @@ import com.example.listitaapp.ui.components.show
 import com.example.listitaapp.ui.components.getGridColumns
 import com.example.listitaapp.ui.components.AppSearchField
 import com.example.listitaapp.ui.components.AppSearchButton
+import com.example.listitaapp.ui.common.asString
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -97,8 +98,11 @@ fun ShoppingListsScreen(
 
     // Success snackbar (standardized)
     uiState.successMessage?.let { message ->
+        val localizedMessage = message.asString()
         LaunchedEffect(message) {
-            appSnackbar.show(message, appSnackTypeFromMessage(message))
+            if (localizedMessage.isNotBlank()) {
+                appSnackbar.show(localizedMessage, appSnackTypeFromMessage(localizedMessage))
+            }
             onClearSuccess()
         }
     }

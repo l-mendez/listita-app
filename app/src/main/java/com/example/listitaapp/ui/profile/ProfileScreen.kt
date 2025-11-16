@@ -27,6 +27,7 @@ import com.example.listitaapp.ui.components.appSnackTypeFromMessage
 import com.example.listitaapp.ui.components.show
 import com.example.listitaapp.ui.components.AppTextField
 import com.example.listitaapp.ui.components.AppPasswordField
+import com.example.listitaapp.ui.common.asString
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,8 +54,11 @@ fun ProfileScreen(
 
     // Success snackbar (standardized)
     uiState.successMessage?.let { message ->
+        val localizedMessage = message.asString()
         LaunchedEffect(message) {
-            appSnackbar.show(message, appSnackTypeFromMessage(message))
+            if (localizedMessage.isNotBlank()) {
+                appSnackbar.show(localizedMessage, appSnackTypeFromMessage(localizedMessage))
+            }
             onClearSuccess()
         }
     }
@@ -143,7 +147,7 @@ fun ProfileScreen(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Default.Edit,
                                 title = stringResource(R.string.edit_profile),
-                                subtitle = "Update your name and information",
+                                subtitle = stringResource(R.string.profile_edit_description),
                                 onClick = onEditProfile,
                                 isLandscape = true
                             )
@@ -152,7 +156,7 @@ fun ProfileScreen(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Default.Lock,
                                 title = stringResource(R.string.change_password),
-                                subtitle = "Change your account password",
+                                subtitle = stringResource(R.string.profile_password_description),
                                 onClick = onChangePassword,
                                 isLandscape = true
                             )
@@ -161,7 +165,7 @@ fun ProfileScreen(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.AutoMirrored.Filled.ExitToApp,
                                 title = stringResource(R.string.logout),
-                                subtitle = "Sign out of your account",
+                                subtitle = stringResource(R.string.profile_logout_description),
                                 onClick = { showLogoutDialog = true },
                                 tint = MaterialTheme.colorScheme.error,
                                 isLandscape = true
@@ -216,21 +220,21 @@ fun ProfileScreen(
                         SettingsItem(
                             icon = Icons.Default.Edit,
                             title = stringResource(R.string.edit_profile),
-                            subtitle = "Update your name and information",
+                            subtitle = stringResource(R.string.profile_edit_description),
                             onClick = onEditProfile
                         )
 
                         SettingsItem(
                             icon = Icons.Default.Lock,
                             title = stringResource(R.string.change_password),
-                            subtitle = "Change your account password",
+                            subtitle = stringResource(R.string.profile_password_description),
                             onClick = onChangePassword
                         )
 
                         SettingsItem(
                             icon = Icons.AutoMirrored.Filled.ExitToApp,
                             title = stringResource(R.string.logout),
-                            subtitle = "Sign out of your account",
+                            subtitle = stringResource(R.string.profile_logout_description),
                             onClick = { showLogoutDialog = true },
                             tint = MaterialTheme.colorScheme.error
                         )

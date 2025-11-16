@@ -2,8 +2,10 @@ package com.example.listitaapp.ui.purchases
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.listitaapp.R
 import com.example.listitaapp.data.model.Purchase
 import com.example.listitaapp.data.repository.PurchaseRepository
+import com.example.listitaapp.ui.common.UiMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +18,7 @@ data class PurchaseHistoryUiState(
     val purchases: List<Purchase> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
-    val successMessage: String? = null
+    val successMessage: UiMessage? = null
 )
 
 @HiltViewModel
@@ -65,7 +67,7 @@ class PurchaseHistoryViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            successMessage = "List restored successfully"
+                            successMessage = UiMessage(resId = R.string.list_restored)
                         )
                     }
                     // Add the restored list to the shopping lists state

@@ -37,6 +37,20 @@
   <string name="shopping_lists">Listas</string>
   <string name="products">Productos</string>
   <string name="profile">Perfil</string>
+  <string name="unit_units">Unidades</string>
+  <string name="unit_kilograms">Kilogramos</string>
+  <string name="unit_grams">Gramos</string>
+  <string name="unit_liters">Litros</string>
+  <string name="unit_milliliters">Mililitros</string>
+  <string name="unit_pieces">Piezas</string>
+  <string name="profile_edit_description">Actualiza tu nombre e información</string>
+  <string name="profile_password_description">Cambia la contraseña de tu cuenta</string>
+  <string name="profile_logout_description">Cierra sesión de tu cuenta</string>
+  <string name="back">Atrás</string>
+  <string name="unknown_list">Lista desconocida</string>
+  <string name="purchase_history">Historial de compras</string>
+  <string name="empty_purchase_history">Aún no tienes historial de compras</string>
+  <string name="empty_purchase_history_subtitle">Las listas completadas aparecerán aquí</string>
 
   <!-- Shopping Lists -->
   <string name="create_list">Crear Lista</string>
@@ -77,14 +91,30 @@
   <string name="password_changed">Contraseña cambiada exitosamente</string>
   <string name="list_created">Lista creada exitosamente</string>
   <string name="list_deleted">Lista eliminada</string>
+  <string name="list_updated">Lista actualizada</string>
+  <string name="list_completed_history">Lista completada y movida al historial</string>
+  <string name="list_shared">Lista compartida</string>
+  <string name="list_set_private">Lista marcada como privada</string>
+  <string name="list_restored">Lista restaurada exitosamente</string>
+  <string name="access_revoked">Acceso revocado</string>
   <string name="product_created">Producto creado exitosamente</string>
+  <string name="product_updated">Producto actualizado</string>
+  <string name="product_deleted">Producto eliminado</string>
+  <string name="category_created">Categoría creada exitosamente</string>
+  <string name="category_deleted">Categoría eliminada</string>
+  <string name="category_updated">Categoría actualizada</string>
+  <string name="profile_updated">Perfil actualizado exitosamente</string>
   <string name="item_added">Producto agregado a la lista</string>
+  <string name="item_updated">Producto actualizado</string>
+  <string name="item_removed">Producto eliminado de la lista</string>
   <string name="network_error">Error de conexión. Verifica tu red.</string>
   <string name="confirm_delete_list">¿Eliminar esta lista?</string>
   <string name="confirm_delete_product">¿Eliminar este producto?</string>
   <string name="confirm_logout">¿Cerrar sesión?</string>
   <string name="confirm_remove_item_from_list">¿Eliminar %1$s de la lista?</string>
   <string name="this_item">este ítem</string>
+  <string name="account_verified_login">Cuenta verificada exitosamente. Inicia sesión.</string>
+  <string name="new_verification_code">Nuevo código de verificación: %1$s&#10;&#10;Revisa también la consola del API.</string>
   <string name="recurrentes">Recurrentes</string>
   <string name="activas">Activas</string>
   <string name="solo_tu">Solo tú</string>
@@ -129,6 +159,5 @@
   <string name="code_invalid">El código debe tener 6 dígitos</string>
 
   <!-- Additional Messages -->
-  <string name="list_updated">Lista actualizada</string>
   <string name="failed_to_update">Fallo al actualizar</string>
 </resources>

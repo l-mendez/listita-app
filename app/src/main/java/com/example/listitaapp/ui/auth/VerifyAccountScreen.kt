@@ -21,6 +21,7 @@ import com.example.listitaapp.ui.components.AppMessageDialog
 import com.example.listitaapp.ui.components.AppTextField
 import com.example.listitaapp.ui.components.AppButton
 import com.example.listitaapp.ui.components.AppTextButton
+import com.example.listitaapp.ui.common.asString
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,9 +53,10 @@ fun VerifyAccountScreen(
 
     // Show success dialog (standardized, for resend)
     uiState.successMessage?.let { msg ->
+        val localizedMessage = msg.asString()
         AppMessageDialog(
             type = AppDialogType.Success,
-            message = msg,
+            message = localizedMessage,
             onDismiss = onClearSuccess
         )
     }

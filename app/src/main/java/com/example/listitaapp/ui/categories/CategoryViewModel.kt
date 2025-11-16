@@ -2,9 +2,11 @@ package com.example.listitaapp.ui.categories
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.listitaapp.R
 import com.example.listitaapp.data.model.Category
 import com.example.listitaapp.data.repository.AuthRepository
 import com.example.listitaapp.data.repository.ProductRepository
+import com.example.listitaapp.ui.common.UiMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +19,7 @@ data class CategoryUiState(
     val categories: List<Category> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
-    val successMessage: String? = null
+    val successMessage: UiMessage? = null
 )
 
 @HiltViewModel
@@ -79,7 +81,7 @@ class CategoryViewModel @Inject constructor(
                         it.copy(
                             isLoading = false,
                             categories = (it.categories + category).distinctBy { item -> item.id },
-                            successMessage = "Category created successfully"
+                            successMessage = UiMessage(resId = R.string.category_created)
                         )
                     }
                     onCreated?.invoke(category)
@@ -105,7 +107,7 @@ class CategoryViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            successMessage = "Category deleted"
+                            successMessage = UiMessage(resId = R.string.category_deleted)
                         )
                     }
                     loadCategories()
@@ -130,7 +132,7 @@ class CategoryViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            successMessage = "Category updated"
+                            successMessage = UiMessage(resId = R.string.category_updated)
                         )
                     }
                     loadCategories()

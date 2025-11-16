@@ -38,6 +38,7 @@ import com.example.listitaapp.ui.components.PopupMenuAction
 import com.example.listitaapp.ui.components.PopupHeaderButton
 import com.example.listitaapp.ui.components.PopupHeaderDeleteButton
 import com.example.listitaapp.ui.components.AppTextButton
+import com.example.listitaapp.ui.common.asString
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,8 +85,11 @@ fun ShoppingListDetailScreen(
 
     // Success snackbar (standardized)
     uiState.successMessage?.let { message ->
+        val localizedMessage = message.asString()
         LaunchedEffect(message) {
-            appSnackbar.show(message, appSnackTypeFromMessage(message))
+            if (localizedMessage.isNotBlank()) {
+                appSnackbar.show(localizedMessage, appSnackTypeFromMessage(localizedMessage))
+            }
             onClearSuccess()
         }
     }
@@ -457,8 +461,9 @@ private fun ListItemCard(
                         MaterialTheme.colorScheme.onSurface
                     }
                 )
+                val unitLabel = MeasurementUnit.fromId(item.unit)?.let { stringResource(it.labelRes) } ?: item.unit
                 Text(
-                    text = "${item.quantity} ${item.unit}" +
+                    text = "${item.quantity} $unitLabel" +
                            (item.product?.category?.name?.let { " • $it" } ?: ""),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.outline
@@ -505,10 +510,9 @@ fun AddItemToListDialog(
 ) {
     var selectedProductId by remember { mutableStateOf<Long?>(null) }
     var quantity by remember { mutableStateOf("1") }
-    var unit by remember { mutableStateOf("units") }
+    var unitId by remember { mutableStateOf(MeasurementUnit.Units.id) }
+    var customUnitText by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
-
-    val commonUnits = listOf("units", "kg", "g", "l", "ml", "pcs")
 
     LaunchedEffect(recentProduct?.id) {
         if (recentProduct != null) {
@@ -525,7 +529,7 @@ fun AddItemToListDialog(
         onConfirm = {
             selectedProductId?.let { productId ->
                 val qty = quantity.toDoubleOrNull() ?: 1.0
-                onAdd(productId, qty, unit)
+                onAdd(productId, qty, unitId)
                 onDismiss()
             }
         }
@@ -599,14 +603,23 @@ fun AddItemToListDialog(
             )
 
             var unitExpanded by remember { mutableStateOf(false) }
+            val selectedUnit = MeasurementUnit.fromId(unitId)
+            val unitDisplay = if (customUnitText.isNotEmpty() || selectedUnit == null) {
+                if (customUnitText.isNotEmpty()) customUnitText else unitId
+            } else {
+                stringResource(selectedUnit.labelRes)
+            }
             ExposedDropdownMenuBox(
                 expanded = unitExpanded,
                 onExpandedChange = { unitExpanded = it },
                 modifier = Modifier.weight(1f)
             ) {
                 AppTextField(
-                    value = unit,
-                    onValueChange = { unit = it },
+                    value = unitDisplay,
+                    onValueChange = {
+                        customUnitText = it
+                        unitId = it
+                    },
                     label = stringResource(R.string.unit),
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded) },
                     modifier = Modifier.menuAnchor()
@@ -616,11 +629,12 @@ fun AddItemToListDialog(
                     expanded = unitExpanded,
                     onDismissRequest = { unitExpanded = false }
                 ) {
-                    commonUnits.forEach { commonUnit ->
+                    MeasurementUnit.values().forEach { option ->
                         DropdownMenuItem(
-                            text = { Text(commonUnit) },
+                            text = { Text(stringResource(option.labelRes)) },
                             onClick = {
-                                unit = commonUnit
+                                unitId = option.id
+                                customUnitText = ""
                                 unitExpanded = false
                             }
                         )
@@ -646,18 +660,26 @@ private fun EditListItemDialog(
     onUpdate: (Double, String) -> Unit
 ) {
     var quantity by rememberSaveable(item.id) { mutableStateOf(item.quantity.toString()) }
-    var unit by rememberSaveable(item.id) { mutableStateOf(item.unit) }
+    var unitId by rememberSaveable(item.id) { mutableStateOf(item.unit) }
+    var customUnitText by rememberSaveable("${item.id}_custom_unit") {
+        mutableStateOf(if (MeasurementUnit.fromId(item.unit) == null) item.unit else "")
+    }
     var unitExpanded by remember { mutableStateOf(false) }
-    val commonUnits = listOf("units", "kg", "g", "l", "ml", "pcs")
+    val selectedUnit = MeasurementUnit.fromId(unitId)
+    val unitDisplay = if (customUnitText.isNotEmpty() || selectedUnit == null) {
+        if (customUnitText.isNotEmpty()) customUnitText else unitId
+    } else {
+        stringResource(selectedUnit.labelRes)
+    }
 
     AppFormDialog(
         title = stringResource(R.string.edit_item),
         onDismiss = onDismiss,
         confirmLabel = stringResource(R.string.update_item),
-        confirmEnabled = quantity.toDoubleOrNull() != null && unit.isNotBlank(),
+        confirmEnabled = quantity.toDoubleOrNull() != null && unitId.isNotBlank(),
         onConfirm = {
             val qty = quantity.toDoubleOrNull() ?: return@AppFormDialog
-            onUpdate(qty, unit)
+            onUpdate(qty, unitId)
         }
     ) {
         AppTextField(
@@ -671,8 +693,11 @@ private fun EditListItemDialog(
             onExpandedChange = { unitExpanded = it }
         ) {
             AppTextField(
-                value = unit,
-                onValueChange = { unit = it },
+                value = unitDisplay,
+                onValueChange = {
+                    customUnitText = it
+                    unitId = it
+                },
                 label = stringResource(R.string.unit),
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded) },
                 modifier = Modifier.menuAnchor()
@@ -681,11 +706,12 @@ private fun EditListItemDialog(
                 expanded = unitExpanded,
                 onDismissRequest = { unitExpanded = false }
             ) {
-                commonUnits.forEach { commonUnit ->
+                MeasurementUnit.values().forEach { option ->
                     DropdownMenuItem(
-                        text = { Text(commonUnit) },
+                        text = { Text(stringResource(option.labelRes)) },
                         onClick = {
-                            unit = commonUnit
+                            unitId = option.id
+                            customUnitText = ""
                             unitExpanded = false
                         }
                     )

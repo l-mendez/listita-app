@@ -27,9 +27,12 @@ import com.example.listitaapp.ui.components.getGridColumns
 import com.example.listitaapp.ui.components.isLandscape
 import com.example.listitaapp.ui.components.AppTopBar
 import com.example.listitaapp.ui.components.StandardCard
+import com.example.listitaapp.ui.common.asString
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,8 +56,11 @@ fun PurchaseHistoryScreen(
 
     // Success snackbar
     uiState.successMessage?.let { message ->
+        val localizedMessage = message.asString()
         LaunchedEffect(message) {
-            appSnackbar.show(message, appSnackTypeFromMessage(message))
+            if (localizedMessage.isNotBlank()) {
+                appSnackbar.show(localizedMessage, appSnackTypeFromMessage(localizedMessage))
+            }
             onClearSuccess()
         }
     }
@@ -69,7 +75,7 @@ fun PurchaseHistoryScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 }
@@ -183,7 +189,7 @@ fun PurchaseHistoryCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = purchase.list?.name ?: "Unknown List",
+                        text = purchase.list?.name ?: stringResource(R.string.unknown_list),
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.weight(1f),
                         maxLines = 1,
@@ -294,7 +300,8 @@ fun PurchaseHistoryCard(
 private fun formatPurchaseDate(dateString: String): String {
     return try {
         val instant = Instant.parse(dateString.replace(" ", "T") + "Z")
-        val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy")
+        val formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+            .withLocale(Locale.getDefault())
             .withZone(ZoneId.systemDefault())
         formatter.format(instant)
     } catch (e: Exception) {

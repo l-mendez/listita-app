@@ -2,9 +2,11 @@ package com.example.listitaapp.ui.products
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.listitaapp.R
 import com.example.listitaapp.data.model.Product
 import com.example.listitaapp.data.repository.AuthRepository
 import com.example.listitaapp.data.repository.ProductRepository
+import com.example.listitaapp.ui.common.UiMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +19,7 @@ data class ProductUiState(
     val products: List<Product> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
-    val successMessage: String? = null,
+    val successMessage: UiMessage? = null,
     val searchQuery: String = "",
     val recentlyCreatedProduct: Product? = null
 )
@@ -81,7 +83,7 @@ class ProductViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            successMessage = "Product created successfully",
+                            successMessage = UiMessage(resId = R.string.product_created),
                             recentlyCreatedProduct = product
                         )
                     }
@@ -111,7 +113,7 @@ class ProductViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            successMessage = "Product updated"
+                            successMessage = UiMessage(resId = R.string.product_updated)
                         )
                     }
                     loadProducts()
@@ -136,7 +138,7 @@ class ProductViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            successMessage = "Product deleted"
+                            successMessage = UiMessage(resId = R.string.product_deleted)
                         )
                     }
                     loadProducts()

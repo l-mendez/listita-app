@@ -2,11 +2,13 @@ package com.example.listitaapp.ui.lists
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.listitaapp.R
 import com.example.listitaapp.data.model.ListItem
 import com.example.listitaapp.data.model.ShoppingList
 import com.example.listitaapp.data.model.User
 import com.example.listitaapp.data.repository.AuthRepository
 import com.example.listitaapp.data.repository.ShoppingListRepository
+import com.example.listitaapp.ui.common.UiMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,7 +26,7 @@ data class ShoppingListUiState(
     val searchQuery: String = "",
     val isLoading: Boolean = false,
     val error: String? = null,
-    val successMessage: String? = null,
+    val successMessage: UiMessage? = null,
     val shouldNavigateBack: Boolean = false
 )
 
@@ -174,7 +176,7 @@ class ShoppingListViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            successMessage = "List created successfully"
+                            successMessage = UiMessage(resId = R.string.list_created)
                         )
                     }
                     loadShoppingLists()
@@ -200,7 +202,7 @@ class ShoppingListViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            successMessage = "List deleted"
+                            successMessage = UiMessage(resId = R.string.list_deleted)
                         )
                     }
                     loadShoppingLists()
@@ -221,7 +223,7 @@ class ShoppingListViewModel @Inject constructor(
         viewModelScope.launch {
             listRepository.updateShoppingListName(id, name).fold(
                 onSuccess = {
-                    _uiState.update { it.copy(successMessage = "List updated") }
+                    _uiState.update { it.copy(successMessage = UiMessage(resId = R.string.list_updated)) }
                     loadShoppingLists()
                     // Reload current list details if viewing detail page
                     if (_uiState.value.currentList?.id == id) {
@@ -239,7 +241,7 @@ class ShoppingListViewModel @Inject constructor(
         viewModelScope.launch {
             listRepository.updateShoppingListDescription(id, description).fold(
                 onSuccess = {
-                    _uiState.update { it.copy(successMessage = "List updated") }
+                    _uiState.update { it.copy(successMessage = UiMessage(resId = R.string.list_updated)) }
                     loadShoppingLists()
                     // Reload current list details if viewing detail page
                     if (_uiState.value.currentList?.id == id) {
@@ -257,7 +259,7 @@ class ShoppingListViewModel @Inject constructor(
         viewModelScope.launch {
             listRepository.toggleShoppingListRecurring(id, currentRecurring).fold(
                 onSuccess = {
-                    _uiState.update { it.copy(successMessage = "List updated") }
+                    _uiState.update { it.copy(successMessage = UiMessage(resId = R.string.list_updated)) }
                     loadShoppingLists()
                 },
                 onFailure = { exception ->
@@ -276,7 +278,7 @@ class ShoppingListViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            successMessage = "Item added to list"
+                            successMessage = UiMessage(resId = R.string.item_added)
                         )
                     }
                     loadListDetails(listId)
@@ -305,7 +307,7 @@ class ShoppingListViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            successMessage = "Item updated"
+                            successMessage = UiMessage(resId = R.string.item_updated)
                         )
                     }
                     loadListDetails(listId)
@@ -361,7 +363,7 @@ class ShoppingListViewModel @Inject constructor(
                             listRepository.purchaseList(listId).fold(
                                 onSuccess = {
                                     _uiState.update {
-                                        it.copy(successMessage = "List completed and moved to history!")
+                                        it.copy(successMessage = UiMessage(resId = R.string.list_completed_history))
                                     }
                                     loadShoppingLists()
                                 },
@@ -390,7 +392,7 @@ class ShoppingListViewModel @Inject constructor(
         viewModelScope.launch {
             listRepository.deleteListItem(listId, itemId).fold(
                 onSuccess = {
-                    _uiState.update { it.copy(successMessage = "Item removed") }
+                    _uiState.update { it.copy(successMessage = UiMessage(resId = R.string.item_removed)) }
                     loadListDetails(listId)
                 },
                 onFailure = { exception ->
@@ -433,7 +435,7 @@ class ShoppingListViewModel @Inject constructor(
             listRepository.shareListWithEmail(listId, email).fold(
                 onSuccess = {
                     _uiState.update {
-                        it.copy(isLoading = false, successMessage = "List shared")
+                        it.copy(isLoading = false, successMessage = UiMessage(resId = R.string.list_shared))
                     }
                     loadSharedUsers(listId)
                     loadShoppingLists()
@@ -452,7 +454,7 @@ class ShoppingListViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, error = null) }
             listRepository.revokeShare(listId, userId).fold(
                 onSuccess = {
-                    _uiState.update { it.copy(isLoading = false, successMessage = "Access revoked") }
+                    _uiState.update { it.copy(isLoading = false, successMessage = UiMessage(resId = R.string.access_revoked)) }
                     loadSharedUsers(listId)
                     loadShoppingLists()
                 },
@@ -470,7 +472,7 @@ class ShoppingListViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, error = null) }
             listRepository.makeListPrivate(listId).fold(
                 onSuccess = {
-                    _uiState.update { it.copy(isLoading = false, successMessage = "List set to private", sharedUsers = emptyList()) }
+                    _uiState.update { it.copy(isLoading = false, successMessage = UiMessage(resId = R.string.list_set_private), sharedUsers = emptyList()) }
                     loadShoppingLists()
                 },
                 onFailure = { exception ->

@@ -2,7 +2,9 @@ package com.example.listitaapp.ui.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.listitaapp.R
 import com.example.listitaapp.data.repository.AuthRepository
+import com.example.listitaapp.ui.common.UiMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +18,7 @@ data class AuthUiState(
     val isAuthenticated: Boolean = false,
     val isInitialAuthCheckComplete: Boolean = false,
     val error: String? = null,
-    val successMessage: String? = null,
+    val successMessage: UiMessage? = null,
     val email: String = "",
     val password: String = "",
     val registrationComplete: Boolean = false,
@@ -168,7 +170,7 @@ class AuthViewModel @Inject constructor(
                             it.copy(
                                 isLoading = false,
                                 verificationComplete = true,
-                                successMessage = "Account verified successfully! Please login.",
+                                successMessage = UiMessage(resId = R.string.account_verified_login),
                                 error = null
                             )
                         }
@@ -203,7 +205,10 @@ class AuthViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            successMessage = "New verification code: $code\n\nCheck the API console as well.",
+                            successMessage = UiMessage(
+                                resId = R.string.new_verification_code,
+                                formatArgs = listOf(code)
+                            ),
                             error = null
                         )
                     }

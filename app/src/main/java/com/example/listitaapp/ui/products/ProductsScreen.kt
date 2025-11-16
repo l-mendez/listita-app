@@ -51,6 +51,7 @@ import com.example.listitaapp.ui.components.CreateProductDialog
 import com.example.listitaapp.ui.components.rememberWindowSize
 import com.example.listitaapp.ui.components.WindowSizeClass
 import com.example.listitaapp.ui.components.isLandscape
+import com.example.listitaapp.ui.common.asString
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,8 +86,11 @@ fun ProductsScreen(
 
     // Success snackbar (standardized)
     uiState.successMessage?.let { message ->
+        val localizedMessage = message.asString()
         LaunchedEffect(message) {
-            appSnackbar.show(message, appSnackTypeFromMessage(message))
+            if (localizedMessage.isNotBlank()) {
+                appSnackbar.show(localizedMessage, appSnackTypeFromMessage(localizedMessage))
+            }
             onClearSuccess()
         }
     }

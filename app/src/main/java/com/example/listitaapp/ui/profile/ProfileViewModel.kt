@@ -2,9 +2,11 @@ package com.example.listitaapp.ui.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.listitaapp.R
 import com.example.listitaapp.data.model.User
 import com.example.listitaapp.data.repository.AuthRepository
 import com.example.listitaapp.data.repository.UserRepository
+import com.example.listitaapp.ui.common.UiMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +19,7 @@ data class ProfileUiState(
     val user: User? = null,
     val isLoading: Boolean = false,
     val error: String? = null,
-    val successMessage: String? = null
+    val successMessage: UiMessage? = null
 )
 
 @HiltViewModel
@@ -80,7 +82,7 @@ class ProfileViewModel @Inject constructor(
                         it.copy(
                             user = user,
                             isLoading = false,
-                            successMessage = "Profile updated successfully"
+                            successMessage = UiMessage(resId = R.string.profile_updated)
                         )
                     }
                 },
@@ -105,7 +107,7 @@ class ProfileViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            successMessage = "Password changed successfully"
+                            successMessage = UiMessage(resId = R.string.password_changed)
                         )
                     }
                 },
