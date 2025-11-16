@@ -69,6 +69,9 @@
     <string name="empty_products">No products available</string>
     <string name="create_category">Create Category</string>
     <string name="category_name">Category Name</string>
+    <string name="no_products_available_create">No products available. Please create products first.</string>
+    <string name="empty_list_title">No items in this list</string>
+    <string name="empty_list_subtitle">Tap + to add products</string>
 
     <!-- Profile -->
     <string name="my_profile">My Profile</string>

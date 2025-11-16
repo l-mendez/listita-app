@@ -245,12 +245,12 @@ fun ShoppingListDetailScreen(
                             tint = MaterialTheme.colorScheme.outline
                         )
                         Text(
-                            text = "No items in this list",
+                            text = stringResource(R.string.empty_list_title),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.outline
                         )
                         Text(
-                            text = "Tap + to add products",
+                            text = stringResource(R.string.empty_list_subtitle),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.outline
                         )
@@ -542,7 +542,7 @@ fun AddItemToListDialog(
                 )
             ) {
                 Text(
-                    text = "No products available. Please create products first in the Products screen.",
+                    text = stringResource(R.string.no_products_available_create),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onErrorContainer,
                     modifier = Modifier.padding(16.dp)
