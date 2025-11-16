@@ -1,6 +1,7 @@
 package com.example.listitaapp.di
 
 import android.content.Context
+import com.example.listitaapp.BuildConfig
 import com.example.listitaapp.data.api.ApiService
 import com.example.listitaapp.data.api.AuthInterceptor
 import com.example.listitaapp.data.api.ClearOnUnauthorizedInterceptor
@@ -29,8 +30,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
-
-    private const val BASE_URL = "http://10.0.2.2:8080/"
     private const val CONNECT_TIMEOUT = 30L
     private const val READ_TIMEOUT = 30L
     private const val WRITE_TIMEOUT = 30L
@@ -88,7 +87,7 @@ object AppModule {
         json: Json
     ): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(BuildConfig.API_BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()

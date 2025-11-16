@@ -7,6 +7,8 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+val apiBaseUrl: String = project.findProperty("API_BASE_URL") as? String ?: "http://10.0.2.2:8080/"
+
 android {
     namespace = "com.example.listitaapp"
     compileSdk = 36
@@ -19,6 +21,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
     }
 
     buildTypes {

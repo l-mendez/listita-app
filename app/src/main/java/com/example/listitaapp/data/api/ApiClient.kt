@@ -1,6 +1,7 @@
 package com.example.listitaapp.data.api
 
 import android.content.Context
+import com.example.listitaapp.BuildConfig
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -10,10 +11,6 @@ import okhttp3.MediaType.Companion.toMediaType
 import java.util.concurrent.TimeUnit
 
 object ApiClient {
-
-    // Base URL for the API
-    // Use 10.0.2.2 for Android Emulator, localhost for physical device on same network
-    private const val BASE_URL = "http://10.0.2.2:8080/"
 
     // Timeout durations
     private const val CONNECT_TIMEOUT = 30L
@@ -75,7 +72,7 @@ object ApiClient {
      */
     private fun buildRetrofit(context: Context): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(BuildConfig.API_BASE_URL)
             .client(buildOkHttpClient(context))
             .addConverterFactory(buildJson().asConverterFactory("application/json".toMediaType()))
             .build()
