@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -41,10 +42,23 @@ fun VerifyAccountScreen(
     var codeError by remember { mutableStateOf<String?>(null) }
 
     val focusManager = LocalFocusManager.current
+    val configuration = LocalConfiguration.current
+    val screenWidthDp = configuration.screenWidthDp
+    val screenHeightDp = configuration.screenHeightDp
     val windowSize = rememberWindowSize()
-    val isTabletLandscape = isLandscape() && windowSize.width != WindowSizeClass.Compact
-    val horizontalPadding = if (isTabletLandscape) 48.dp else 24.dp
-    val verticalSpacing = if (isTabletLandscape) 12.dp else 16.dp
+
+    val isMobileHorizontal = isLandscape() && screenHeightDp < 500
+    val isTabletLandscape = isLandscape() && screenHeightDp >= 500
+    val horizontalPadding = when {
+        isMobileHorizontal -> 16.dp
+        isTabletLandscape -> 48.dp
+        else -> 24.dp
+    }
+    val verticalSpacing = when {
+        isMobileHorizontal -> 12.dp
+        isTabletLandscape -> 12.dp
+        else -> 16.dp
+    }
     val formWidthModifier = if (isTabletLandscape) Modifier.widthIn(max = 420.dp) else Modifier
     val headerSpacerHeight = if (isTabletLandscape) 8.dp else 16.dp
     val fieldSpacerHeight = if (isTabletLandscape) 6.dp else 8.dp
@@ -79,121 +93,252 @@ fun VerifyAccountScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            Column(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .padding(horizontal = horizontalPadding)
-                    .then(formWidthModifier)
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(verticalSpacing, Alignment.CenterVertically)
-            ) {
-            // Icon
-            Icon(
-                imageVector = Icons.Default.Email,
-                contentDescription = null,
-                modifier = Modifier.size(72.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-
-            Text(
-                text = stringResource(R.string.verify_account),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            // Info text
-            Text(
-                text = stringResource(R.string.verification_info),
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center
-            )
-
-            Text(
-                text = email,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.primary,
-                textAlign = TextAlign.Center
-            )
-
-            Text(
-                text = stringResource(R.string.check_spam),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-            Spacer(modifier = Modifier.height(headerSpacerHeight))
-
-            // Verification code field
-            AppTextField(
-                value = code,
-                onValueChange = {
-                    code = it.trim()
-                    codeError = null
-                },
-                label = stringResource(R.string.verification_code),
-                placeholder = stringResource(R.string.code_placeholder),
-                leadingIcon = Icons.Default.Lock,
-                isError = codeError != null,
-                errorMessage = codeError,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Done
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = {
-                        focusManager.clearFocus()
-                        if (validateCode(
-                                code.trim(),
-                                codeRequiredMessage,
-                                codeInvalidMessage,
-                                { codeError = it }
-                            )
-                        ) {
-                            onVerify(code.trim())
-                        }
-                    }
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(fieldSpacerHeight))
-
-            // Verify button
-            AppButton(
-                onClick = {
-                    if (validateCode(
-                            code.trim(),
-                            codeRequiredMessage,
-                            codeInvalidMessage,
-                            { codeError = it }
-                        )
+            if (isMobileHorizontal) {
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(horizontal = horizontalPadding)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        onVerify(code.trim())
+                        Icon(
+                            imageVector = Icons.Default.Email,
+                            contentDescription = null,
+                            modifier = Modifier.size(72.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = stringResource(R.string.verify_account),
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = stringResource(R.string.verification_info),
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = email,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = stringResource(R.string.check_spam),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
                     }
-                },
-                text = stringResource(R.string.verify_account_title),
-                enabled = !uiState.isLoading,
-                loading = uiState.isLoading,
-                fullWidth = true,
-                modifier = Modifier.fillMaxWidth()
-            )
 
-            // Resend code button
-            AppTextButton(
-                onClick = onResendCode,
-                text = stringResource(R.string.resend_code),
-                enabled = !uiState.isLoading
-            )
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 24.dp, end = 32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(verticalSpacing, Alignment.CenterVertically)
+                    ) {
+                        AppTextField(
+                            value = code,
+                            onValueChange = {
+                                code = it.trim()
+                                codeError = null
+                            },
+                            label = stringResource(R.string.verification_code),
+                            placeholder = stringResource(R.string.code_placeholder),
+                            leadingIcon = Icons.Default.Lock,
+                            isError = codeError != null,
+                            errorMessage = codeError,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Done
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    focusManager.clearFocus()
+                                    if (validateCode(
+                                            code.trim(),
+                                            codeRequiredMessage,
+                                            codeInvalidMessage,
+                                            { codeError = it }
+                                        )
+                                    ) {
+                                        onVerify(code.trim())
+                                    }
+                                }
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
 
-            // Back to login
-            AppTextButton(
-                onClick = onNavigateToLogin,
-                text = stringResource(R.string.back_to_login),
-                enabled = !uiState.isLoading
-            )
+                        AppButton(
+                            onClick = {
+                                if (validateCode(
+                                        code.trim(),
+                                        codeRequiredMessage,
+                                        codeInvalidMessage,
+                                        { codeError = it }
+                                    )
+                                ) {
+                                    onVerify(code.trim())
+                                }
+                            },
+                            text = stringResource(R.string.verify_account_title),
+                            enabled = !uiState.isLoading,
+                            loading = uiState.isLoading,
+                            fullWidth = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        AppTextButton(
+                            onClick = onResendCode,
+                            text = stringResource(R.string.resend_code),
+                            enabled = !uiState.isLoading
+                        )
+
+                        AppTextButton(
+                            onClick = onNavigateToLogin,
+                            text = stringResource(R.string.back_to_login),
+                            enabled = !uiState.isLoading
+                        )
+                    }
+                }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(horizontal = horizontalPadding)
+                        .then(formWidthModifier)
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(verticalSpacing, Alignment.CenterVertically)
+                ) {
+                    // Icon
+                    Icon(
+                        imageVector = Icons.Default.Email,
+                        contentDescription = null,
+                        modifier = Modifier.size(72.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+
+                    Text(
+                        text = stringResource(R.string.verify_account),
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    // Info text
+                    Text(
+                        text = stringResource(R.string.verification_info),
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Text(
+                        text = email,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Text(
+                        text = stringResource(R.string.check_spam),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(headerSpacerHeight))
+
+                    // Verification code field
+                    AppTextField(
+                        value = code,
+                        onValueChange = {
+                            code = it.trim()
+                            codeError = null
+                        },
+                        label = stringResource(R.string.verification_code),
+                        placeholder = stringResource(R.string.code_placeholder),
+                        leadingIcon = Icons.Default.Lock,
+                        isError = codeError != null,
+                        errorMessage = codeError,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                focusManager.clearFocus()
+                                if (validateCode(
+                                        code.trim(),
+                                        codeRequiredMessage,
+                                        codeInvalidMessage,
+                                        { codeError = it }
+                                    )
+                                ) {
+                                    onVerify(code.trim())
+                                }
+                            }
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(fieldSpacerHeight))
+
+                    // Verify button
+                    AppButton(
+                        onClick = {
+                            if (validateCode(
+                                    code.trim(),
+                                    codeRequiredMessage,
+                                    codeInvalidMessage,
+                                    { codeError = it }
+                                )
+                            ) {
+                                onVerify(code.trim())
+                            }
+                        },
+                        text = stringResource(R.string.verify_account_title),
+                        enabled = !uiState.isLoading,
+                        loading = uiState.isLoading,
+                        fullWidth = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    // Resend code button
+                    AppTextButton(
+                        onClick = onResendCode,
+                        text = stringResource(R.string.resend_code),
+                        enabled = !uiState.isLoading
+                    )
+
+                    // Back to login
+                    AppTextButton(
+                        onClick = onNavigateToLogin,
+                        text = stringResource(R.string.back_to_login),
+                        enabled = !uiState.isLoading
+                    )
+                }
             }
         }
     }

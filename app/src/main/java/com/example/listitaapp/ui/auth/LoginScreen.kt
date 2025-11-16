@@ -49,9 +49,7 @@ fun LoginScreen(
     val screenHeightDp = configuration.screenHeightDp
     val windowSize = rememberWindowSize()
 
-    // Mobile horizontal: landscape and height < 500dp (typical phone in landscape)
     val isMobileHorizontal = isLandscape() && screenHeightDp < 500
-    // Tablet landscape: landscape and height >= 500dp
     val isTabletLandscape = isLandscape() && screenHeightDp >= 500
     val formWidthModifier = if (isTabletLandscape) Modifier.widthIn(max = 420.dp) else Modifier
     val horizontalPadding = when {
@@ -88,7 +86,6 @@ fun LoginScreen(
                 .padding(padding)
         ) {
             if (isMobileHorizontal) {
-                // Two-column layout for mobile horizontal
                 Row(
                     modifier = Modifier
                         .align(Alignment.Center)
@@ -97,7 +94,6 @@ fun LoginScreen(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // First column: Logo and app name
                     Column(
                         modifier = Modifier
                             .weight(1f)
@@ -121,7 +117,6 @@ fun LoginScreen(
                         )
                     }
 
-                    // Second column: Form fields
                     Column(
                         modifier = Modifier
                             .weight(1f)
@@ -129,7 +124,6 @@ fun LoginScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(verticalSpacing, Alignment.CenterVertically)
                     ) {
-                        // Email field
                         AppTextField(
                             value = email,
                             onValueChange = {
@@ -151,7 +145,6 @@ fun LoginScreen(
                             modifier = Modifier.fillMaxWidth()
                         )
 
-                        // Password field
                         AppPasswordField(
                             value = password,
                             onValueChange = {
@@ -187,7 +180,6 @@ fun LoginScreen(
 
                         Spacer(modifier = Modifier.height(buttonSpacerHeight))
 
-                        // Login button
                         AppButton(
                             onClick = {
                                 if (validateInput(
@@ -210,7 +202,6 @@ fun LoginScreen(
                             modifier = Modifier.fillMaxWidth()
                         )
 
-                        // Register link
                         AppTextButton(
                             onClick = onNavigateToRegister,
                             text = "${stringResource(R.string.no_account)} ${stringResource(R.string.register)}",
@@ -219,7 +210,6 @@ fun LoginScreen(
                     }
                 }
             } else {
-                // Original single-column layout for tablet and mobile vertical
                 Column(
                     modifier = Modifier
                         .align(Alignment.Center)

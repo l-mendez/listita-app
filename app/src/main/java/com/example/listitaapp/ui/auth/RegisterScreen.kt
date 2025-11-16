@@ -60,9 +60,7 @@ fun RegisterScreen(
     val screenHeightDp = configuration.screenHeightDp
     val windowSize = rememberWindowSize()
 
-    // Mobile horizontal: landscape and height < 500dp (typical phone in landscape)
     val isMobileHorizontal = isLandscape() && screenHeightDp < 500
-    // Tablet landscape: landscape and height >= 500dp
     val isTabletLandscape = isLandscape() && screenHeightDp >= 500
     val formWidthModifier = if (isTabletLandscape) Modifier.widthIn(max = 420.dp) else Modifier
     val horizontalPadding = when {
@@ -120,12 +118,10 @@ fun RegisterScreen(
                 .padding(padding)
         ) {
             if (isMobileHorizontal) {
-                // Two-column layout for mobile horizontal with back button
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                 ) {
-                    // Back to login button at top left of entire screen
                     Row(
                         modifier = Modifier
                             .align(Alignment.TopStart)
@@ -149,7 +145,6 @@ fun RegisterScreen(
                         )
                     }
 
-                    // Two columns content
                     Row(
                         modifier = Modifier
                             .align(Alignment.Center)
@@ -158,7 +153,6 @@ fun RegisterScreen(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // First column: Logo and app name
                         Column(
                             modifier = Modifier
                                 .weight(1f)
@@ -182,11 +176,9 @@ fun RegisterScreen(
                             )
                         }
 
-                        // Second column: Scrollable form fields with scroll indicator
                         val scrollState = rememberScrollState()
                         var showScrollIndicator by remember { mutableStateOf(true) }
 
-                        // Hide scroll indicator after first scroll
                         LaunchedEffect(scrollState.value) {
                             if (scrollState.value > 0) {
                                 showScrollIndicator = false
@@ -365,7 +357,6 @@ fun RegisterScreen(
                             modifier = Modifier.fillMaxWidth()
                         )
 
-                                // Only show verify link if email is available
                                 if (verificationEmail.isNotBlank()) {
                                     AppTextButton(
                                         onClick = { onNavigateToVerify(verificationEmail) },
@@ -375,7 +366,6 @@ fun RegisterScreen(
                                 }
                             }
 
-                            // Animated scroll indicator arrow
                             androidx.compose.animation.AnimatedVisibility(
                                 visible = showScrollIndicator,
                                 modifier = Modifier.align(Alignment.BottomCenter),
@@ -395,7 +385,6 @@ fun RegisterScreen(
                     }
                 }
             } else {
-                // Original single-column layout for tablet and mobile vertical
                 Column(
                     modifier = Modifier
                         .align(Alignment.Center)
