@@ -313,7 +313,6 @@ fun ShoppingListDetailScreen(
             PopupHeaderButton(
                 text = stringResource(R.string.recurrente),
                 icon = Icons.Default.History,
-                selected = uiState.currentList?.recurring == true,
                 onClick = {
                     uiState.currentList?.let {
                         onToggleRecurring(it.id, it.recurring)

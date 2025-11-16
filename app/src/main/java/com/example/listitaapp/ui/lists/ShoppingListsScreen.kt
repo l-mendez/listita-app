@@ -413,7 +413,6 @@ fun ShoppingListsScreen(
             PopupHeaderButton(
                 text = stringResource(R.string.recurrente),
                 icon = Icons.Default.History,
-                selected = selectedList?.recurring == true,
                 onClick = {
                     selectedList?.let {
                         // Pass the CURRENT recurring value, repository will toggle it
