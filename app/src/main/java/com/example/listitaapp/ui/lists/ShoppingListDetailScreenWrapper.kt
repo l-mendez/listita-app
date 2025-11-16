@@ -66,6 +66,7 @@ fun ShoppingListDetailScreenWrapper(
         onUpdateItem = { itemId, quantity, unit ->
             viewModel.updateListItem(listId, itemId, quantity, unit)
         },
+        onLoadMoreItems = { viewModel.loadMoreListItems(listId) },
         onUpdateListName = { id, name ->
             viewModel.updateListName(id, name)
         },

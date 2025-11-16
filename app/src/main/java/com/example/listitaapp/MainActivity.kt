@@ -506,6 +506,7 @@ fun ShoppingListsScreenWrapper(
             navController.navigate(PurchaseHistoryRoute)
         },
         onRefresh = { viewModel.loadShoppingLists() },
+        onLoadMore = { viewModel.loadNextPage() },
         onSearchQueryChange = { query -> viewModel.updateSearchQuery(query) },
         onSearch = { viewModel.searchShoppingLists() },
         onClearError = { viewModel.clearError() },
@@ -547,6 +548,7 @@ fun ProductsScreenWrapper(
         },
         onSearchQueryChange = { viewModel.updateSearchQuery(it) },
         onSearch = { viewModel.searchProducts() },
+        onLoadMore = { viewModel.loadMoreProducts() },
         onClearError = { viewModel.clearError() },
         onClearSuccess = { viewModel.clearSuccess() }
     )
@@ -664,6 +666,7 @@ fun ShoppingListDetailScreenWrapper(
         onUpdateItem = { itemId, quantity, unit ->
             viewModel.updateListItem(listId, itemId, quantity, unit)
         },
+        onLoadMoreItems = { viewModel.loadMoreListItems(listId) },
         onUpdateListName = { id, name ->
             viewModel.updateListName(id, name)
         },

@@ -3,8 +3,10 @@ package com.example.listitaapp.data.repository
 import com.example.listitaapp.data.datasource.CategoryRemoteDataSource
 import com.example.listitaapp.data.datasource.ProductRemoteDataSource
 import com.example.listitaapp.data.mapper.toDomain
+import com.example.listitaapp.data.mapper.toDomain as mapPaginated
 import com.example.listitaapp.domain.model.Category
 import com.example.listitaapp.domain.model.Product
+import com.example.listitaapp.domain.model.PaginatedResult
 import javax.inject.Inject
 
 class ProductRepository @Inject constructor(
@@ -19,11 +21,10 @@ class ProductRepository @Inject constructor(
         perPage: Int = 10,
         sortBy: String = "name",
         order: String = "ASC"
-    ): Result<List<Product>> = runCatching {
-        productRemoteDataSource
+    ): Result<PaginatedResult<Product>> = runCatching {
+        val response = productRemoteDataSource
             .getProducts(name, categoryId, page, perPage, sortBy, order)
-            .data
-            .map { it.toDomain() }
+        response.mapPaginated { it.toDomain() }
     }
 
     suspend fun createProduct(name: String, categoryId: Long?): Result<Product> = runCatching {

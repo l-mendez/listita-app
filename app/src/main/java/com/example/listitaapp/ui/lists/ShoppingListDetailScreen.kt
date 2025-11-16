@@ -3,11 +3,13 @@ package com.example.listitaapp.ui.lists
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,6 +41,7 @@ import com.example.listitaapp.ui.components.PopupHeaderButton
 import com.example.listitaapp.ui.components.PopupHeaderDeleteButton
 import com.example.listitaapp.ui.components.AppTextButton
 import com.example.listitaapp.ui.common.asString
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,6 +54,7 @@ fun ShoppingListDetailScreen(
     onToggleItem: (Long) -> Unit,
     onDeleteItem: (Long) -> Unit,
     onUpdateItem: (Long, Double, String) -> Unit,
+    onLoadMoreItems: () -> Unit,
     onUpdateListName: (Long, String) -> Unit,
     onUpdateListDescription: (Long, String) -> Unit,
     onDeleteList: (Long) -> Unit,
@@ -73,6 +77,20 @@ fun ShoppingListDetailScreen(
     var selectedItem by remember { mutableStateOf<ListItem?>(null) }
     var itemAnchorBounds by remember { mutableStateOf<Rect?>(null) }
     var editingItem by remember { mutableStateOf<ListItem?>(null) }
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(listState, uiState.itemsHasNextPage, uiState.isItemsLoadingMore, uiState.isLoading) {
+        snapshotFlow {
+            val layoutInfo = listState.layoutInfo
+            val totalItems = layoutInfo.totalItemsCount
+            val lastVisibleIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
+            totalItems > 0 && lastVisibleIndex >= totalItems - 2
+        }.distinctUntilChanged().collect { shouldLoadMore ->
+            if (shouldLoadMore && uiState.itemsHasNextPage && !uiState.isItemsLoadingMore && !uiState.isLoading) {
+                onLoadMoreItems()
+            }
+        }
+    }
 
     // Error dialog (standardized)
     uiState.error?.let {
@@ -283,6 +301,7 @@ fun ShoppingListDetailScreen(
 
                 // Items list
                 LazyColumn(
+                    state = listState,
                     modifier = Modifier.weight(1f),
                     contentPadding = PaddingValues(
                         start = 16.dp,
@@ -302,6 +321,19 @@ fun ShoppingListDetailScreen(
                                 showItemOptions = true
                             }
                         )
+                    }
+
+                    if (uiState.isItemsLoadingMore) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator()
+                            }
+                        }
                     }
                 }
             }

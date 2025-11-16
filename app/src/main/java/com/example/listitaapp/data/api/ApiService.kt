@@ -147,7 +147,17 @@ interface ApiService {
     // ========== List Item Endpoints ==========
 
     @GET("api/shopping-lists/{id}/items")
-    suspend fun getListItems(@Path("id") listId: Long): Response<PaginatedResponse<ListItem>>
+    suspend fun getListItems(
+        @Path("id") listId: Long,
+        @Query("purchased") purchased: Boolean? = null,
+        @Query("page") page: Int = 1,
+        @Query("per_page") perPage: Int = 10,
+        @Query("sort_by") sortBy: String = "createdAt",
+        @Query("order") order: String = "DESC",
+        @Query("pantry_id") pantryId: Long? = null,
+        @Query("category_id") categoryId: Long? = null,
+        @Query("search") search: String? = null
+    ): Response<PaginatedResponse<ListItem>>
 
     @POST("api/shopping-lists/{id}/items")
     suspend fun addListItem(

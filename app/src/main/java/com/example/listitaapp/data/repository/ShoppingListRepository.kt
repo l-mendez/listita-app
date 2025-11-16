@@ -3,9 +3,11 @@ package com.example.listitaapp.data.repository
 import com.example.listitaapp.data.datasource.ListItemRemoteDataSource
 import com.example.listitaapp.data.datasource.ShoppingListRemoteDataSource
 import com.example.listitaapp.data.mapper.toDomain
+import com.example.listitaapp.data.mapper.toDomain as mapPaginated
 import com.example.listitaapp.domain.model.ListItem
 import com.example.listitaapp.domain.model.ShoppingList
 import com.example.listitaapp.domain.model.User
+import com.example.listitaapp.domain.model.PaginatedResult
 import javax.inject.Inject
 
 class ShoppingListRepository @Inject constructor(
@@ -21,9 +23,9 @@ class ShoppingListRepository @Inject constructor(
         perPage: Int = 10,
         sortBy: String = "name",
         order: String = "ASC"
-    ): Result<List<ShoppingList>> = runCatching {
+    ): Result<PaginatedResult<ShoppingList>> = runCatching {
         val response = shoppingListRemoteDataSource.getShoppingLists(name, owner, recurring, page, perPage, sortBy, order)
-        response.data.map { it.toDomain() }
+        response.mapPaginated { it.toDomain() }
     }
 
     suspend fun createShoppingList(name: String, description: String?, recurring: Boolean): Result<ShoppingList> =
@@ -68,8 +70,29 @@ class ShoppingListRepository @Inject constructor(
         sharedUsers.forEach { shoppingListRemoteDataSource.revokeShare(listId, it.id) }
     }
 
-    suspend fun getListItems(listId: Long): Result<List<ListItem>> = runCatching {
-        listItemRemoteDataSource.getListItems(listId).data.map { it.toDomain() }
+    suspend fun getListItems(
+        listId: Long,
+        purchased: Boolean? = null,
+        page: Int = 1,
+        perPage: Int = 10,
+        sortBy: String = "createdAt",
+        order: String = "DESC",
+        pantryId: Long? = null,
+        categoryId: Long? = null,
+        search: String? = null
+    ): Result<PaginatedResult<ListItem>> = runCatching {
+        val response = listItemRemoteDataSource.getListItems(
+            listId = listId,
+            purchased = purchased,
+            page = page,
+            perPage = perPage,
+            sortBy = sortBy,
+            order = order,
+            pantryId = pantryId,
+            categoryId = categoryId,
+            search = search
+        )
+        response.mapPaginated { it.toDomain() }
     }
 
     suspend fun getListItemsCount(listId: Long): Result<Int> = runCatching {

@@ -15,8 +15,28 @@ class ListItemRemoteDataSource @Inject constructor(
     json: Json
 ) : BaseRemoteDataSource(json) {
 
-    suspend fun getListItems(listId: Long): PaginatedResponse<ListItem> {
-        val response = apiService.getListItems(listId)
+    suspend fun getListItems(
+        listId: Long,
+        purchased: Boolean? = null,
+        page: Int = 1,
+        perPage: Int = 10,
+        sortBy: String = "createdAt",
+        order: String = "DESC",
+        pantryId: Long? = null,
+        categoryId: Long? = null,
+        search: String? = null
+    ): PaginatedResponse<ListItem> {
+        val response = apiService.getListItems(
+            listId = listId,
+            purchased = purchased,
+            page = page,
+            perPage = perPage,
+            sortBy = sortBy,
+            order = order,
+            pantryId = pantryId,
+            categoryId = categoryId,
+            search = search
+        )
         return handleResponse(response, "Failed to get list items")
     }
 
@@ -64,6 +84,6 @@ class ListItemRemoteDataSource @Inject constructor(
     }
 
     suspend fun getListItemsCount(listId: Long): Int {
-        return getListItems(listId).pagination.total
+        return getListItems(listId, page = 1, perPage = 1).pagination.total
     }
 }

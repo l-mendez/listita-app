@@ -25,6 +25,12 @@ data class ShoppingListUiState(
     val sharedUsers: List<User> = emptyList(),
     val searchQuery: String = "",
     val isLoading: Boolean = false,
+    val isLoadingMore: Boolean = false,
+    val currentPage: Int = 1,
+    val hasNextPage: Boolean = false,
+    val itemsCurrentPage: Int = 1,
+    val itemsHasNextPage: Boolean = false,
+    val isItemsLoadingMore: Boolean = false,
     val error: String? = null,
     val successMessage: UiMessage? = null,
     val shouldNavigateBack: Boolean = false
@@ -35,6 +41,10 @@ class ShoppingListViewModel @Inject constructor(
     private val listRepository: ShoppingListRepository,
     private val authRepository: AuthRepository
 ) : ViewModel() {
+
+    private val pageSize = 10
+    private val listItemsPageSize = 10
+    private var appliedSearchQuery: String? = null
 
     private val _uiState = MutableStateFlow(ShoppingListUiState())
     val uiState: StateFlow<ShoppingListUiState> = _uiState.asStateFlow()
@@ -56,6 +66,7 @@ class ShoppingListViewModel @Inject constructor(
     }
 
     private fun clearAllData() {
+        appliedSearchQuery = null
         _uiState.update {
             ShoppingListUiState(
                 lists = emptyList(),
@@ -64,6 +75,7 @@ class ShoppingListViewModel @Inject constructor(
                 itemsCountByListId = emptyMap(),
                 sharedUsers = emptyList(),
                 isLoading = false,
+                isItemsLoadingMore = false,
                 error = null,
                 successMessage = null
             )
@@ -72,30 +84,36 @@ class ShoppingListViewModel @Inject constructor(
 
     fun loadShoppingLists(query: String? = null) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            val providedQuery = query?.trim()
+            val sanitizedQuery = providedQuery?.takeIf { it.isNotEmpty() }
+            if (query != null) {
+                appliedSearchQuery = sanitizedQuery
+            }
+            val effectiveQuery = sanitizedQuery ?: appliedSearchQuery
 
-            val trimmedQuery = query?.takeIf { it.isNotBlank() }
+            _uiState.update {
+                it.copy(
+                    isLoading = true,
+                    error = null,
+                    itemsCountByListId = emptyMap(),
+                    currentPage = 1,
+                    hasNextPage = false,
+                    isLoadingMore = false
+                )
+            }
 
-            listRepository.getShoppingLists(name = trimmedQuery).fold(
-                onSuccess = { lists ->
+            listRepository.getShoppingLists(name = effectiveQuery, page = 1, perPage = pageSize).fold(
+                onSuccess = { result ->
+                    val lists = result.data
                     _uiState.update {
                         it.copy(
                             lists = lists,
-                            isLoading = false
+                            isLoading = false,
+                            currentPage = result.pagination.page,
+                            hasNextPage = result.pagination.hasNext
                         )
                     }
-                    viewModelScope.launch {
-                        val countsMutable = mutableMapOf<Long, Int>()
-                        lists.forEach { list ->
-                            listRepository.getListItemsCount(list.id).fold(
-                                onSuccess = { count -> countsMutable[list.id] = count },
-                                onFailure = { _ -> }
-                            )
-                            _uiState.update { state ->
-                                state.copy(itemsCountByListId = state.itemsCountByListId + countsMutable)
-                            }
-                        }
-                    }
+                    fetchItemsCountForLists(lists, resetExisting = true)
                 },
                 onFailure = { exception ->
                     _uiState.update {
@@ -109,25 +127,117 @@ class ShoppingListViewModel @Inject constructor(
         }
     }
 
+    fun loadNextPage() {
+        val state = _uiState.value
+        if (state.isLoadingMore || state.isLoading || !state.hasNextPage) return
+
+        viewModelScope.launch {
+            val nextPage = state.currentPage + 1
+            val query = appliedSearchQuery
+            _uiState.update { it.copy(isLoadingMore = true, error = null) }
+
+            listRepository.getShoppingLists(name = query, page = nextPage, perPage = pageSize).fold(
+                onSuccess = { result ->
+                    val newLists = result.data
+                    _uiState.update { current ->
+                        current.copy(
+                            lists = current.lists + newLists,
+                            isLoadingMore = false,
+                            currentPage = result.pagination.page,
+                            hasNextPage = result.pagination.hasNext
+                        )
+                    }
+                    fetchItemsCountForLists(newLists, resetExisting = false)
+                },
+                onFailure = { exception ->
+                    _uiState.update {
+                        it.copy(
+                            isLoadingMore = false,
+                            error = exception.message ?: "Failed to load lists"
+                        )
+                    }
+                }
+            )
+        }
+    }
+
+    fun loadMoreListItems(listId: Long) {
+        val state = _uiState.value
+        if (state.isItemsLoadingMore || state.isLoading || !state.itemsHasNextPage) return
+
+        viewModelScope.launch {
+            val nextPage = state.itemsCurrentPage + 1
+            _uiState.update { it.copy(isItemsLoadingMore = true, error = null) }
+
+            listRepository.getListItems(listId, page = nextPage, perPage = listItemsPageSize).fold(
+                onSuccess = { result ->
+                    val newItems = result.data.filter { it.product != null }
+                    _uiState.update { current ->
+                        current.copy(
+                            currentListItems = current.currentListItems + newItems,
+                            isItemsLoadingMore = false,
+                            itemsCurrentPage = result.pagination.page,
+                            itemsHasNextPage = result.pagination.hasNext,
+                            itemsCountByListId = current.itemsCountByListId + (listId to result.pagination.total)
+                        )
+                    }
+                },
+                onFailure = { exception ->
+                    _uiState.update {
+                        it.copy(
+                            isItemsLoadingMore = false,
+                            error = exception.message ?: "Failed to load items"
+                        )
+                    }
+                }
+            )
+        }
+    }
+
+    private fun fetchItemsCountForLists(lists: List<ShoppingList>, resetExisting: Boolean) {
+        viewModelScope.launch {
+            var counts = if (resetExisting) emptyMap<Long, Int>() else _uiState.value.itemsCountByListId
+            lists.forEach { list ->
+                listRepository.getListItemsCount(list.id).fold(
+                    onSuccess = { count ->
+                        counts = counts + (list.id to count)
+                        _uiState.update { it.copy(itemsCountByListId = counts) }
+                    },
+                    onFailure = { _ -> }
+                )
+            }
+        }
+    }
+
     fun loadListDetails(listId: Long) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            _uiState.update {
+                it.copy(
+                    isLoading = true,
+                    error = null,
+                    isItemsLoadingMore = false,
+                    itemsCurrentPage = 1,
+                    itemsHasNextPage = false
+                )
+            }
 
             val listResult = listRepository.getShoppingListById(listId)
-            val itemsResult = listRepository.getListItems(listId)
+            val itemsResult = listRepository.getListItems(listId, page = 1, perPage = listItemsPageSize)
 
             listResult.fold(
                 onSuccess = { list ->
                     itemsResult.fold(
-                        onSuccess = { items ->
-                            val validItems = items.filter { it.product != null }
+                        onSuccess = { paginated ->
+                            val validItems = paginated.data.filter { it.product != null }
 
                             _uiState.update {
                                 it.copy(
                                     currentList = list,
                                     currentListItems = validItems,
                                     isLoading = false,
-                                    itemsCountByListId = it.itemsCountByListId + (list.id to validItems.size)
+                                    itemsCurrentPage = paginated.pagination.page,
+                                    itemsHasNextPage = paginated.pagination.hasNext,
+                                    itemsCountByListId = it.itemsCountByListId + (list.id to paginated.pagination.total)
                                 )
                             }
                         },
@@ -385,7 +495,13 @@ class ShoppingListViewModel @Inject constructor(
 
     fun clearCurrentList() {
         _uiState.update {
-            it.copy(currentList = null, currentListItems = emptyList())
+            it.copy(
+                currentList = null,
+                currentListItems = emptyList(),
+                itemsCurrentPage = 1,
+                itemsHasNextPage = false,
+                isItemsLoadingMore = false
+            )
         }
     }
 

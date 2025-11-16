@@ -18,6 +18,9 @@ import javax.inject.Inject
 data class ProductUiState(
     val products: List<Product> = emptyList(),
     val isLoading: Boolean = false,
+    val isLoadingMore: Boolean = false,
+    val currentPage: Int = 1,
+    val hasNextPage: Boolean = false,
     val error: String? = null,
     val successMessage: UiMessage? = null,
     val searchQuery: String = "",
@@ -29,6 +32,9 @@ class ProductViewModel @Inject constructor(
     private val repository: ProductRepository,
     private val authRepository: AuthRepository
 ) : ViewModel() {
+
+    private val pageSize = 10
+    private var appliedQuery: String? = null
 
     private val _uiState = MutableStateFlow(ProductUiState())
     val uiState: StateFlow<ProductUiState> = _uiState.asStateFlow()
@@ -50,23 +56,76 @@ class ProductViewModel @Inject constructor(
     }
 
     private fun clearAllData() {
+        appliedQuery = null
         _uiState.update { ProductUiState() }
     }
 
     fun loadProducts(query: String? = null) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-            val trimmedQuery = query?.takeIf { it.isNotBlank() }
-            repository.getProducts(name = trimmedQuery).fold(
-                onSuccess = { products ->
+            val trimmedQuery = query?.trim()?.takeIf { it.isNotEmpty() }
+            if (query != null) {
+                appliedQuery = trimmedQuery
+            }
+            val effectiveQuery = trimmedQuery ?: appliedQuery
+
+            _uiState.update {
+                it.copy(
+                    isLoading = true,
+                    error = null,
+                    currentPage = 1,
+                    hasNextPage = false,
+                    isLoadingMore = false
+                )
+            }
+
+            repository.getProducts(name = effectiveQuery, page = 1, perPage = pageSize).fold(
+                onSuccess = { result ->
                     _uiState.update {
-                        it.copy(products = products, isLoading = false)
+                        it.copy(
+                            products = result.data,
+                            isLoading = false,
+                            currentPage = result.pagination.page,
+                            hasNextPage = result.pagination.hasNext
+                        )
                     }
                 },
                 onFailure = { exception ->
                     _uiState.update {
                         it.copy(
                             isLoading = false,
+                            error = exception.message ?: "Failed to load products"
+                        )
+                    }
+                }
+            )
+        }
+    }
+
+    fun loadMoreProducts() {
+        val state = _uiState.value
+        if (state.isLoadingMore || state.isLoading || !state.hasNextPage) return
+
+        viewModelScope.launch {
+            val nextPage = state.currentPage + 1
+            val query = appliedQuery
+
+            _uiState.update { it.copy(isLoadingMore = true, error = null) }
+
+            repository.getProducts(name = query, page = nextPage, perPage = pageSize).fold(
+                onSuccess = { result ->
+                    _uiState.update { current ->
+                        current.copy(
+                            products = current.products + result.data,
+                            isLoadingMore = false,
+                            currentPage = result.pagination.page,
+                            hasNextPage = result.pagination.hasNext
+                        )
+                    }
+                },
+                onFailure = { exception ->
+                    _uiState.update {
+                        it.copy(
+                            isLoadingMore = false,
                             error = exception.message ?: "Failed to load products"
                         )
                     }

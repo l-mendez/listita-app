@@ -3,6 +3,7 @@ package com.example.listitaapp.ui.lists
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
@@ -10,6 +11,8 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -66,6 +69,7 @@ fun ShoppingListsScreen(
     onMakePrivate: (Long) -> Unit,
     onNavigateToHistory: () -> Unit,
     onRefresh: () -> Unit,
+    onLoadMore: () -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
     onClearError: () -> Unit,
@@ -81,6 +85,7 @@ fun ShoppingListsScreen(
     var showEditDescriptionDialog by remember { mutableStateOf(false) }
     var showEditListDialog by remember { mutableStateOf(false) }
     var showShareDialog by remember { mutableStateOf(false) }
+    val listState = rememberLazyListState()
 
     // Error dialog (standardized)
     uiState.error?.let {
@@ -99,6 +104,19 @@ fun ShoppingListsScreen(
                 appSnackbar.show(localizedMessage, appSnackTypeFromMessage(localizedMessage))
             }
             onClearSuccess()
+        }
+    }
+
+    LaunchedEffect(listState, uiState.hasNextPage, uiState.isLoadingMore, uiState.isLoading) {
+        snapshotFlow {
+            val layoutInfo = listState.layoutInfo
+            val totalItems = layoutInfo.totalItemsCount
+            val lastVisibleIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
+            totalItems > 0 && lastVisibleIndex >= totalItems - 2
+        }.distinctUntilChanged().collect { shouldLoadMore ->
+            if (shouldLoadMore && uiState.hasNextPage && !uiState.isLoadingMore && !uiState.isLoading) {
+                onLoadMore()
+            }
         }
     }
 
@@ -291,6 +309,7 @@ fun ShoppingListsScreen(
 
                 // Always use single column layout
                 LazyColumn(
+                    state = listState,
                     contentPadding = PaddingValues(
                         start = horizontalPadding,
                         end = horizontalPadding,
@@ -331,6 +350,19 @@ fun ShoppingListsScreen(
                                     showOptions = true
                                 }
                             )
+                        }
+                    }
+
+                    if (uiState.isLoadingMore) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator()
+                            }
                         }
                     }
 

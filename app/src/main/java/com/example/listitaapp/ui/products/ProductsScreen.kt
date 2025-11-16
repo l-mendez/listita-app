@@ -10,11 +10,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +29,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
 import com.example.listitaapp.R
 import com.example.listitaapp.domain.model.Product
 import com.example.listitaapp.domain.model.Category
@@ -64,6 +67,7 @@ fun ProductsScreen(
     onCreateCategory: (String, (Category) -> Unit) -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
+    onLoadMore: () -> Unit,
     onClearError: () -> Unit,
     onClearSuccess: () -> Unit
 ) {
@@ -77,6 +81,20 @@ fun ProductsScreen(
     val windowSize = rememberWindowSize()
     val landscape = isLandscape()
     val showSearchButton = windowSize.width != WindowSizeClass.Compact || landscape
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(listState, uiState.hasNextPage, uiState.isLoadingMore, uiState.isLoading) {
+        snapshotFlow {
+            val layoutInfo = listState.layoutInfo
+            val totalItems = layoutInfo.totalItemsCount
+            val lastVisibleIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
+            totalItems > 0 && lastVisibleIndex >= totalItems - 2
+        }.distinctUntilChanged().collect { shouldLoadMore ->
+            if (shouldLoadMore && uiState.hasNextPage && !uiState.isLoadingMore && !uiState.isLoading) {
+                onLoadMore()
+            }
+        }
+    }
 
     // Error dialog (standardized)
     uiState.error?.let {
@@ -189,6 +207,8 @@ fun ProductsScreen(
                 // Products list (uses filtered products if search query exists)
                 ProductsList(
                     products = uiState.products,
+                    listState = listState,
+                    showLoadingMore = uiState.isLoadingMore,
                     onSettingsClick = { product, bounds ->
                         selectedProduct = product
                         anchorBounds = bounds
@@ -390,12 +410,15 @@ private fun EditProductDialog(
 @Composable
 private fun ProductsList(
     products: List<Product>,
+    listState: androidx.compose.foundation.lazy.LazyListState,
+    showLoadingMore: Boolean,
     onSettingsClick: (Product, Rect) -> Unit,
     horizontalPadding: androidx.compose.ui.unit.Dp,
     extraBottomPadding: androidx.compose.ui.unit.Dp,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
+        state = listState,
         modifier = modifier,
         contentPadding = PaddingValues(
             start = horizontalPadding,
@@ -410,6 +433,19 @@ private fun ProductsList(
                 product = product,
                 onSettingsClick = { bounds -> onSettingsClick(product, bounds) }
             )
+        }
+
+        if (showLoadingMore) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
         }
 
         item {
