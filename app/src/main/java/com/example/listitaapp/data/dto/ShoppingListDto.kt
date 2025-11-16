@@ -1,5 +1,6 @@
 package com.example.listitaapp.data.dto
 
+import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -9,6 +10,7 @@ data class CreateShoppingListRequest(
     val name: String,
     @SerialName("description")
     val description: String? = null,
+    @EncodeDefault(EncodeDefault.Mode.ALWAYS)
     @SerialName("recurring")
     val recurring: Boolean = false,
     @SerialName("metadata")
