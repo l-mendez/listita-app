@@ -379,6 +379,7 @@ fun ShoppingListsScreen(
             confirmLabel = stringResource(R.string.search),
             onConfirm = {
                 onSearchQueryChange(localQuery)
+                onSearch()
                 showSearchDialog = false
             },
             confirmEnabled = true
@@ -390,6 +391,7 @@ fun ShoppingListsScreen(
                 keyboardActions = KeyboardActions(
                     onSearch = {
                         onSearchQueryChange(localQuery)
+                        onSearch()
                         showSearchDialog = false
                     }
                 )
