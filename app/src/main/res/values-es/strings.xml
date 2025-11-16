@@ -49,6 +49,7 @@
   <string name="back">Atrás</string>
   <string name="unknown_list">Lista desconocida</string>
   <string name="purchase_history">Historial de compras</string>
+  <string name="history">Historial</string>
   <string name="empty_purchase_history">Aún no tienes historial de compras</string>
   <string name="empty_purchase_history_subtitle">Las listas completadas aparecerán aquí</string>
 
@@ -96,6 +97,10 @@
   <string name="list_deleted">Lista eliminada</string>
   <string name="list_updated">Lista actualizada</string>
   <string name="list_completed_history">Lista completada y movida al historial</string>
+  <string name="restore_list">Restaurar lista</string>
+  <string name="items_count">%1$d productos</string>
+  <string name="recurring_badge">Recurrente</string>
+  <string name="cannot_restore_recurring">Las listas recurrentes no se pueden restaurar</string>
   <string name="list_shared">Lista compartida</string>
   <string name="list_set_private">Lista marcada como privada</string>
   <string name="list_restored">Lista restaurada exitosamente</string>
