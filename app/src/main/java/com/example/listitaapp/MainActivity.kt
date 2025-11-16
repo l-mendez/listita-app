@@ -29,8 +29,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
+import androidx.navigation.toRoute
 import com.example.listitaapp.ui.auth.AuthViewModel
 import com.example.listitaapp.ui.auth.LoginScreen
 import com.example.listitaapp.ui.auth.RegisterScreen
@@ -38,7 +37,14 @@ import com.example.listitaapp.ui.auth.VerifyAccountScreen
 import com.example.listitaapp.ui.categories.CategoryViewModel
 import com.example.listitaapp.ui.components.AddProductDialog
 import com.example.listitaapp.ui.lists.*
-import com.example.listitaapp.ui.navigation.Screen
+import com.example.listitaapp.ui.navigation.ListDetailRoute
+import com.example.listitaapp.ui.navigation.LoginRoute
+import com.example.listitaapp.ui.navigation.ProductsRoute
+import com.example.listitaapp.ui.navigation.ProfileRoute
+import com.example.listitaapp.ui.navigation.PurchaseHistoryRoute
+import com.example.listitaapp.ui.navigation.RegisterRoute
+import com.example.listitaapp.ui.navigation.ShoppingListsRoute
+import com.example.listitaapp.ui.navigation.VerifyAccountRoute
 import com.example.listitaapp.ui.products.*
 import com.example.listitaapp.ui.profile.*
 import com.example.listitaapp.ui.theme.ListitaAppTheme
@@ -88,12 +94,15 @@ fun AppNavigation(
     LaunchedEffect(authUiState.isAuthenticated) {
         if (authUiState.isAuthenticated) {
             val currentRoute = navController.currentBackStackEntry?.destination?.route
-            if (currentRoute != Screen.ShoppingLists.route &&
-                currentRoute != Screen.Products.route &&
-                currentRoute != Screen.Profile.route &&
-                currentRoute != Screen.ListDetail.route
-            ) {
-                navController.navigate(Screen.ShoppingLists.route) {
+            val mainRoutes = setOf(
+                ShoppingListsRoute.route,
+                ProductsRoute.route,
+                ProfileRoute.route,
+                ListDetailRoute.route,
+                PurchaseHistoryRoute.route
+            )
+            if (currentRoute !in mainRoutes) {
+                navController.navigate(ShoppingListsRoute) {
                     popUpTo(0) { inclusive = true }
                 }
             }
@@ -113,15 +122,16 @@ fun AppNavigation(
                 CircularProgressIndicator()
             }
         } else {
+            val startDestination = if (authUiState.isAuthenticated) {
+                ShoppingListsRoute
+            } else {
+                LoginRoute
+            }
             NavHost(
                 navController = navController,
-                startDestination = if (authUiState.isAuthenticated) {
-                    Screen.ShoppingLists.route
-                } else {
-                    Screen.Login.route
-                }
+                startDestination = startDestination
             ) {
-            composable(Screen.Login.route) {
+            composable<LoginRoute> {
                 LaunchedEffect(Unit) {
                     authViewModel.resetRegistrationState()
                 }
@@ -132,7 +142,7 @@ fun AppNavigation(
                         authViewModel.login(email, password)
                     },
                     onNavigateToRegister = {
-                        navController.navigate(Screen.Register.route)
+                        navController.navigate(RegisterRoute)
                     },
                     onClearError = {
                         authViewModel.clearError()
@@ -140,7 +150,7 @@ fun AppNavigation(
                 )
             }
 
-            composable(Screen.Register.route) {
+            composable<RegisterRoute> {
                 LaunchedEffect(Unit) {
                     authViewModel.resetRegistrationState()
                 }
@@ -154,7 +164,7 @@ fun AppNavigation(
                         navController.popBackStack()
                     },
                     onNavigateToVerify = { email ->
-                        navController.navigate(Screen.VerifyAccount.createRoute(email))
+                        navController.navigate(VerifyAccountRoute(email))
                     },
                     onClearError = {
                         authViewModel.clearError()
@@ -162,13 +172,10 @@ fun AppNavigation(
                 )
             }
 
-            composable(
-                route = Screen.VerifyAccount.route,
-                arguments = listOf(navArgument("email") { type = NavType.StringType })
-            ) { backStackEntry ->
-                val email = backStackEntry.arguments?.getString("email") ?: ""
+            composable<VerifyAccountRoute> { backStackEntry ->
+                val args = backStackEntry.toRoute<VerifyAccountRoute>()
                 VerifyAccountScreen(
-                    email = email,
+                    email = args.email,
                     uiState = authUiState,
                     onVerify = { code ->
                         authViewModel.verifyAccount(code)
@@ -177,8 +184,8 @@ fun AppNavigation(
                         authViewModel.resendVerificationCode()
                     },
                     onNavigateToLogin = {
-                        navController.navigate(Screen.Login.route) {
-                            popUpTo(Screen.Login.route) { inclusive = true }
+                        navController.navigate(LoginRoute) {
+                            popUpTo(LoginRoute.route) { inclusive = true }
                         }
                     },
                     onClearError = {
@@ -190,10 +197,10 @@ fun AppNavigation(
                 )
             }
 
-            composable(Screen.ShoppingLists.route) {
+            composable<ShoppingListsRoute> {
                 MainScreenScaffold(
                     navController = navController,
-                    currentRoute = Screen.ShoppingLists.route
+                    currentRoute = ShoppingListsRoute.route
                 ) {
                     ShoppingListsScreenWrapper(
                         viewModel = shoppingListViewModel,
@@ -202,10 +209,10 @@ fun AppNavigation(
                 }
             }
 
-            composable(Screen.Products.route) {
+            composable<ProductsRoute> {
                 MainScreenScaffold(
                     navController = navController,
-                    currentRoute = Screen.Products.route
+                    currentRoute = ProductsRoute.route
                 ) {
                     ProductsScreenWrapper(
                         viewModel = productViewModel,
@@ -214,10 +221,10 @@ fun AppNavigation(
                 }
             }
 
-            composable(Screen.Profile.route) {
+            composable<ProfileRoute> {
                 MainScreenScaffold(
                     navController = navController,
-                    currentRoute = Screen.Profile.route
+                    currentRoute = ProfileRoute.route
                 ) {
                     ProfileScreenWrapper(
                         viewModel = profileViewModel,
@@ -227,17 +234,14 @@ fun AppNavigation(
                 }
             }
 
-            composable(
-                route = Screen.ListDetail.route,
-                arguments = listOf(navArgument("listId") { type = NavType.LongType })
-            ) { backStackEntry ->
-                val listId = backStackEntry.arguments?.getLong("listId") ?: 0L
+            composable<ListDetailRoute> { backStackEntry ->
+                val args = backStackEntry.toRoute<ListDetailRoute>()
                 MainScreenScaffold(
                     navController = navController,
-                    currentRoute = Screen.ListDetail.route
+                    currentRoute = ListDetailRoute.route
                 ) {
                     ShoppingListDetailScreenWrapper(
-                        listId = listId,
+                        listId = args.listId,
                         viewModel = shoppingListViewModel,
                         productViewModel = productViewModel,
                         categoryViewModel = categoryViewModel,
@@ -246,10 +250,10 @@ fun AppNavigation(
                 }
             }
 
-            composable(Screen.PurchaseHistory.route) {
+            composable<PurchaseHistoryRoute> {
                 MainScreenScaffold(
                     navController = navController,
-                    currentRoute = Screen.PurchaseHistory.route
+                    currentRoute = PurchaseHistoryRoute.route
                 ) {
                     PurchaseHistoryScreenWrapper(
                         purchaseHistoryViewModel = purchaseHistoryViewModel,
@@ -297,11 +301,11 @@ fun MainScreenScaffold(
                 CustomNavigationRailItem(
                     icon = Icons.AutoMirrored.Filled.List,
                     label = stringResource(R.string.shopping_lists),
-                    selected = currentRoute == Screen.ShoppingLists.route,
+                    selected = currentRoute == ShoppingListsRoute.route,
                     onClick = {
-                        if (currentRoute != Screen.ShoppingLists.route) {
-                            navController.navigate(Screen.ShoppingLists.route) {
-                                popUpTo(Screen.ShoppingLists.route) { inclusive = true }
+                        if (currentRoute != ShoppingListsRoute.route) {
+                            navController.navigate(ShoppingListsRoute) {
+                                popUpTo(ShoppingListsRoute.route) { inclusive = true }
                             }
                         }
                     }
@@ -309,11 +313,11 @@ fun MainScreenScaffold(
                 CustomNavigationRailItem(
                     icon = Icons.Default.ShoppingCart,
                     label = stringResource(R.string.products),
-                    selected = currentRoute == Screen.Products.route,
+                    selected = currentRoute == ProductsRoute.route,
                     onClick = {
-                        if (currentRoute != Screen.Products.route) {
-                            navController.navigate(Screen.Products.route) {
-                                popUpTo(Screen.ShoppingLists.route) { inclusive = false }
+                        if (currentRoute != ProductsRoute.route) {
+                            navController.navigate(ProductsRoute) {
+                                popUpTo(ShoppingListsRoute.route) { inclusive = false }
                             }
                         }
                     }
@@ -321,11 +325,11 @@ fun MainScreenScaffold(
                 CustomNavigationRailItem(
                     icon = Icons.Default.Person,
                     label = stringResource(R.string.profile),
-                    selected = currentRoute == Screen.Profile.route,
+                    selected = currentRoute == ProfileRoute.route,
                     onClick = {
-                        if (currentRoute != Screen.Profile.route) {
-                            navController.navigate(Screen.Profile.route) {
-                                popUpTo(Screen.ShoppingLists.route) { inclusive = false }
+                        if (currentRoute != ProfileRoute.route) {
+                            navController.navigate(ProfileRoute) {
+                                popUpTo(ShoppingListsRoute.route) { inclusive = false }
                             }
                         }
                     }
@@ -344,33 +348,33 @@ fun MainScreenScaffold(
                         BottomNavItem(
                             icon = Icons.AutoMirrored.Filled.List,
                             label = stringResource(R.string.shopping_lists),
-                            selected = currentRoute == Screen.ShoppingLists.route
+                            selected = currentRoute == ShoppingListsRoute.route
                         ) {
-                            if (currentRoute != Screen.ShoppingLists.route) {
-                                navController.navigate(Screen.ShoppingLists.route) {
-                                    popUpTo(Screen.ShoppingLists.route) { inclusive = true }
+                            if (currentRoute != ShoppingListsRoute.route) {
+                                navController.navigate(ShoppingListsRoute) {
+                                    popUpTo(ShoppingListsRoute.route) { inclusive = true }
                                 }
                             }
                         }
                         BottomNavItem(
                             icon = Icons.Default.ShoppingCart,
                             label = stringResource(R.string.products),
-                            selected = currentRoute == Screen.Products.route
+                            selected = currentRoute == ProductsRoute.route
                         ) {
-                            if (currentRoute != Screen.Products.route) {
-                                navController.navigate(Screen.Products.route) {
-                                    popUpTo(Screen.ShoppingLists.route) { inclusive = false }
+                            if (currentRoute != ProductsRoute.route) {
+                                navController.navigate(ProductsRoute) {
+                                    popUpTo(ShoppingListsRoute.route) { inclusive = false }
                                 }
                             }
                         }
                         BottomNavItem(
                             icon = Icons.Default.Person,
                             label = stringResource(R.string.profile),
-                            selected = currentRoute == Screen.Profile.route
+                            selected = currentRoute == ProfileRoute.route
                         ) {
-                            if (currentRoute != Screen.Profile.route) {
-                                navController.navigate(Screen.Profile.route) {
-                                    popUpTo(Screen.ShoppingLists.route) { inclusive = false }
+                            if (currentRoute != ProfileRoute.route) {
+                                navController.navigate(ProfileRoute) {
+                                    popUpTo(ShoppingListsRoute.route) { inclusive = false }
                                 }
                             }
                         }
@@ -488,7 +492,7 @@ fun ShoppingListsScreenWrapper(
         uiState = uiState,
         onCreateList = { showCreateDialog = true },
         onListClick = { listId ->
-            navController.navigate(Screen.ListDetail.createRoute(listId))
+            navController.navigate(ListDetailRoute(listId))
         },
         onDeleteList = { viewModel.deleteShoppingList(it) },
         onUpdateListName = { id, name -> viewModel.updateListName(id, name) },
@@ -499,7 +503,7 @@ fun ShoppingListsScreenWrapper(
         onRevokeShare = { id, userId -> viewModel.revokeUserAccess(id, userId) },
         onMakePrivate = { id -> viewModel.makeListPrivate(id) },
         onNavigateToHistory = {
-            navController.navigate(Screen.PurchaseHistory.route)
+            navController.navigate(PurchaseHistoryRoute)
         },
         onRefresh = { viewModel.loadShoppingLists() },
         onSearchQueryChange = { query -> viewModel.updateSearchQuery(query) },
@@ -580,7 +584,7 @@ fun ProfileScreenWrapper(
         onChangePassword = { showChangePasswordDialog = true },
         onLogout = {
             authViewModel.logout()
-            navController.navigate(Screen.Login.route) {
+            navController.navigate(LoginRoute) {
                 popUpTo(0) { inclusive = true }
             }
         },
@@ -754,8 +758,8 @@ fun PurchaseHistoryScreenWrapper(
             purchaseHistoryViewModel.restorePurchase(purchaseId, shoppingListViewModel)
         },
         onNavigateBack = {
-            navController.navigate(Screen.ShoppingLists.route) {
-                popUpTo(Screen.ShoppingLists.route) { inclusive = false }
+            navController.navigate(ShoppingListsRoute) {
+                popUpTo(ShoppingListsRoute.route) { inclusive = false }
             }
         },
         onClearError = { purchaseHistoryViewModel.clearError() },

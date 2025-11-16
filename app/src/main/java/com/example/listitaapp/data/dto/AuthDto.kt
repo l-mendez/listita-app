@@ -1,106 +1,85 @@
 package com.example.listitaapp.data.dto
 
 import com.example.listitaapp.data.model.User
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-// Login Request
-@JsonClass(generateAdapter = true)
+@Serializable
 data class LoginRequest(
-    @Json(name = "email")
+    @SerialName("email")
     val email: String,
-
-    @Json(name = "password")
+    @SerialName("password")
     val password: String
 )
 
-// Login Response
-@JsonClass(generateAdapter = true)
+@Serializable
 data class AuthResponse(
-    @Json(name = "token")
+    @SerialName("token")
     val token: String
 )
 
-// Register Request
-@JsonClass(generateAdapter = true)
+@Serializable
 data class RegisterRequest(
-    @Json(name = "email")
+    @SerialName("email")
     val email: String,
-
-    @Json(name = "password")
+    @SerialName("password")
     val password: String,
-
-    @Json(name = "name")
+    @SerialName("name")
     val name: String,
-
-    @Json(name = "surname")
+    @SerialName("surname")
     val surname: String,
-
-    @Json(name = "metadata")
-    val metadata: Map<String, Any>? = null
+    @SerialName("metadata")
+    val metadata: Map<String, String>? = null
 )
 
-// Register Response - API returns User object directly
-// Verification token is sent via email, not in response
 typealias RegisterResponse = User
 
-// Verify Account Request
-@JsonClass(generateAdapter = true)
+@Serializable
 data class VerifyAccountRequest(
-    @Json(name = "code")
+    @SerialName("code")
     val code: String
 )
 
-// Change Password Request
-@JsonClass(generateAdapter = true)
+@Serializable
 data class ChangePasswordRequest(
-    @Json(name = "currentPassword")
+    @SerialName("currentPassword")
     val currentPassword: String,
-
-    @Json(name = "newPassword")
+    @SerialName("newPassword")
     val newPassword: String
 )
 
-// Update Profile Request
-@JsonClass(generateAdapter = true)
+@Serializable
 data class UpdateProfileRequest(
-    @Json(name = "name")
+    @SerialName("name")
     val name: String,
-
-    @Json(name = "surname")
+    @SerialName("surname")
     val surname: String,
-
-    @Json(name = "metadata")
-    val metadata: Map<String, Any>? = null
+    @SerialName("metadata")
+    val metadata: Map<String, String>? = null
 )
 
-// Password Recovery Request
-@JsonClass(generateAdapter = true)
+@Serializable
 data class PasswordRecoveryRequest(
-    @Json(name = "email")
+    @SerialName("email")
     val email: String
 )
 
-// Password Reset Request
-@JsonClass(generateAdapter = true)
+@Serializable
 data class PasswordResetRequest(
-    @Json(name = "code")
+    @SerialName("code")
     val code: String,
-
-    @Json(name = "password")
+    @SerialName("password")
     val password: String
 )
 
-// Error Response from API
-@JsonClass(generateAdapter = true)
+@Serializable
 data class ErrorResponse(
-    @Json(name = "message")
+    @SerialName("message")
     val message: String
 )
 
-// Resend Verification Response
-@JsonClass(generateAdapter = true)
+@Serializable
 data class ResendVerificationResponse(
-    @Json(name = "code")
+    @SerialName("code")
     val code: String
 )

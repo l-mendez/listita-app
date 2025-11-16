@@ -12,8 +12,8 @@ import com.example.listitaapp.data.datasource.ProductRemoteDataSource
 import com.example.listitaapp.data.datasource.PurchaseRemoteDataSource
 import com.example.listitaapp.data.datasource.ShoppingListRemoteDataSource
 import com.example.listitaapp.data.datasource.UserRemoteDataSource
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,7 +22,7 @@ import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -43,10 +43,11 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideMoshi(): Moshi {
-        return Moshi.Builder()
-            .add(KotlinJsonAdapterFactory())
-            .build()
+    fun provideJson(): Json {
+        return Json {
+            ignoreUnknownKeys = true
+            explicitNulls = false
+        }
     }
 
     @Provides
@@ -84,12 +85,12 @@ object AppModule {
     @Singleton
     fun provideRetrofit(
         okHttpClient: OkHttpClient,
-        moshi: Moshi
+        json: Json
     ): Retrofit {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(okHttpClient)
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
     }
 
@@ -103,62 +104,62 @@ object AppModule {
     @Singleton
     fun provideShoppingListRemoteDataSource(
         apiService: ApiService,
-        moshi: Moshi
+        json: Json
     ): ShoppingListRemoteDataSource {
-        return ShoppingListRemoteDataSource(apiService, moshi)
+        return ShoppingListRemoteDataSource(apiService, json)
     }
 
     @Provides
     @Singleton
     fun provideListItemRemoteDataSource(
         apiService: ApiService,
-        moshi: Moshi
+        json: Json
     ): ListItemRemoteDataSource {
-        return ListItemRemoteDataSource(apiService, moshi)
+        return ListItemRemoteDataSource(apiService, json)
     }
 
     @Provides
     @Singleton
     fun provideProductRemoteDataSource(
         apiService: ApiService,
-        moshi: Moshi
+        json: Json
     ): ProductRemoteDataSource {
-        return ProductRemoteDataSource(apiService, moshi)
+        return ProductRemoteDataSource(apiService, json)
     }
 
     @Provides
     @Singleton
     fun provideCategoryRemoteDataSource(
         apiService: ApiService,
-        moshi: Moshi
+        json: Json
     ): CategoryRemoteDataSource {
-        return CategoryRemoteDataSource(apiService, moshi)
+        return CategoryRemoteDataSource(apiService, json)
     }
 
     @Provides
     @Singleton
     fun providePurchaseRemoteDataSource(
         apiService: ApiService,
-        moshi: Moshi
+        json: Json
     ): PurchaseRemoteDataSource {
-        return PurchaseRemoteDataSource(apiService, moshi)
+        return PurchaseRemoteDataSource(apiService, json)
     }
 
     @Provides
     @Singleton
     fun provideAuthRemoteDataSource(
         apiService: ApiService,
-        moshi: Moshi
+        json: Json
     ): AuthRemoteDataSource {
-        return AuthRemoteDataSource(apiService, moshi)
+        return AuthRemoteDataSource(apiService, json)
     }
 
     @Provides
     @Singleton
     fun provideUserRemoteDataSource(
         apiService: ApiService,
-        moshi: Moshi
+        json: Json
     ): UserRemoteDataSource {
-        return UserRemoteDataSource(apiService, moshi)
+        return UserRemoteDataSource(apiService, json)
     }
 }

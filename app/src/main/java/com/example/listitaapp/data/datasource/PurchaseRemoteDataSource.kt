@@ -4,13 +4,13 @@ import com.example.listitaapp.data.api.ApiService
 import com.example.listitaapp.data.dto.PaginatedResponse
 import com.example.listitaapp.data.dto.RestorePurchaseResponse
 import com.example.listitaapp.data.model.Purchase
-import com.squareup.moshi.Moshi
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 class PurchaseRemoteDataSource @Inject constructor(
     private val apiService: ApiService,
-    moshi: Moshi
-) : BaseRemoteDataSource(moshi) {
+    json: Json
+) : BaseRemoteDataSource(json) {
 
     suspend fun getPurchases(
         page: Int = 1,

@@ -7,7 +7,7 @@ data class ListItem(
     val purchased: Boolean = false,
     val lastPurchasedAt: String? = null,
     val product: Product? = null,
-    val metadata: Map<String, Any>? = null,
+    val metadata: Map<String, String>? = null,
     val createdAt: String,
     val updatedAt: String
 )

@@ -5,6 +5,6 @@ data class Purchase(
     val list: ShoppingList? = null,
     val owner: User? = null,
     val items: List<ListItem> = emptyList(),
-    val metadata: Map<String, Any>? = null,
+    val metadata: Map<String, String>? = null,
     val createdAt: String
 )

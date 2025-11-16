@@ -1,34 +1,28 @@
 package com.example.listitaapp.data.dto
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class PaginatedResponse<T>(
-    @Json(name = "data")
+    @SerialName("data")
     val data: List<T>,
-
-    @Json(name = "pagination")
+    @SerialName("pagination")
     val pagination: Pagination
 )
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class Pagination(
-    @Json(name = "total")
+    @SerialName("total")
     val total: Int,
-
-    @Json(name = "page")
+    @SerialName("page")
     val page: Int,
-
-    @Json(name = "per_page")
+    @SerialName("per_page")
     val perPage: Int,
-
-    @Json(name = "total_pages")
+    @SerialName("total_pages")
     val totalPages: Int,
-
-    @Json(name = "has_next")
+    @SerialName("has_next")
     val hasNext: Boolean,
-
-    @Json(name = "has_prev")
+    @SerialName("has_prev")
     val hasPrev: Boolean
 )

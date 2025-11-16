@@ -1,12 +1,12 @@
 package com.example.listitaapp.data.api
 
 import android.content.Context
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
+import okhttp3.MediaType.Companion.toMediaType
 import java.util.concurrent.TimeUnit
 
 object ApiClient {
@@ -63,13 +63,11 @@ object ApiClient {
             .build()
     }
 
-    /**
-     * Build and configure Moshi for JSON parsing
-     */
-    private fun buildMoshi(): Moshi {
-        return Moshi.Builder()
-            .add(KotlinJsonAdapterFactory())
-            .build()
+    private fun buildJson(): Json {
+        return Json {
+            ignoreUnknownKeys = true
+            explicitNulls = false
+        }
     }
 
     /**
@@ -79,7 +77,7 @@ object ApiClient {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(buildOkHttpClient(context))
-            .addConverterFactory(MoshiConverterFactory.create(buildMoshi()))
+            .addConverterFactory(buildJson().asConverterFactory("application/json".toMediaType()))
             .build()
     }
 

@@ -5,13 +5,13 @@ import com.example.listitaapp.data.dto.CreateCategoryRequest
 import com.example.listitaapp.data.dto.PaginatedResponse
 import com.example.listitaapp.data.dto.UpdateCategoryRequest
 import com.example.listitaapp.data.model.Category
-import com.squareup.moshi.Moshi
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 class CategoryRemoteDataSource @Inject constructor(
     private val apiService: ApiService,
-    moshi: Moshi
-) : BaseRemoteDataSource(moshi) {
+    json: Json
+) : BaseRemoteDataSource(json) {
 
     suspend fun getCategories(): PaginatedResponse<Category> {
         val response = apiService.getCategories()

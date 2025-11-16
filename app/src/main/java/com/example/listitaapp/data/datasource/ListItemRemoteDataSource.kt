@@ -7,13 +7,13 @@ import com.example.listitaapp.data.dto.PaginatedResponse
 import com.example.listitaapp.data.dto.ToggleItemPurchasedRequest
 import com.example.listitaapp.data.dto.UpdateListItemRequest
 import com.example.listitaapp.data.model.ListItem
-import com.squareup.moshi.Moshi
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 class ListItemRemoteDataSource @Inject constructor(
     private val apiService: ApiService,
-    moshi: Moshi
-) : BaseRemoteDataSource(moshi) {
+    json: Json
+) : BaseRemoteDataSource(json) {
 
     suspend fun getListItems(listId: Long): PaginatedResponse<ListItem> {
         val response = apiService.getListItems(listId)
@@ -37,7 +37,7 @@ class ListItemRemoteDataSource @Inject constructor(
         itemId: Long,
         quantity: Double,
         unit: String,
-        metadata: Map<String, Any>? = null
+        metadata: Map<String, String>? = null
     ): ListItem {
         val request = UpdateListItemRequest(
             quantity = quantity,

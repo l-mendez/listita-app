@@ -1,25 +1,20 @@
 package com.example.listitaapp.data.model
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class Purchase(
-    @Json(name = "id")
+    @SerialName("id")
     val id: Long,
-
-    @Json(name = "list")
+    @SerialName("list")
     val list: ShoppingList? = null,
-
-    @Json(name = "owner")
+    @SerialName("owner")
     val owner: User? = null,
-
-    @Json(name = "items")
+    @SerialName("items")
     val items: List<ListItem> = emptyList(),
-
-    @Json(name = "metadata")
-    val metadata: Map<String, Any>? = null,
-
-    @Json(name = "createdAt")
+    @SerialName("metadata")
+    val metadata: Map<String, String>? = null,
+    @SerialName("createdAt")
     val createdAt: String
 )

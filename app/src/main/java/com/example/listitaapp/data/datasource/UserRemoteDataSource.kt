@@ -3,13 +3,13 @@ package com.example.listitaapp.data.datasource
 import com.example.listitaapp.data.api.ApiService
 import com.example.listitaapp.data.dto.UpdateProfileRequest
 import com.example.listitaapp.data.model.User
-import com.squareup.moshi.Moshi
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 class UserRemoteDataSource @Inject constructor(
     private val apiService: ApiService,
-    moshi: Moshi
-) : BaseRemoteDataSource(moshi) {
+    json: Json
+) : BaseRemoteDataSource(json) {
 
     suspend fun getProfile(): User {
         val response = apiService.getProfile()

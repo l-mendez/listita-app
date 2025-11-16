@@ -1,11 +1,12 @@
 package com.example.listitaapp.data.datasource
 
 import com.example.listitaapp.data.dto.ErrorResponse
-import com.squareup.moshi.Moshi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.decodeFromString
 import retrofit2.Response
 
 abstract class BaseRemoteDataSource(
-    private val moshi: Moshi
+    private val json: Json
 ) {
 
     protected fun <T> handleResponse(response: Response<T>, defaultMessage: String): T {
@@ -23,8 +24,7 @@ abstract class BaseRemoteDataSource(
     private fun parseErrorMessage(response: Response<*>, defaultMessage: String): String {
         return try {
             response.errorBody()?.string()?.let { body ->
-                val adapter = moshi.adapter(ErrorResponse::class.java)
-                adapter.fromJson(body)?.message
+                json.decodeFromString<ErrorResponse>(body).message
             } ?: response.message().ifEmpty { defaultMessage }
         } catch (_: Exception) {
             response.message().ifEmpty { defaultMessage }

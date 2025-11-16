@@ -10,13 +10,13 @@ import com.example.listitaapp.data.dto.RegisterRequest
 import com.example.listitaapp.data.dto.ResendVerificationResponse
 import com.example.listitaapp.data.dto.VerifyAccountRequest
 import com.example.listitaapp.data.model.User
-import com.squareup.moshi.Moshi
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 class AuthRemoteDataSource @Inject constructor(
     private val apiService: ApiService,
-    moshi: Moshi
-) : BaseRemoteDataSource(moshi) {
+    json: Json
+) : BaseRemoteDataSource(json) {
 
     suspend fun register(
         email: String,

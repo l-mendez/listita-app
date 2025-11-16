@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.android)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -52,21 +53,18 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation("androidx.compose.material:material-icons-extended")
 
-    // Retrofit
+    // Retrofit + Kotlin Serialization
     implementation(libs.retrofit)
-    implementation(libs.retrofit.converter.moshi)
+    implementation(libs.retrofit.converter.kotlinx.serialization)
+    implementation(libs.kotlinx.serialization.json)
 
     // OkHttp
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
 
-    // Moshi
-    implementation(libs.moshi)
-    implementation(libs.moshi.kotlin)
-    ksp(libs.moshi.kotlin.codegen)
-
     // Navigation
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.navigation.runtime.ktx)
 
     // ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.compose)

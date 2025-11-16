@@ -5,7 +5,7 @@ data class User(
     val email: String,
     val name: String,
     val surname: String,
-    val metadata: Map<String, Any>? = null,
+    val metadata: Map<String, String>? = null,
     val createdAt: String,
     val updatedAt: String
 )

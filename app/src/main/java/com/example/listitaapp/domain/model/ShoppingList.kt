@@ -8,7 +8,7 @@ data class ShoppingList(
     val owner: User,
     val sharedWith: List<User> = emptyList(),
     val lastPurchasedAt: String? = null,
-    val metadata: Map<String, Any>? = null,
+    val metadata: Map<String, String>? = null,
     val createdAt: String,
     val updatedAt: String
 )

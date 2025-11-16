@@ -1,63 +1,53 @@
 package com.example.listitaapp.data.dto
 
 import com.example.listitaapp.data.model.Product
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-// Create Product Request
-@JsonClass(generateAdapter = true)
+@Serializable
 data class CreateProductRequest(
-    @Json(name = "name")
+    @SerialName("name")
     val name: String,
-
-    @Json(name = "category")
+    @SerialName("category")
     val category: ProductCategory? = null,
-
-    @Json(name = "metadata")
-    val metadata: Map<String, Any>? = null
+    @SerialName("metadata")
+    val metadata: Map<String, String>? = null
 )
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class ProductCategory(
-    @Json(name = "id")
+    @SerialName("id")
     val id: Long
 )
 
-// Update Product Request
-@JsonClass(generateAdapter = true)
+@Serializable
 data class UpdateProductRequest(
-    @Json(name = "name")
+    @SerialName("name")
     val name: String? = null,
-
-    @Json(name = "category")
+    @SerialName("category")
     val category: ProductCategory? = null,
-
-    @Json(name = "metadata")
-    val metadata: Map<String, Any>? = null
+    @SerialName("metadata")
+    val metadata: Map<String, String>? = null
 )
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class UpdateProductResponse(
-    @Json(name = "product")
+    @SerialName("product")
     val product: Product
 )
 
-// Create Category Request
-@JsonClass(generateAdapter = true)
+@Serializable
 data class CreateCategoryRequest(
-    @Json(name = "name")
+    @SerialName("name")
     val name: String,
-
-    @Json(name = "metadata")
-    val metadata: Map<String, Any>? = null
+    @SerialName("metadata")
+    val metadata: Map<String, String>? = null
 )
 
-// Update Category Request
-@JsonClass(generateAdapter = true)
+@Serializable
 data class UpdateCategoryRequest(
-    @Json(name = "name")
+    @SerialName("name")
     val name: String? = null,
-
-    @Json(name = "metadata")
-    val metadata: Map<String, Any>? = null
+    @SerialName("metadata")
+    val metadata: Map<String, String>? = null
 )

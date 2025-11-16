@@ -7,13 +7,13 @@ import com.example.listitaapp.data.dto.ProductCategory
 import com.example.listitaapp.data.dto.UpdateProductRequest
 import com.example.listitaapp.data.dto.UpdateProductResponse
 import com.example.listitaapp.data.model.Product
-import com.squareup.moshi.Moshi
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 class ProductRemoteDataSource @Inject constructor(
     private val apiService: ApiService,
-    moshi: Moshi
-) : BaseRemoteDataSource(moshi) {
+    json: Json
+) : BaseRemoteDataSource(json) {
 
     suspend fun getProducts(
         name: String? = null,

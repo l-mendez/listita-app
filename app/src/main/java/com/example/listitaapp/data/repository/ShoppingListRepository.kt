@@ -86,7 +86,7 @@ class ShoppingListRepository @Inject constructor(
         itemId: Long,
         quantity: Double,
         unit: String,
-        metadata: Map<String, Any>? = null
+        metadata: Map<String, String>? = null
     ): Result<ListItem> = runCatching {
         listItemRemoteDataSource.updateListItem(listId, itemId, quantity, unit, metadata).toDomain()
     }
