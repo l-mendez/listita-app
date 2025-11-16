@@ -1,6 +1,11 @@
 package com.example.listitaapp.ui.auth
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -11,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -49,13 +55,32 @@ fun RegisterScreen(
     var surnameError by remember { mutableStateOf<String?>(null) }
 
     val focusManager = LocalFocusManager.current
+    val configuration = LocalConfiguration.current
+    val screenWidthDp = configuration.screenWidthDp
+    val screenHeightDp = configuration.screenHeightDp
     val windowSize = rememberWindowSize()
-    val isTabletLandscape = isLandscape() && windowSize.width != WindowSizeClass.Compact
+
+    // Mobile horizontal: landscape and height < 500dp (typical phone in landscape)
+    val isMobileHorizontal = isLandscape() && screenHeightDp < 500
+    // Tablet landscape: landscape and height >= 500dp
+    val isTabletLandscape = isLandscape() && screenHeightDp >= 500
     val formWidthModifier = if (isTabletLandscape) Modifier.widthIn(max = 420.dp) else Modifier
-    val horizontalPadding = if (isTabletLandscape) 48.dp else 24.dp
-    val verticalSpacing = if (isTabletLandscape) 12.dp else 16.dp
+    val horizontalPadding = when {
+        isMobileHorizontal -> 16.dp
+        isTabletLandscape -> 48.dp
+        else -> 24.dp
+    }
+    val verticalSpacing = when {
+        isMobileHorizontal -> 10.dp
+        isTabletLandscape -> 12.dp
+        else -> 16.dp
+    }
     val headerSpacerHeight = if (isTabletLandscape) 8.dp else 16.dp
-    val buttonSpacerHeight = if (isTabletLandscape) 6.dp else 8.dp
+    val buttonSpacerHeight = when {
+        isMobileHorizontal -> 4.dp
+        isTabletLandscape -> 6.dp
+        else -> 8.dp
+    }
     val linkSpacerHeight = if (isTabletLandscape) 2.dp else 6.dp
 
     LaunchedEffect(uiState.registrationComplete) {
@@ -94,126 +119,435 @@ fun RegisterScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            Column(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .padding(horizontal = horizontalPadding)
-                    .then(formWidthModifier)
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = columnArrangement
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ShoppingCart,
-                    contentDescription = null,
-                    modifier = Modifier.size(72.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
+            if (isMobileHorizontal) {
+                // Two-column layout for mobile horizontal with back button
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+                    // Back to login button at top left of entire screen
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(start = 16.dp, top = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(
+                            onClick = onNavigateToLogin,
+                            enabled = !uiState.isLoading
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = "Back",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        Text(
+                            text = stringResource(R.string.back_to_login),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
 
-                Text(
-                    text = stringResource(R.string.app_name),
-                    style = MaterialTheme.typography.headlineLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                    // Two columns content
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(horizontal = horizontalPadding)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // First column: Logo and app name
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ShoppingCart,
+                                contentDescription = null,
+                                modifier = Modifier.size(72.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
 
-                Spacer(modifier = Modifier.height(headerSpacerHeight))
+                            Spacer(modifier = Modifier.height(8.dp))
 
-                AppTextField(
-                    value = name,
-                    onValueChange = {
-                        name = it
-                        nameError = null
-                    },
-                    label = stringResource(R.string.name),
-                    leadingIcon = Icons.Default.Person,
-                    isError = nameError != null,
-                    errorMessage = nameError,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Next
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                            Text(
+                                text = stringResource(R.string.app_name),
+                                style = MaterialTheme.typography.headlineLarge,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
 
-                AppTextField(
-                    value = surname,
-                    onValueChange = {
-                        surname = it
-                        surnameError = null
-                    },
-                    label = stringResource(R.string.surname),
-                    leadingIcon = Icons.Default.Person,
-                    isError = surnameError != null,
-                    errorMessage = surnameError,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Next
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                        // Second column: Scrollable form fields with scroll indicator
+                        val scrollState = rememberScrollState()
+                        var showScrollIndicator by remember { mutableStateOf(true) }
 
-                AppTextField(
-                    value = email,
-                    onValueChange = {
-                        email = it
-                        emailError = null
-                    },
-                    label = stringResource(R.string.email),
-                    placeholder = stringResource(R.string.email_placeholder),
-                    leadingIcon = Icons.Default.Email,
-                    isError = emailError != null,
-                    errorMessage = emailError,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Email,
-                        imeAction = ImeAction.Next
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                        // Hide scroll indicator after first scroll
+                        LaunchedEffect(scrollState.value) {
+                            if (scrollState.value > 0) {
+                                showScrollIndicator = false
+                            }
+                        }
 
-                AppPasswordField(
-                    value = password,
-                    onValueChange = {
-                        password = it
-                        passwordError = null
-                    },
-                    label = stringResource(R.string.password),
-                    isError = passwordError != null,
-                    errorMessage = passwordError,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Next
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 24.dp, end = 32.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(vertical = 48.dp)
+                                    .verticalScroll(scrollState),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(verticalSpacing, Alignment.CenterVertically)
+                            ) {
+                        AppTextField(
+                            value = name,
+                            onValueChange = {
+                                name = it
+                                nameError = null
+                            },
+                            label = stringResource(R.string.name),
+                            leadingIcon = Icons.Default.Person,
+                            isError = nameError != null,
+                            errorMessage = nameError,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Next
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
 
-                AppPasswordField(
-                    value = confirmPassword,
-                    onValueChange = {
-                        confirmPassword = it
-                        confirmPasswordError = null
-                    },
-                    label = stringResource(R.string.confirm_password),
-                    isError = confirmPasswordError != null,
-                    errorMessage = confirmPasswordError,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Done
+                        AppTextField(
+                            value = surname,
+                            onValueChange = {
+                                surname = it
+                                surnameError = null
+                            },
+                            label = stringResource(R.string.surname),
+                            leadingIcon = Icons.Default.Person,
+                            isError = surnameError != null,
+                            errorMessage = surnameError,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Next
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        AppTextField(
+                            value = email,
+                            onValueChange = {
+                                email = it
+                                emailError = null
+                            },
+                            label = stringResource(R.string.email),
+                            placeholder = stringResource(R.string.email_placeholder),
+                            leadingIcon = Icons.Default.Email,
+                            isError = emailError != null,
+                            errorMessage = emailError,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Email,
+                                imeAction = ImeAction.Next
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        AppPasswordField(
+                            value = password,
+                            onValueChange = {
+                                password = it
+                                passwordError = null
+                            },
+                            label = stringResource(R.string.password),
+                            isError = passwordError != null,
+                            errorMessage = passwordError,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Password,
+                                imeAction = ImeAction.Next
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        AppPasswordField(
+                            value = confirmPassword,
+                            onValueChange = {
+                                confirmPassword = it
+                                confirmPasswordError = null
+                            },
+                            label = stringResource(R.string.confirm_password),
+                            isError = confirmPasswordError != null,
+                            errorMessage = confirmPasswordError,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Password,
+                                imeAction = ImeAction.Done
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    focusManager.clearFocus()
+                                    if (validateInput(
+                                            name,
+                                            surname,
+                                            email,
+                                            password,
+                                            confirmPassword,
+                                            nameRequiredMessage,
+                                            surnameRequiredMessage,
+                                            emailRequiredMessage,
+                                            invalidEmailMessage,
+                                            passwordRequiredMessage,
+                                            passwordTooShortMessage,
+                                            confirmPasswordRequiredMessage,
+                                            passwordsDontMatchMessage,
+                                            { nameError = it },
+                                            { surnameError = it },
+                                            { emailError = it },
+                                            { passwordError = it },
+                                            { confirmPasswordError = it }
+                                        )
+                                    ) {
+                                        onRegister(email, password, name, surname)
+                                    }
+                                }
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(modifier = Modifier.height(buttonSpacerHeight))
+
+                        AppButton(
+                            onClick = {
+                                if (validateInput(
+                                        name,
+                                        surname,
+                                        email,
+                                        password,
+                                        confirmPassword,
+                                        nameRequiredMessage,
+                                        surnameRequiredMessage,
+                                        emailRequiredMessage,
+                                        invalidEmailMessage,
+                                        passwordRequiredMessage,
+                                        passwordTooShortMessage,
+                                        confirmPasswordRequiredMessage,
+                                        passwordsDontMatchMessage,
+                                        { nameError = it },
+                                        { surnameError = it },
+                                        { emailError = it },
+                                        { passwordError = it },
+                                        { confirmPasswordError = it }
+                                    )
+                                ) {
+                                    onRegister(email, password, name, surname)
+                                }
+                            },
+                            text = stringResource(R.string.register),
+                            enabled = !uiState.isLoading,
+                            loading = uiState.isLoading,
+                            fullWidth = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                                // Only show verify link if email is available
+                                if (verificationEmail.isNotBlank()) {
+                                    AppTextButton(
+                                        onClick = { onNavigateToVerify(verificationEmail) },
+                                        text = "${stringResource(R.string.already_have_verification_code)} ${stringResource(R.string.verify_now)}",
+                                        enabled = !uiState.isLoading
+                                    )
+                                }
+                            }
+
+                            // Animated scroll indicator arrow
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = showScrollIndicator,
+                                modifier = Modifier.align(Alignment.BottomCenter),
+                                enter = fadeIn(),
+                                exit = fadeOut()
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.KeyboardArrowDown,
+                                    contentDescription = "Scroll down",
+                                    modifier = Modifier
+                                        .padding(bottom = 16.dp)
+                                        .size(32.dp),
+                                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                                )
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Original single-column layout for tablet and mobile vertical
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(horizontal = horizontalPadding)
+                        .then(formWidthModifier)
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = columnArrangement
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ShoppingCart,
+                        contentDescription = null,
+                        modifier = Modifier.size(72.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+
+                    Text(
+                        text = stringResource(R.string.app_name),
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Spacer(modifier = Modifier.height(headerSpacerHeight))
+
+                    AppTextField(
+                        value = name,
+                        onValueChange = {
+                            name = it
+                            nameError = null
+                        },
+                        label = stringResource(R.string.name),
+                        leadingIcon = Icons.Default.Person,
+                        isError = nameError != null,
+                        errorMessage = nameError,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Next
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    AppTextField(
+                        value = surname,
+                        onValueChange = {
+                            surname = it
+                            surnameError = null
+                        },
+                        label = stringResource(R.string.surname),
+                        leadingIcon = Icons.Default.Person,
+                        isError = surnameError != null,
+                        errorMessage = surnameError,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Next
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    AppTextField(
+                        value = email,
+                        onValueChange = {
+                            email = it
+                            emailError = null
+                        },
+                        label = stringResource(R.string.email),
+                        placeholder = stringResource(R.string.email_placeholder),
+                        leadingIcon = Icons.Default.Email,
+                        isError = emailError != null,
+                        errorMessage = emailError,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Email,
+                            imeAction = ImeAction.Next
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    AppPasswordField(
+                        value = password,
+                        onValueChange = {
+                            password = it
+                            passwordError = null
+                        },
+                        label = stringResource(R.string.password),
+                        isError = passwordError != null,
+                        errorMessage = passwordError,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Password,
+                            imeAction = ImeAction.Next
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    AppPasswordField(
+                        value = confirmPassword,
+                        onValueChange = {
+                            confirmPassword = it
+                            confirmPasswordError = null
+                        },
+                        label = stringResource(R.string.confirm_password),
+                        isError = confirmPasswordError != null,
+                        errorMessage = confirmPasswordError,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Password,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                focusManager.clearFocus()
+                            if (validateInput(
+                                    name,
+                                    surname,
+                                    email,
+                                    password,
+                                    confirmPassword,
+                                    nameRequiredMessage,
+                                    surnameRequiredMessage,
+                                    emailRequiredMessage,
+                                    invalidEmailMessage,
+                                    passwordRequiredMessage,
+                                    passwordTooShortMessage,
+                                    confirmPasswordRequiredMessage,
+                                    passwordsDontMatchMessage,
+                                    { nameError = it },
+                                    { surnameError = it },
+                                    { emailError = it },
+                                    { passwordError = it },
+                                    { confirmPasswordError = it }
+                                )
+                            ) {
+                                onRegister(email, password, name, surname)
+                            }
+                        }
                     ),
-                    keyboardActions = KeyboardActions(
-                        onDone = {
-                            focusManager.clearFocus()
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(buttonSpacerHeight))
+
+                    AppButton(
+                        onClick = {
                         if (validateInput(
                                 name,
                                 surname,
@@ -237,65 +571,34 @@ fun RegisterScreen(
                         ) {
                             onRegister(email, password, name, surname)
                         }
-                    }
-                ),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                    },
+                        text = stringResource(R.string.register),
+                        enabled = !uiState.isLoading,
+                        loading = uiState.isLoading,
+                        fullWidth = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-                Spacer(modifier = Modifier.height(buttonSpacerHeight))
+                    Spacer(modifier = Modifier.height(linkSpacerHeight))
 
-                AppButton(
-                    onClick = {
-                    if (validateInput(
-                            name,
-                            surname,
-                            email,
-                            password,
-                            confirmPassword,
-                            nameRequiredMessage,
-                            surnameRequiredMessage,
-                            emailRequiredMessage,
-                            invalidEmailMessage,
-                            passwordRequiredMessage,
-                            passwordTooShortMessage,
-                            confirmPasswordRequiredMessage,
-                            passwordsDontMatchMessage,
-                            { nameError = it },
-                            { surnameError = it },
-                            { emailError = it },
-                            { passwordError = it },
-                            { confirmPasswordError = it }
-                        )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(linkSpacerHeight)
                     ) {
-                        onRegister(email, password, name, surname)
-                    }
-                },
-                    text = stringResource(R.string.register),
-                    enabled = !uiState.isLoading,
-                    loading = uiState.isLoading,
-                    fullWidth = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                        if (verificationEmail.isNotBlank()) {
+                            AppTextButton(
+                                onClick = { onNavigateToVerify(verificationEmail) },
+                                text = "${stringResource(R.string.already_have_verification_code)} ${stringResource(R.string.verify_now)}",
+                                enabled = !uiState.isLoading
+                            )
+                        }
 
-                Spacer(modifier = Modifier.height(linkSpacerHeight))
-
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(linkSpacerHeight)
-                ) {
-                    if (verificationEmail.isNotBlank()) {
                         AppTextButton(
-                            onClick = { onNavigateToVerify(verificationEmail) },
-                            text = "${stringResource(R.string.already_have_verification_code)} ${stringResource(R.string.verify_now)}",
+                            onClick = onNavigateToLogin,
+                            text = "${stringResource(R.string.already_have_account)} ${stringResource(R.string.login)}",
                             enabled = !uiState.isLoading
                         )
                     }
-
-                    AppTextButton(
-                        onClick = onNavigateToLogin,
-                        text = "${stringResource(R.string.already_have_account)} ${stringResource(R.string.login)}",
-                        enabled = !uiState.isLoading
-                    )
                 }
             }
         }

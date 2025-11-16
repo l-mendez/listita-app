@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -43,11 +44,26 @@ fun LoginScreen(
     var passwordError by remember { mutableStateOf<String?>(null) }
 
     val focusManager = LocalFocusManager.current
+    val configuration = LocalConfiguration.current
+    val screenWidthDp = configuration.screenWidthDp
+    val screenHeightDp = configuration.screenHeightDp
     val windowSize = rememberWindowSize()
-    val isTabletLandscape = isLandscape() && windowSize.width != WindowSizeClass.Compact
+
+    // Mobile horizontal: landscape and height < 500dp (typical phone in landscape)
+    val isMobileHorizontal = isLandscape() && screenHeightDp < 500
+    // Tablet landscape: landscape and height >= 500dp
+    val isTabletLandscape = isLandscape() && screenHeightDp >= 500
     val formWidthModifier = if (isTabletLandscape) Modifier.widthIn(max = 420.dp) else Modifier
-    val horizontalPadding = if (isTabletLandscape) 48.dp else 24.dp
-    val verticalSpacing = if (isTabletLandscape) 12.dp else 16.dp
+    val horizontalPadding = when {
+        isMobileHorizontal -> 16.dp
+        isTabletLandscape -> 48.dp
+        else -> 24.dp
+    }
+    val verticalSpacing = when {
+        isMobileHorizontal -> 12.dp
+        isTabletLandscape -> 12.dp
+        else -> 16.dp
+    }
     val headerSpacerHeight = if (isTabletLandscape) 8.dp else 16.dp
     val buttonSpacerHeight = if (isTabletLandscape) 4.dp else 8.dp
 
@@ -71,119 +87,252 @@ fun LoginScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Gestalt: Proximity - Related elements grouped together
-            Column(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .padding(horizontal = horizontalPadding)
-                    .then(formWidthModifier)
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(verticalSpacing, Alignment.CenterVertically)
-            ) {
-            // App branding
-            Icon(
-                imageVector = Icons.Default.ShoppingCart,
-                contentDescription = null,
-                modifier = Modifier.size(72.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
+            if (isMobileHorizontal) {
+                // Two-column layout for mobile horizontal
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(horizontal = horizontalPadding)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // First column: Logo and app name
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ShoppingCart,
+                            contentDescription = null,
+                            modifier = Modifier.size(72.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
 
-            Text(
-                text = stringResource(R.string.app_name),
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.primary
-            )
+                        Spacer(modifier = Modifier.height(8.dp))
 
-            Spacer(modifier = Modifier.height(headerSpacerHeight))
-
-            // Email field (Nielsen: Recognition over recall)
-            AppTextField(
-                value = email,
-                onValueChange = {
-                    email = it
-                    emailError = null // Clear error on input
-                },
-                label = stringResource(R.string.email),
-                placeholder = stringResource(R.string.email_placeholder),
-                leadingIcon = Icons.Default.Email,
-                isError = emailError != null,
-                errorMessage = emailError,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Email,
-                    imeAction = ImeAction.Next
-                ),
-                keyboardActions = KeyboardActions(
-                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            // Password field
-            AppPasswordField(
-                value = password,
-                onValueChange = {
-                    password = it
-                    passwordError = null
-                },
-                label = stringResource(R.string.password),
-                isError = passwordError != null,
-                errorMessage = passwordError,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Done
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = {
-                        focusManager.clearFocus()
-                        if (validateInput(
-                                email,
-                                password,
-                                emailRequiredMessage,
-                                invalidEmailMessage,
-                                passwordRequiredMessage,
-                                passwordTooShortMessage,
-                                { emailError = it },
-                                { passwordError = it }
-                            )) {
-                            onLogin(email, password)
-                        }
+                        Text(
+                            text = stringResource(R.string.app_name),
+                            style = MaterialTheme.typography.headlineLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
 
-            Spacer(modifier = Modifier.height(buttonSpacerHeight))
+                    // Second column: Form fields
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 24.dp, end = 32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(verticalSpacing, Alignment.CenterVertically)
+                    ) {
+                        // Email field
+                        AppTextField(
+                            value = email,
+                            onValueChange = {
+                                email = it
+                                emailError = null
+                            },
+                            label = stringResource(R.string.email),
+                            placeholder = stringResource(R.string.email_placeholder),
+                            leadingIcon = Icons.Default.Email,
+                            isError = emailError != null,
+                            errorMessage = emailError,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Email,
+                                imeAction = ImeAction.Next
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
 
-            // Login button (Nielsen: Visibility of system status)
-            AppButton(
-                onClick = {
-                    if (validateInput(
-                            email,
-                            password,
-                            emailRequiredMessage,
-                            invalidEmailMessage,
-                            passwordRequiredMessage,
-                            passwordTooShortMessage,
-                            { emailError = it },
-                            { passwordError = it }
-                        )) {
-                        onLogin(email, password)
+                        // Password field
+                        AppPasswordField(
+                            value = password,
+                            onValueChange = {
+                                password = it
+                                passwordError = null
+                            },
+                            label = stringResource(R.string.password),
+                            isError = passwordError != null,
+                            errorMessage = passwordError,
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Password,
+                                imeAction = ImeAction.Done
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    focusManager.clearFocus()
+                                    if (validateInput(
+                                            email,
+                                            password,
+                                            emailRequiredMessage,
+                                            invalidEmailMessage,
+                                            passwordRequiredMessage,
+                                            passwordTooShortMessage,
+                                            { emailError = it },
+                                            { passwordError = it }
+                                        )) {
+                                        onLogin(email, password)
+                                    }
+                                }
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(modifier = Modifier.height(buttonSpacerHeight))
+
+                        // Login button
+                        AppButton(
+                            onClick = {
+                                if (validateInput(
+                                        email,
+                                        password,
+                                        emailRequiredMessage,
+                                        invalidEmailMessage,
+                                        passwordRequiredMessage,
+                                        passwordTooShortMessage,
+                                        { emailError = it },
+                                        { passwordError = it }
+                                    )) {
+                                    onLogin(email, password)
+                                }
+                            },
+                            text = stringResource(R.string.login),
+                            enabled = !uiState.isLoading,
+                            loading = uiState.isLoading,
+                            fullWidth = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        // Register link
+                        AppTextButton(
+                            onClick = onNavigateToRegister,
+                            text = "${stringResource(R.string.no_account)} ${stringResource(R.string.register)}",
+                            enabled = !uiState.isLoading
+                        )
                     }
-                },
-                text = stringResource(R.string.login),
-                enabled = !uiState.isLoading,
-                loading = uiState.isLoading,
-                fullWidth = true,
-                modifier = Modifier.fillMaxWidth()
-            )
+                }
+            } else {
+                // Original single-column layout for tablet and mobile vertical
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(horizontal = horizontalPadding)
+                        .then(formWidthModifier)
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(verticalSpacing, Alignment.CenterVertically)
+                ) {
+                    // App branding
+                    Icon(
+                        imageVector = Icons.Default.ShoppingCart,
+                        contentDescription = null,
+                        modifier = Modifier.size(72.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
 
-            // Register link (Gestalt: Continuity)
-            AppTextButton(
-                onClick = onNavigateToRegister,
-                text = "${stringResource(R.string.no_account)} ${stringResource(R.string.register)}",
-                enabled = !uiState.isLoading
-            )
+                    Text(
+                        text = stringResource(R.string.app_name),
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Spacer(modifier = Modifier.height(headerSpacerHeight))
+
+                    // Email field (Nielsen: Recognition over recall)
+                    AppTextField(
+                        value = email,
+                        onValueChange = {
+                            email = it
+                            emailError = null // Clear error on input
+                        },
+                        label = stringResource(R.string.email),
+                        placeholder = stringResource(R.string.email_placeholder),
+                        leadingIcon = Icons.Default.Email,
+                        isError = emailError != null,
+                        errorMessage = emailError,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Email,
+                            imeAction = ImeAction.Next
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    // Password field
+                    AppPasswordField(
+                        value = password,
+                        onValueChange = {
+                            password = it
+                            passwordError = null
+                        },
+                        label = stringResource(R.string.password),
+                        isError = passwordError != null,
+                        errorMessage = passwordError,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Password,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                focusManager.clearFocus()
+                                if (validateInput(
+                                        email,
+                                        password,
+                                        emailRequiredMessage,
+                                        invalidEmailMessage,
+                                        passwordRequiredMessage,
+                                        passwordTooShortMessage,
+                                        { emailError = it },
+                                        { passwordError = it }
+                                    )) {
+                                    onLogin(email, password)
+                                }
+                            }
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(buttonSpacerHeight))
+
+                    // Login button (Nielsen: Visibility of system status)
+                    AppButton(
+                        onClick = {
+                            if (validateInput(
+                                    email,
+                                    password,
+                                    emailRequiredMessage,
+                                    invalidEmailMessage,
+                                    passwordRequiredMessage,
+                                    passwordTooShortMessage,
+                                    { emailError = it },
+                                    { passwordError = it }
+                                )) {
+                                onLogin(email, password)
+                            }
+                        },
+                        text = stringResource(R.string.login),
+                        enabled = !uiState.isLoading,
+                        loading = uiState.isLoading,
+                        fullWidth = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    // Register link (Gestalt: Continuity)
+                    AppTextButton(
+                        onClick = onNavigateToRegister,
+                        text = "${stringResource(R.string.no_account)} ${stringResource(R.string.register)}",
+                        enabled = !uiState.isLoading
+                    )
+                }
             }
         }
     }
