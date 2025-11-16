@@ -21,6 +21,9 @@ import com.example.listitaapp.ui.components.AppMessageDialog
 import com.example.listitaapp.ui.components.AppTextField
 import com.example.listitaapp.ui.components.AppButton
 import com.example.listitaapp.ui.components.AppTextButton
+import com.example.listitaapp.ui.components.WindowSizeClass
+import com.example.listitaapp.ui.components.isLandscape
+import com.example.listitaapp.ui.components.rememberWindowSize
 import com.example.listitaapp.ui.common.asString
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,6 +41,13 @@ fun VerifyAccountScreen(
     var codeError by remember { mutableStateOf<String?>(null) }
 
     val focusManager = LocalFocusManager.current
+    val windowSize = rememberWindowSize()
+    val isTabletLandscape = isLandscape() && windowSize.width != WindowSizeClass.Compact
+    val horizontalPadding = if (isTabletLandscape) 48.dp else 24.dp
+    val verticalSpacing = if (isTabletLandscape) 12.dp else 16.dp
+    val formWidthModifier = if (isTabletLandscape) Modifier.widthIn(max = 420.dp) else Modifier
+    val headerSpacerHeight = if (isTabletLandscape) 8.dp else 16.dp
+    val fieldSpacerHeight = if (isTabletLandscape) 6.dp else 8.dp
 
     // Navigation handled by MainActivity based on auth state
     // When isAuthenticated becomes true, NavHost will automatically navigate to main screen
@@ -62,14 +72,20 @@ fun VerifyAccountScreen(
     }
 
     Scaffold { padding ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
         ) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(horizontal = horizontalPadding)
+                    .then(formWidthModifier)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(verticalSpacing, Alignment.CenterVertically)
+            ) {
             // Icon
             Icon(
                 imageVector = Icons.Default.Email,
@@ -106,6 +122,7 @@ fun VerifyAccountScreen(
             )
 
             Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(headerSpacerHeight))
 
             // Verification code field
             AppTextField(
@@ -130,10 +147,11 @@ fun VerifyAccountScreen(
                             onVerify(code.trim())
                         }
                     }
-                )
+                ),
+                modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(fieldSpacerHeight))
 
             // Verify button
             AppButton(
@@ -145,7 +163,8 @@ fun VerifyAccountScreen(
                 text = stringResource(R.string.verify_account_title),
                 enabled = !uiState.isLoading,
                 loading = uiState.isLoading,
-                fullWidth = true
+                fullWidth = true,
+                modifier = Modifier.fillMaxWidth()
             )
 
             // Resend code button
@@ -161,6 +180,7 @@ fun VerifyAccountScreen(
                 text = stringResource(R.string.back_to_login),
                 enabled = !uiState.isLoading
             )
+            }
         }
     }
 }
