@@ -28,8 +28,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import com.example.listitaapp.R
-import com.example.listitaapp.data.model.Product
-import com.example.listitaapp.data.model.Category
+import com.example.listitaapp.domain.model.Product
+import com.example.listitaapp.domain.model.Category
 import com.example.listitaapp.ui.components.AppTopBar
 import com.example.listitaapp.ui.components.StandardCard
 import com.example.listitaapp.ui.components.OptionsPopupMenu

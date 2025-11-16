@@ -21,7 +21,8 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.listitaapp.R
-import com.example.listitaapp.data.model.ShoppingList
+import com.example.listitaapp.domain.model.ShoppingList
+import com.example.listitaapp.domain.model.User
 import com.example.listitaapp.ui.components.AppFab
 import com.example.listitaapp.ui.components.AppTopBar
 import com.example.listitaapp.ui.components.SectionHeader
@@ -641,7 +642,7 @@ fun CreateShoppingListDialog(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShareListDialog(
-    sharedUsers: List<com.example.listitaapp.data.model.User>,
+    sharedUsers: List<User>,
     isLoading: Boolean,
     onDismiss: () -> Unit,
     onShare: (String) -> Unit,

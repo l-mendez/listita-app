@@ -16,7 +16,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.listitaapp.R
-import com.example.listitaapp.data.model.Purchase
+import com.example.listitaapp.domain.model.Purchase
 import com.example.listitaapp.ui.components.AppDialogType
 import com.example.listitaapp.ui.components.AppMessageDialog
 import com.example.listitaapp.ui.components.AppSnackbarHost

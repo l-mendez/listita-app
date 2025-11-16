@@ -3,7 +3,7 @@ package com.example.listitaapp.ui.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.listitaapp.R
-import com.example.listitaapp.data.model.User
+import com.example.listitaapp.domain.model.User
 import com.example.listitaapp.data.repository.AuthRepository
 import com.example.listitaapp.data.repository.UserRepository
 import com.example.listitaapp.ui.common.UiMessage

@@ -1,13 +1,15 @@
 package com.example.listitaapp.data.repository
 
-import com.example.listitaapp.data.api.ApiService
-import com.example.listitaapp.data.dto.*
-import com.example.listitaapp.data.model.Category
-import com.example.listitaapp.data.model.Product
+import com.example.listitaapp.data.datasource.CategoryRemoteDataSource
+import com.example.listitaapp.data.datasource.ProductRemoteDataSource
+import com.example.listitaapp.data.mapper.toDomain
+import com.example.listitaapp.domain.model.Category
+import com.example.listitaapp.domain.model.Product
 import javax.inject.Inject
 
 class ProductRepository @Inject constructor(
-    private val apiService: ApiService
+    private val productRemoteDataSource: ProductRemoteDataSource,
+    private val categoryRemoteDataSource: CategoryRemoteDataSource
 ) {
 
     suspend fun getProducts(
@@ -17,102 +19,42 @@ class ProductRepository @Inject constructor(
         perPage: Int = 10,
         sortBy: String = "name",
         order: String = "ASC"
-    ): Result<List<Product>> = try {
-        val response = apiService.getProducts(name, categoryId, page, perPage, sortBy, order)
-        if (response.isSuccessful && response.body() != null) {
-            Result.success(response.body()!!.data)
-        } else {
-            Result.failure(Exception(response.message()))
-        }
-    } catch (e: Exception) {
-        Result.failure(e)
+    ): Result<List<Product>> = runCatching {
+        productRemoteDataSource
+            .getProducts(name, categoryId, page, perPage, sortBy, order)
+            .data
+            .map { it.toDomain() }
     }
 
-    suspend fun createProduct(name: String, categoryId: Long?): Result<Product> = try {
-        val request = CreateProductRequest(name, categoryId?.let { ProductCategory(it) })
-        val response = apiService.createProduct(request)
-        if (response.isSuccessful && response.body() != null) {
-            Result.success(response.body()!!)
-        } else {
-            Result.failure(Exception(response.message()))
-        }
-    } catch (e: Exception) {
-        Result.failure(e)
+    suspend fun createProduct(name: String, categoryId: Long?): Result<Product> = runCatching {
+        productRemoteDataSource.createProduct(name, categoryId).toDomain()
     }
 
     suspend fun updateProduct(
         id: Long,
         name: String?,
         categoryId: Long?
-    ): Result<Product> = try {
-        val request = UpdateProductRequest(
-            name = name,
-            category = categoryId?.let { ProductCategory(it) }
-        )
-        val response = apiService.updateProduct(id, request)
-        if (response.isSuccessful && response.body() != null) {
-            Result.success(response.body()!!.product)
-        } else {
-            Result.failure(Exception(response.message()))
-        }
-    } catch (e: Exception) {
-        Result.failure(e)
+    ): Result<Product> = runCatching {
+        productRemoteDataSource.updateProduct(id, name, categoryId).product.toDomain()
     }
 
-    suspend fun deleteProduct(id: Long): Result<Unit> = try {
-        val response = apiService.deleteProduct(id)
-        if (response.isSuccessful) {
-            Result.success(Unit)
-        } else {
-            Result.failure(Exception(response.message()))
-        }
-    } catch (e: Exception) {
-        Result.failure(e)
+    suspend fun deleteProduct(id: Long): Result<Unit> = runCatching {
+        productRemoteDataSource.deleteProduct(id)
     }
 
-    suspend fun getCategories(): Result<List<Category>> = try {
-        val response = apiService.getCategories()
-        if (response.isSuccessful && response.body() != null) {
-            Result.success(response.body()!!.data)
-        } else {
-            Result.failure(Exception(response.message()))
-        }
-    } catch (e: Exception) {
-        Result.failure(e)
+    suspend fun getCategories(): Result<List<Category>> = runCatching {
+        categoryRemoteDataSource.getCategories().data.map { it.toDomain() }
     }
 
-    suspend fun createCategory(name: String): Result<Category> = try {
-        val request = CreateCategoryRequest(name)
-        val response = apiService.createCategory(request)
-        if (response.isSuccessful && response.body() != null) {
-            Result.success(response.body()!!)
-        } else {
-            Result.failure(Exception(response.message()))
-        }
-    } catch (e: Exception) {
-        Result.failure(e)
+    suspend fun createCategory(name: String): Result<Category> = runCatching {
+        categoryRemoteDataSource.createCategory(name).toDomain()
     }
 
-    suspend fun updateCategory(id: Long, name: String): Result<Category> = try {
-        val request = UpdateCategoryRequest(name = name)
-        val response = apiService.updateCategory(id, request)
-        if (response.isSuccessful && response.body() != null) {
-            Result.success(response.body()!!)
-        } else {
-            Result.failure(Exception(response.message()))
-        }
-    } catch (e: Exception) {
-        Result.failure(e)
+    suspend fun updateCategory(id: Long, name: String): Result<Category> = runCatching {
+        categoryRemoteDataSource.updateCategory(id, name).toDomain()
     }
 
-    suspend fun deleteCategory(id: Long): Result<Unit> = try {
-        val response = apiService.deleteCategory(id)
-        if (response.isSuccessful) {
-            Result.success(Unit)
-        } else {
-            Result.failure(Exception(response.message()))
-        }
-    } catch (e: Exception) {
-        Result.failure(e)
+    suspend fun deleteCategory(id: Long): Result<Unit> = runCatching {
+        categoryRemoteDataSource.deleteCategory(id)
     }
 }

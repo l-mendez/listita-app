@@ -4,7 +4,7 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import com.example.listitaapp.data.model.Category
+import com.example.listitaapp.domain.model.Category
 import kotlinx.coroutines.delay
 
 @Composable

@@ -3,7 +3,7 @@ package com.example.listitaapp.ui.categories
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.listitaapp.R
-import com.example.listitaapp.data.model.Category
+import com.example.listitaapp.domain.model.Category
 import com.example.listitaapp.data.repository.AuthRepository
 import com.example.listitaapp.data.repository.ProductRepository
 import com.example.listitaapp.ui.common.UiMessage

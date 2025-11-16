@@ -19,8 +19,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.example.listitaapp.R
-import com.example.listitaapp.data.model.ListItem
-import com.example.listitaapp.data.model.Product
+import com.example.listitaapp.domain.model.ListItem
+import com.example.listitaapp.domain.model.Product
 import com.example.listitaapp.ui.components.AppTopBar
 import com.example.listitaapp.ui.components.StandardCard
 import com.example.listitaapp.ui.components.AppFab

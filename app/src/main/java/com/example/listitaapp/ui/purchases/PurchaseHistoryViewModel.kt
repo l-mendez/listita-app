@@ -3,7 +3,7 @@ package com.example.listitaapp.ui.purchases
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.listitaapp.R
-import com.example.listitaapp.data.model.Purchase
+import com.example.listitaapp.domain.model.Purchase
 import com.example.listitaapp.data.repository.PurchaseRepository
 import com.example.listitaapp.ui.common.UiMessage
 import dagger.hilt.android.lifecycle.HiltViewModel

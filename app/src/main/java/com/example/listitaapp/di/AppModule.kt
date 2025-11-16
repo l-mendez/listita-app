@@ -5,6 +5,13 @@ import com.example.listitaapp.data.api.ApiService
 import com.example.listitaapp.data.api.AuthInterceptor
 import com.example.listitaapp.data.api.ClearOnUnauthorizedInterceptor
 import com.example.listitaapp.data.api.TokenManager
+import com.example.listitaapp.data.datasource.AuthRemoteDataSource
+import com.example.listitaapp.data.datasource.CategoryRemoteDataSource
+import com.example.listitaapp.data.datasource.ListItemRemoteDataSource
+import com.example.listitaapp.data.datasource.ProductRemoteDataSource
+import com.example.listitaapp.data.datasource.PurchaseRemoteDataSource
+import com.example.listitaapp.data.datasource.ShoppingListRemoteDataSource
+import com.example.listitaapp.data.datasource.UserRemoteDataSource
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
@@ -90,5 +97,68 @@ object AppModule {
     @Singleton
     fun provideApiService(retrofit: Retrofit): ApiService {
         return retrofit.create(ApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideShoppingListRemoteDataSource(
+        apiService: ApiService,
+        moshi: Moshi
+    ): ShoppingListRemoteDataSource {
+        return ShoppingListRemoteDataSource(apiService, moshi)
+    }
+
+    @Provides
+    @Singleton
+    fun provideListItemRemoteDataSource(
+        apiService: ApiService,
+        moshi: Moshi
+    ): ListItemRemoteDataSource {
+        return ListItemRemoteDataSource(apiService, moshi)
+    }
+
+    @Provides
+    @Singleton
+    fun provideProductRemoteDataSource(
+        apiService: ApiService,
+        moshi: Moshi
+    ): ProductRemoteDataSource {
+        return ProductRemoteDataSource(apiService, moshi)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCategoryRemoteDataSource(
+        apiService: ApiService,
+        moshi: Moshi
+    ): CategoryRemoteDataSource {
+        return CategoryRemoteDataSource(apiService, moshi)
+    }
+
+    @Provides
+    @Singleton
+    fun providePurchaseRemoteDataSource(
+        apiService: ApiService,
+        moshi: Moshi
+    ): PurchaseRemoteDataSource {
+        return PurchaseRemoteDataSource(apiService, moshi)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAuthRemoteDataSource(
+        apiService: ApiService,
+        moshi: Moshi
+    ): AuthRemoteDataSource {
+        return AuthRemoteDataSource(apiService, moshi)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUserRemoteDataSource(
+        apiService: ApiService,
+        moshi: Moshi
+    ): UserRemoteDataSource {
+        return UserRemoteDataSource(apiService, moshi)
     }
 }

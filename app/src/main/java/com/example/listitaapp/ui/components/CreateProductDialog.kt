@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.stringResource
 import com.example.listitaapp.R
-import com.example.listitaapp.data.model.Category
+import com.example.listitaapp.domain.model.Category
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

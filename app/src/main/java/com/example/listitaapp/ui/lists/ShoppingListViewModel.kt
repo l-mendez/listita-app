@@ -3,9 +3,9 @@ package com.example.listitaapp.ui.lists
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.listitaapp.R
-import com.example.listitaapp.data.model.ListItem
-import com.example.listitaapp.data.model.ShoppingList
-import com.example.listitaapp.data.model.User
+import com.example.listitaapp.domain.model.ListItem
+import com.example.listitaapp.domain.model.ShoppingList
+import com.example.listitaapp.domain.model.User
 import com.example.listitaapp.data.repository.AuthRepository
 import com.example.listitaapp.data.repository.ShoppingListRepository
 import com.example.listitaapp.ui.common.UiMessage
