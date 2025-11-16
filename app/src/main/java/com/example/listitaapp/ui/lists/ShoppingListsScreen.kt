@@ -1,15 +1,9 @@
 package com.example.listitaapp.ui.lists
 
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
@@ -22,7 +16,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.res.stringResource
@@ -41,6 +34,7 @@ import com.example.listitaapp.ui.components.AppConfirmDialog
 import com.example.listitaapp.ui.components.AppDialogType
 import com.example.listitaapp.ui.components.AppMessageDialog
 import com.example.listitaapp.ui.components.AppSnackbarHost
+import com.example.listitaapp.ui.components.StandardCard
 import com.example.listitaapp.ui.components.rememberAppSnackbarState
 import com.example.listitaapp.ui.components.AppTextField
 import com.example.listitaapp.ui.components.AppTextButton
@@ -209,7 +203,6 @@ fun ShoppingListsScreen(
     val landscape = com.example.listitaapp.ui.components.isLandscape()
 
     Scaffold(
-        containerColor = Color.White,
         topBar = {
             AppTopBar(
                 title = stringResource(R.string.shopping_lists),
@@ -240,13 +233,7 @@ fun ShoppingListsScreen(
             // Only show search bar in compact/portrait mode
             val columns = getGridColumns()
             val landscape = com.example.listitaapp.ui.components.isLandscape()
-
-            // Calculate responsive padding based on screen size
-            val horizontalPadding = when {
-                columns == 1 -> 16.dp
-                landscape -> 120.dp
-                else -> 90.dp // Tablet portrait
-            }
+            val horizontalPadding = 16.dp
 
             if (columns == 1) {
                 SearchBar(
@@ -292,6 +279,7 @@ fun ShoppingListsScreen(
                 }
             } else {
                 val columns = getGridColumns()
+                val extraBottomPadding = if (columns > 1) 96.dp else 0.dp
                 val filteredLists = uiState.lists
                 val recurrentes = remember(filteredLists) {
                     filteredLists.filter { it.recurring }.sortedBy { it.name.lowercase() }
@@ -306,7 +294,7 @@ fun ShoppingListsScreen(
                         start = horizontalPadding,
                         end = horizontalPadding,
                         top = 8.dp,
-                        bottom = 0.dp
+                        bottom = extraBottomPadding
                     ),
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
@@ -359,7 +347,7 @@ fun ShoppingListsScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(end = 16.dp, bottom = 148.dp),
+                .padding(end = 16.dp, bottom = 124.dp),
             contentAlignment = Alignment.BottomEnd
         ) {
             AppSearchButton(
@@ -495,19 +483,11 @@ private fun ShoppingListItem(
     onClick: () -> Unit,
     onSettingsClick: (Rect) -> Unit
 ) {
-    Card(
+    StandardCard(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 100.dp)
-            .clickable(onClick = onClick)
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
-                shape = RoundedCornerShape(16.dp)
-            ),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            .heightIn(min = 100.dp),
+        onClick = onClick
     ) {
         Row(
             modifier = Modifier

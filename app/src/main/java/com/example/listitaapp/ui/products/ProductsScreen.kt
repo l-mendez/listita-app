@@ -74,6 +74,9 @@ fun ProductsScreen(
     var showOptions by remember { mutableStateOf(false) }
     var anchorBounds by remember { mutableStateOf<Rect?>(null) }
     var showSearchDialog by remember { mutableStateOf(false) }
+    val windowSize = rememberWindowSize()
+    val landscape = isLandscape()
+    val showSearchButton = windowSize.width != WindowSizeClass.Compact || landscape
 
     // Error dialog (standardized)
     uiState.error?.let {
@@ -122,7 +125,6 @@ fun ProductsScreen(
     }
 
     Scaffold(
-        containerColor = androidx.compose.ui.graphics.Color.White,
         topBar = {
             AppTopBar(
                 title = stringResource(R.string.products)
@@ -139,15 +141,7 @@ fun ProductsScreen(
                 .padding(padding)
         ) {
             // Search bar
-            val windowSize = rememberWindowSize()
-            val landscape = isLandscape()
-
-            // Calculate responsive padding based on screen size
-            val horizontalPadding = when {
-                windowSize.width == WindowSizeClass.Compact -> 16.dp
-                landscape -> 120.dp
-                else -> 90.dp // Tablet portrait
-            }
+            val horizontalPadding = 16.dp
 
             if (windowSize.width == WindowSizeClass.Compact && !landscape) {
                 SearchBar(
@@ -201,6 +195,7 @@ fun ProductsScreen(
                         showOptions = true
                     },
                     horizontalPadding = horizontalPadding,
+                    extraBottomPadding = if (showSearchButton) 96.dp else 0.dp,
                     modifier = Modifier.fillMaxSize()
                 )
             }
@@ -208,13 +203,11 @@ fun ProductsScreen(
     }
 
     // Search button overlay for tablet/landscape mode (positioned above FAB)
-    val windowSize = rememberWindowSize()
-    val landscape = isLandscape()
-    if (windowSize.width != WindowSizeClass.Compact || landscape) {
+    if (showSearchButton) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(end = 16.dp, bottom = 148.dp),
+                .padding(end = 16.dp, bottom = 124.dp),
             contentAlignment = Alignment.BottomEnd
         ) {
             AppSearchButton(
@@ -399,6 +392,7 @@ private fun ProductsList(
     products: List<Product>,
     onSettingsClick: (Product, Rect) -> Unit,
     horizontalPadding: androidx.compose.ui.unit.Dp,
+    extraBottomPadding: androidx.compose.ui.unit.Dp,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -407,7 +401,7 @@ private fun ProductsList(
             start = horizontalPadding,
             end = horizontalPadding,
             top = 8.dp,
-            bottom = 0.dp
+            bottom = extraBottomPadding
         ),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
