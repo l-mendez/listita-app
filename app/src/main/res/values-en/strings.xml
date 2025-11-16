@@ -140,6 +140,7 @@
     <string name="verify_now">Verify now</string>
     <string name="email_required">Email is required</string>
     <string name="password_required">Password is required</string>
+    <string name="confirm_password_required">Confirm your password</string>
     <string name="name_required">First name is required</string>
     <string name="surname_required">Last name is required</string>
     <string name="name_too_short">First name must be at least 2 characters</string>

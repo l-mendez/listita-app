@@ -48,6 +48,8 @@ fun VerifyAccountScreen(
     val formWidthModifier = if (isTabletLandscape) Modifier.widthIn(max = 420.dp) else Modifier
     val headerSpacerHeight = if (isTabletLandscape) 8.dp else 16.dp
     val fieldSpacerHeight = if (isTabletLandscape) 6.dp else 8.dp
+    val codeRequiredMessage = stringResource(R.string.code_required)
+    val codeInvalidMessage = stringResource(R.string.code_invalid)
 
     // Navigation handled by MainActivity based on auth state
     // When isAuthenticated becomes true, NavHost will automatically navigate to main screen
@@ -143,7 +145,13 @@ fun VerifyAccountScreen(
                 keyboardActions = KeyboardActions(
                     onDone = {
                         focusManager.clearFocus()
-                        if (validateCode(code.trim(), { codeError = it })) {
+                        if (validateCode(
+                                code.trim(),
+                                codeRequiredMessage,
+                                codeInvalidMessage,
+                                { codeError = it }
+                            )
+                        ) {
                             onVerify(code.trim())
                         }
                     }
@@ -156,7 +164,13 @@ fun VerifyAccountScreen(
             // Verify button
             AppButton(
                 onClick = {
-                    if (validateCode(code.trim(), { codeError = it })) {
+                    if (validateCode(
+                            code.trim(),
+                            codeRequiredMessage,
+                            codeInvalidMessage,
+                            { codeError = it }
+                        )
+                    ) {
                         onVerify(code.trim())
                     }
                 },
@@ -188,15 +202,17 @@ fun VerifyAccountScreen(
 // Code validation
 private fun validateCode(
     code: String,
+    codeRequiredMessage: String,
+    codeInvalidMessage: String,
     setCodeError: (String?) -> Unit
 ): Boolean {
     if (code.isBlank()) {
-        setCodeError("Verification code is required")
+        setCodeError(codeRequiredMessage)
         return false
     }
 
     if (code.length < 6) {
-        setCodeError("Code must be at least 6 characters")
+        setCodeError(codeInvalidMessage)
         return false
     }
 

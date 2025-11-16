@@ -60,6 +60,11 @@ fun LoginScreen(
         )
     }
 
+    val emailRequiredMessage = stringResource(R.string.email_required)
+    val invalidEmailMessage = stringResource(R.string.invalid_email)
+    val passwordRequiredMessage = stringResource(R.string.password_required)
+    val passwordTooShortMessage = stringResource(R.string.password_too_short)
+
     Scaffold { padding ->
         Box(
             modifier = Modifier
@@ -131,9 +136,16 @@ fun LoginScreen(
                 keyboardActions = KeyboardActions(
                     onDone = {
                         focusManager.clearFocus()
-                        if (validateInput(email, password,
+                        if (validateInput(
+                                email,
+                                password,
+                                emailRequiredMessage,
+                                invalidEmailMessage,
+                                passwordRequiredMessage,
+                                passwordTooShortMessage,
                                 { emailError = it },
-                                { passwordError = it })) {
+                                { passwordError = it }
+                            )) {
                             onLogin(email, password)
                         }
                     }
@@ -146,9 +158,16 @@ fun LoginScreen(
             // Login button (Nielsen: Visibility of system status)
             AppButton(
                 onClick = {
-                    if (validateInput(email, password,
+                    if (validateInput(
+                            email,
+                            password,
+                            emailRequiredMessage,
+                            invalidEmailMessage,
+                            passwordRequiredMessage,
+                            passwordTooShortMessage,
                             { emailError = it },
-                            { passwordError = it })) {
+                            { passwordError = it }
+                        )) {
                         onLogin(email, password)
                     }
                 },
@@ -174,24 +193,28 @@ fun LoginScreen(
 private fun validateInput(
     email: String,
     password: String,
+    emailRequiredMessage: String,
+    invalidEmailMessage: String,
+    passwordRequiredMessage: String,
+    passwordTooShortMessage: String,
     setEmailError: (String?) -> Unit,
     setPasswordError: (String?) -> Unit
 ): Boolean {
     var isValid = true
 
     if (email.isBlank()) {
-        setEmailError("Email is required")
+        setEmailError(emailRequiredMessage)
         isValid = false
     } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-        setEmailError("Invalid email address")
+        setEmailError(invalidEmailMessage)
         isValid = false
     }
 
     if (password.isBlank()) {
-        setPasswordError("Password is required")
+        setPasswordError(passwordRequiredMessage)
         isValid = false
     } else if (password.length < 6) {
-        setPasswordError("Password must be at least 6 characters")
+        setPasswordError(passwordTooShortMessage)
         isValid = false
     }
 

@@ -143,6 +143,7 @@
   <string name="verify_now">Verificar ahora</string>
   <string name="email_required">El correo es requerido</string>
   <string name="password_required">La contraseña es requerida</string>
+  <string name="confirm_password_required">Confirma tu contraseña</string>
   <string name="name_required">El nombre es requerido</string>
   <string name="surname_required">El apellido es requerido</string>
   <string name="name_too_short">El nombre debe tener al menos 2 caracteres</string>
