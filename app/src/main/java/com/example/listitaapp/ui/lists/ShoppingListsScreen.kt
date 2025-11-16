@@ -510,21 +510,10 @@ private fun ShoppingListItem(
                 .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (list.recurring) {
-                Icon(
-                    imageVector = Icons.Default.History,
-                    contentDescription = stringResource(R.string.recurrente),
-                    modifier = Modifier
-                        .size(40.dp)
-                        .padding(end = 12.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
             if (list.description.isNullOrBlank()) {
                 Column(
                     modifier = Modifier
-                        .weight(1f)
-                        .padding(top = 8.dp),
+                        .weight(1f),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
