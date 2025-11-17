@@ -4,6 +4,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.*
@@ -12,10 +15,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import android.content.res.Configuration
 import com.example.listitaapp.R
 import com.example.listitaapp.ui.components.AppTopBar
 import com.example.listitaapp.ui.components.StandardCard
@@ -31,6 +32,8 @@ import com.example.listitaapp.ui.components.show
 import com.example.listitaapp.ui.components.AppTextField
 import com.example.listitaapp.ui.components.AppPasswordField
 import com.example.listitaapp.ui.common.asString
+import com.example.listitaapp.ui.components.isLandscape
+import androidx.compose.ui.platform.LocalConfiguration
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -85,7 +88,9 @@ fun ProfileScreen(
     }
 
     val configuration = LocalConfiguration.current
-    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val screenHeightDp = configuration.screenHeightDp
+    val isLandscape = isLandscape()
+    val isMobileHorizontal = isLandscape && screenHeightDp < 500
 
     Scaffold(
         topBar = {
@@ -144,49 +149,126 @@ fun ProfileScreen(
 
                         val themeSubtitle = themePreferenceLabel(themePreference)
 
-                        Column(
-                            modifier = Modifier
-                                .weight(0.5f)
-                                .fillMaxHeight()
-                                .padding(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            SettingsItem(
-                                modifier = Modifier.weight(1f),
-                                icon = Icons.Default.Edit,
-                                title = stringResource(R.string.edit_profile),
-                                subtitle = stringResource(R.string.profile_edit_description),
-                                onClick = onEditProfile,
-                                isLandscape = true
-                            )
+                        if (isMobileHorizontal) {
+                            // En móvil horizontal, permitimos que el contenido de las acciones
+                            // use la altura que necesite y sea desplazable, para que no se corte el texto.
+                            val scrollState = rememberScrollState()
+                            var showScrollIndicator by remember { mutableStateOf(true) }
 
-                            SettingsItem(
-                                modifier = Modifier.weight(1f),
-                                icon = Icons.Default.Lock,
-                                title = stringResource(R.string.change_password),
-                                subtitle = stringResource(R.string.profile_password_description),
-                                onClick = onChangePassword,
-                                isLandscape = true
-                            )
+                            LaunchedEffect(scrollState.value) {
+                                if (scrollState.value > 0) {
+                                    showScrollIndicator = false
+                                }
+                            }
 
-                            SettingsItem(
-                                modifier = Modifier.weight(1f),
-                                icon = Icons.Default.DarkMode,
-                                title = stringResource(R.string.theme),
-                                subtitle = themeSubtitle,
-                                onClick = { showThemeDialog = true },
-                                isLandscape = true
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .weight(0.5f)
+                                    .fillMaxHeight()
+                                    .padding(8.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .verticalScroll(scrollState),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    SettingsItem(
+                                        icon = Icons.Default.Edit,
+                                        title = stringResource(R.string.edit_profile),
+                                        subtitle = stringResource(R.string.profile_edit_description),
+                                        onClick = onEditProfile,
+                                        isLandscape = true
+                                    )
 
-                            SettingsItem(
-                                modifier = Modifier.weight(1f),
-                                icon = Icons.AutoMirrored.Filled.ExitToApp,
-                                title = stringResource(R.string.logout),
-                                subtitle = stringResource(R.string.profile_logout_description),
-                                onClick = { showLogoutDialog = true },
-                                tint = MaterialTheme.colorScheme.error,
-                                isLandscape = true
-                            )
+                                    SettingsItem(
+                                        icon = Icons.Default.Lock,
+                                        title = stringResource(R.string.change_password),
+                                        subtitle = stringResource(R.string.profile_password_description),
+                                        onClick = onChangePassword,
+                                        isLandscape = true
+                                    )
+
+                                    SettingsItem(
+                                        icon = Icons.Default.DarkMode,
+                                        title = stringResource(R.string.theme),
+                                        subtitle = themeSubtitle,
+                                        onClick = { showThemeDialog = true },
+                                        isLandscape = true
+                                    )
+
+                                    SettingsItem(
+                                        icon = Icons.AutoMirrored.Filled.ExitToApp,
+                                        title = stringResource(R.string.logout),
+                                        subtitle = stringResource(R.string.profile_logout_description),
+                                        onClick = { showLogoutDialog = true },
+                                        tint = MaterialTheme.colorScheme.error,
+                                        isLandscape = true
+                                    )
+                                }
+
+                                androidx.compose.animation.AnimatedVisibility(
+                                    visible = showScrollIndicator,
+                                    modifier = Modifier.align(Alignment.BottomCenter),
+                                    enter = fadeIn(),
+                                    exit = fadeOut()
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.KeyboardArrowDown,
+                                        contentDescription = "Scroll down",
+                                        modifier = Modifier
+                                            .padding(bottom = 16.dp)
+                                            .size(32.dp),
+                                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                                    )
+                                }
+                            }
+                        } else {
+                            // En tablet/landscape estándar mantenemos el layout actual
+                            Column(
+                                modifier = Modifier
+                                    .weight(0.5f)
+                                    .fillMaxHeight()
+                                    .padding(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                SettingsItem(
+                                    modifier = Modifier.weight(1f),
+                                    icon = Icons.Default.Edit,
+                                    title = stringResource(R.string.edit_profile),
+                                    subtitle = stringResource(R.string.profile_edit_description),
+                                    onClick = onEditProfile,
+                                    isLandscape = true
+                                )
+
+                                SettingsItem(
+                                    modifier = Modifier.weight(1f),
+                                    icon = Icons.Default.Lock,
+                                    title = stringResource(R.string.change_password),
+                                    subtitle = stringResource(R.string.profile_password_description),
+                                    onClick = onChangePassword,
+                                    isLandscape = true
+                                )
+
+                                SettingsItem(
+                                    modifier = Modifier.weight(1f),
+                                    icon = Icons.Default.DarkMode,
+                                    title = stringResource(R.string.theme),
+                                    subtitle = themeSubtitle,
+                                    onClick = { showThemeDialog = true },
+                                    isLandscape = true
+                                )
+
+                                SettingsItem(
+                                    modifier = Modifier.weight(1f),
+                                    icon = Icons.AutoMirrored.Filled.ExitToApp,
+                                    title = stringResource(R.string.logout),
+                                    subtitle = stringResource(R.string.profile_logout_description),
+                                    onClick = { showLogoutDialog = true },
+                                    tint = MaterialTheme.colorScheme.error,
+                                    isLandscape = true
+                                )
+                            }
                         }
                     }
                 } else {
