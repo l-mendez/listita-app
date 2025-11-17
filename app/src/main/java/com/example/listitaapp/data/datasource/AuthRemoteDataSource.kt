@@ -4,8 +4,6 @@ import com.example.listitaapp.data.api.ApiService
 import com.example.listitaapp.data.dto.AuthResponse
 import com.example.listitaapp.data.dto.ChangePasswordRequest
 import com.example.listitaapp.data.dto.LoginRequest
-import com.example.listitaapp.data.dto.PasswordRecoveryRequest
-import com.example.listitaapp.data.dto.PasswordResetRequest
 import com.example.listitaapp.data.dto.RegisterRequest
 import com.example.listitaapp.data.dto.ResendVerificationResponse
 import com.example.listitaapp.data.dto.VerifyAccountRequest
@@ -47,16 +45,6 @@ class AuthRemoteDataSource @Inject constructor(
     suspend fun changePassword(currentPassword: String, newPassword: String) {
         val response = apiService.changePassword(ChangePasswordRequest(currentPassword, newPassword))
         handleUnitResponse(response, "Failed to change password")
-    }
-
-    suspend fun forgotPassword(email: String) {
-        val response = apiService.forgotPassword(PasswordRecoveryRequest(email))
-        handleUnitResponse(response, "Failed to request password recovery")
-    }
-
-    suspend fun resetPassword(code: String, newPassword: String) {
-        val response = apiService.resetPassword(PasswordResetRequest(code, newPassword))
-        handleUnitResponse(response, "Failed to reset password")
     }
 
     suspend fun logout() {

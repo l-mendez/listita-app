@@ -47,7 +47,6 @@
   <string name="profile_password_description">Cambia la contraseña de tu cuenta</string>
   <string name="profile_logout_description">Cierra sesión de tu cuenta</string>
   <string name="theme">Tema</string>
-  <string name="theme_description">Claro, oscuro o igual al sistema</string>
   <string name="theme_option_system">Predeterminado del sistema</string>
   <string name="theme_option_light">Claro</string>
   <string name="theme_option_dark">Oscuro</string>
@@ -114,8 +113,6 @@
   <string name="product_updated">Producto actualizado</string>
   <string name="product_deleted">Producto eliminado</string>
   <string name="category_created">Categoría creada exitosamente</string>
-  <string name="category_deleted">Categoría eliminada</string>
-  <string name="category_updated">Categoría actualizada</string>
   <string name="profile_updated">Perfil actualizado exitosamente</string>
   <string name="item_added">Producto agregado a la lista</string>
   <string name="item_updated">Producto actualizado</string>

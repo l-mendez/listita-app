@@ -30,21 +30,9 @@ data class UpdateShoppingListRequest(
 )
 
 @Serializable
-data class ShareListRequest(
-    @SerialName("users")
-    val users: List<ShareUser>
-)
-
-@Serializable
 data class ShareByEmailRequest(
     @SerialName("email")
     val email: String
-)
-
-@Serializable
-data class ShareUser(
-    @SerialName("id")
-    val id: Long
 )
 
 @Serializable

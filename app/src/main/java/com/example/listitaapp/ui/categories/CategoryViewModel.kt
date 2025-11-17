@@ -99,56 +99,6 @@ class CategoryViewModel @Inject constructor(
         }
     }
 
-    fun deleteCategory(id: Long) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-            repository.deleteCategory(id).fold(
-                onSuccess = {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            successMessage = UiMessage(resId = R.string.category_deleted)
-                        )
-                    }
-                    loadCategories()
-                },
-                onFailure = { exception ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = exception.message ?: "Failed to delete category"
-                        )
-                    }
-                }
-            )
-        }
-    }
-
-    fun updateCategory(id: Long, name: String) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-            repository.updateCategory(id, name).fold(
-                onSuccess = {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            successMessage = UiMessage(resId = R.string.category_updated)
-                        )
-                    }
-                    loadCategories()
-                },
-                onFailure = { exception ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = exception.message ?: "Failed to update category"
-                        )
-                    }
-                }
-            )
-        }
-    }
-
     fun clearError() {
         _uiState.update { it.copy(error = null) }
     }

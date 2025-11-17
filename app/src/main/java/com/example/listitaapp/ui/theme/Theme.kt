@@ -11,7 +11,6 @@ import com.example.listitaapp.domain.model.ThemePreference
 private val LightColorScheme = lightColorScheme(
     primary = BrandPrimary,
     onPrimary = OnBrandPrimary,
-    // Used by default FAB
     primaryContainer = Neutral100,
     onPrimaryContainer = BrandPrimary,
     background = BackgroundDefault,

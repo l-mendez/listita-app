@@ -45,7 +45,6 @@ fun PurchaseHistoryScreen(
 ) {
     val appSnackbar = rememberAppSnackbarState()
 
-    // Error dialog
     uiState.error?.let {
         AppMessageDialog(
             type = AppDialogType.Error,
@@ -54,7 +53,6 @@ fun PurchaseHistoryScreen(
         )
     }
 
-    // Success snackbar
     uiState.successMessage?.let { message ->
         val localizedMessage = message.asString()
         LaunchedEffect(message) {
@@ -97,7 +95,6 @@ fun PurchaseHistoryScreen(
                 CircularProgressIndicator()
             }
         } else if (uiState.purchases.isEmpty()) {
-            // Empty state
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -182,7 +179,6 @@ fun PurchaseHistoryCard(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Header with list name and recurring badge
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -211,7 +207,6 @@ fun PurchaseHistoryCard(
                     }
                 }
 
-                // Description (if available)
                 purchase.list?.description?.let { description ->
                     if (description.isNotBlank()) {
                         Text(
@@ -224,7 +219,6 @@ fun PurchaseHistoryCard(
                     }
                 }
 
-                // Purchase date and items count
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -265,7 +259,6 @@ fun PurchaseHistoryCard(
                     }
                 }
 
-                // "Cannot restore" message for recurring lists
                 if (purchase.list?.recurring == true) {
                     Text(
                         text = stringResource(R.string.cannot_restore_recurring),
@@ -276,7 +269,6 @@ fun PurchaseHistoryCard(
                 }
             }
 
-            // Restore button (only for non-recurring lists) - icon only, right-aligned, vertically centered
             if (purchase.list?.recurring != true) {
                 IconButton(
                     onClick = onRestore,

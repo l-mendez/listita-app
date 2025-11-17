@@ -8,7 +8,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshotFlow
@@ -48,9 +47,6 @@ import com.example.listitaapp.ui.components.getGridColumns
 import com.example.listitaapp.ui.components.AppSearchField
 import com.example.listitaapp.ui.components.AppSearchButton
 import com.example.listitaapp.ui.common.asString
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,7 +83,6 @@ fun ShoppingListsScreen(
     var showShareDialog by remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
 
-    // Error dialog (standardized)
     uiState.error?.let {
         AppMessageDialog(
             type = AppDialogType.Error,
@@ -96,7 +91,6 @@ fun ShoppingListsScreen(
         )
     }
 
-    // Success snackbar (standardized)
     uiState.successMessage?.let { message ->
         val localizedMessage = message.asString()
         LaunchedEffect(message) {
@@ -120,7 +114,6 @@ fun ShoppingListsScreen(
         }
     }
 
-    // Rename dialog
     if (showRenameDialog && selectedList != null) {
         var newName by remember { mutableStateOf(selectedList!!.name) }
         AppFormDialog(
@@ -143,7 +136,6 @@ fun ShoppingListsScreen(
         }
     }
 
-    // Edit description dialog
     if (showEditDescriptionDialog && selectedList != null) {
         var newDescription by remember { mutableStateOf(selectedList!!.description ?: "") }
         AppFormDialog(
@@ -169,7 +161,6 @@ fun ShoppingListsScreen(
         }
     }
 
-    // Combined Edit dialog (name + description)
     if (showEditListDialog && selectedList != null) {
         var newName by remember { mutableStateOf(selectedList!!.name) }
         var newDescription by remember { mutableStateOf(selectedList!!.description ?: "") }
@@ -206,7 +197,6 @@ fun ShoppingListsScreen(
         }
     }
 
-    // Delete confirmation dialog (standardized)
     showDeleteDialog?.let { list ->
         AppConfirmDialog(
             message = stringResource(R.string.confirm_delete_list),
@@ -249,7 +239,6 @@ fun ShoppingListsScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Only show search bar in compact/portrait mode
             val columns = getGridColumns()
             val landscape = com.example.listitaapp.ui.components.isLandscape()
             val horizontalPadding = 16.dp
@@ -265,7 +254,6 @@ fun ShoppingListsScreen(
                 )
             }
 
-            // Loading indicator
             if (uiState.isLoading && uiState.lists.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -274,7 +262,6 @@ fun ShoppingListsScreen(
                     CircularProgressIndicator()
                 }
             } else if (uiState.lists.isEmpty()) {
-                // Empty state
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -307,7 +294,6 @@ fun ShoppingListsScreen(
                     filteredLists.filter { !it.recurring }.sortedBy { it.name.lowercase() }
                 }
 
-                // Always use single column layout
                 LazyColumn(
                     state = listState,
                     contentPadding = PaddingValues(
@@ -374,7 +360,6 @@ fun ShoppingListsScreen(
         }
     }
 
-    // Search button overlay for tablet/landscape mode (positioned above FAB)
     val columns = getGridColumns()
     if (columns > 1) {
         Box(
@@ -390,7 +375,6 @@ fun ShoppingListsScreen(
         }
     }
 
-    // Search dialog for tablet/landscape mode
     if (showSearchDialog) {
         var localQuery by remember { mutableStateOf(uiState.searchQuery) }
 
@@ -431,7 +415,6 @@ fun ShoppingListsScreen(
         }
     }
 
-    // Options popup menu
     OptionsPopupMenu(
         expanded = showOptions && selectedList != null,
         onDismissRequest = { showOptions = false },
@@ -442,7 +425,6 @@ fun ShoppingListsScreen(
                 icon = Icons.Default.History,
                 onClick = {
                     selectedList?.let {
-                        // Pass the CURRENT recurring value, repository will toggle it
                         onToggleRecurring(it.id, it.recurring)
                         showOptions = false
                     }
@@ -487,7 +469,6 @@ fun ShoppingListsScreen(
         )
     )
 
-    // Share dialog
     if (showShareDialog && selectedList != null) {
         ShareListDialog(
             sharedUsers = uiState.sharedUsers,
@@ -683,10 +664,8 @@ fun ShareListDialog(
 ) {
     var email by remember { mutableStateOf("") }
     
-    // Clear email when loading completes successfully
     LaunchedEffect(isLoading) {
         if (!isLoading && email.isNotBlank()) {
-            // Small delay to allow user to see success feedback
             kotlinx.coroutines.delay(300)
             email = ""
         }

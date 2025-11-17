@@ -2,7 +2,6 @@
     <string name="app_name">Listita</string>
 
     <!-- Common -->
-    <string name="loading">Loading…</string>
     <string name="error">Error</string>
     <string name="success">Success</string>
     <string name="info">Info</string>
@@ -11,11 +10,8 @@
     <string name="save">Save</string>
     <string name="delete">Delete</string>
     <string name="edit">Edit</string>
-    <string name="add">Add</string>
     <string name="search">Search</string>
     <string name="confirm">Confirm</string>
-    <string name="yes">Yes</string>
-    <string name="no">No</string>
 
     <!-- Auth -->
     <string name="login">Log In</string>
@@ -31,7 +27,6 @@
     <string name="current_password">Current Password</string>
     <string name="new_password">New Password</string>
     <string name="confirm_password">Confirm Password</string>
-    <string name="forgot_password">Forgot password?</string>
 
     <!-- Navigation -->
     <string name="shopping_lists">Lists</string>
@@ -47,7 +42,6 @@
     <string name="profile_password_description">Change your account password</string>
     <string name="profile_logout_description">Sign out of your account</string>
     <string name="theme">Theme</string>
-    <string name="theme_description">Light, dark, or follow system</string>
     <string name="theme_option_system">System default</string>
     <string name="theme_option_light">Light</string>
     <string name="theme_option_dark">Dark</string>
@@ -63,8 +57,6 @@
     <string name="add_item">Add Product</string>
     <string name="quantity">Quantity</string>
     <string name="unit">Unit</string>
-    <string name="purchased">Purchased</string>
-    <string name="mark_purchased">Mark as purchased</string>
 
     <!-- Products -->
     <string name="create_product">Create Product</string>
@@ -79,20 +71,15 @@
     <string name="empty_list_subtitle">Tap + to add products</string>
 
     <!-- Profile -->
-    <string name="my_profile">My Profile</string>
     <string name="settings">Settings</string>
     <string name="edit_profile">Edit Profile</string>
 
     <!-- Validation -->
-    <string name="field_required">This field is required</string>
     <string name="invalid_email">Invalid email address</string>
     <string name="password_too_short">Password must be at least 6 characters</string>
     <string name="passwords_dont_match">Passwords don\'t match</string>
 
     <!-- Messages -->
-    <string name="login_success">Successfully logged in</string>
-    <string name="registration_success">Registration successful. Please verify your email.</string>
-    <string name="verification_success">Account verified successfully</string>
     <string name="password_changed">Password changed successfully</string>
     <string name="list_created">List created successfully</string>
     <string name="list_deleted">List deleted</string>
@@ -106,13 +93,10 @@
     <string name="product_updated">Product updated</string>
     <string name="product_deleted">Product deleted</string>
     <string name="category_created">Category created successfully</string>
-    <string name="category_deleted">Category deleted</string>
-    <string name="category_updated">Category updated</string>
     <string name="profile_updated">Profile updated successfully</string>
     <string name="item_added">Item added to list</string>
     <string name="item_updated">Item updated</string>
     <string name="item_removed">Item removed</string>
-    <string name="network_error">Connection error. Check your network.</string>
     <string name="confirm_delete_list">Delete this list?</string>
     <string name="confirm_delete_product">Delete this product?</string>
     <string name="confirm_logout">Log out?</string>
@@ -131,7 +115,6 @@
     <string name="cambiar_descripcion">Change description</string>
     <string name="hacer_privada">Make private</string>
     <string name="compartir">Share</string>
-    <string name="guardar_cambios">Save changes</string>
     <string name="nuevo_nombre">New name</string>
     <string name="nueva_descripcion">New description</string>
     <string name="edit_list">Edit list</string>
@@ -151,8 +134,6 @@
     <string name="confirm_password_required">Confirm your password</string>
     <string name="name_required">First name is required</string>
     <string name="surname_required">Last name is required</string>
-    <string name="name_too_short">First name must be at least 2 characters</string>
-    <string name="surname_too_short">Last name must be at least 2 characters</string>
 
     <!-- Verification Screen -->
     <string name="verification_info">We\'ve sent a verification code to your email</string>
@@ -165,7 +146,6 @@
     <string name="code_invalid">Code must be 6 digits</string>
 
     <!-- Additional Messages -->
-    <string name="failed_to_update">Failed to update</string>
 
     <!-- Purchase History -->
     <string name="purchase_history">Purchase History</string>

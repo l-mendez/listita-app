@@ -21,7 +21,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.listitaapp.R
 import com.example.listitaapp.ui.components.AppDialogType
@@ -30,9 +29,7 @@ import com.example.listitaapp.ui.components.AppTextField
 import com.example.listitaapp.ui.components.AppPasswordField
 import com.example.listitaapp.ui.components.AppButton
 import com.example.listitaapp.ui.components.AppTextButton
-import com.example.listitaapp.ui.components.WindowSizeClass
 import com.example.listitaapp.ui.components.isLandscape
-import com.example.listitaapp.ui.components.rememberWindowSize
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,9 +54,7 @@ fun RegisterScreen(
 
     val focusManager = LocalFocusManager.current
     val configuration = LocalConfiguration.current
-    val screenWidthDp = configuration.screenWidthDp
     val screenHeightDp = configuration.screenHeightDp
-    val windowSize = rememberWindowSize()
 
     val isMobileHorizontal = isLandscape() && screenHeightDp < 500
     val isTabletLandscape = isLandscape() && screenHeightDp >= 500

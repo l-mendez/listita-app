@@ -22,11 +22,6 @@ class PurchaseRemoteDataSource @Inject constructor(
         return handleResponse(response, "Failed to get purchases")
     }
 
-    suspend fun getPurchaseById(id: Long): Purchase {
-        val response = apiService.getPurchaseById(id)
-        return handleResponse(response, "Failed to get purchase")
-    }
-
     suspend fun restorePurchase(id: Long): RestorePurchaseResponse {
         val response = apiService.restorePurchase(id)
         return handleResponse(response, "Failed to restore purchase")

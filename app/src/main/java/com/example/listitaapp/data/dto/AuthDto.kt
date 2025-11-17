@@ -59,20 +59,6 @@ data class UpdateProfileRequest(
 )
 
 @Serializable
-data class PasswordRecoveryRequest(
-    @SerialName("email")
-    val email: String
-)
-
-@Serializable
-data class PasswordResetRequest(
-    @SerialName("code")
-    val code: String,
-    @SerialName("password")
-    val password: String
-)
-
-@Serializable
 data class ErrorResponse(
     @SerialName("message")
     val message: String

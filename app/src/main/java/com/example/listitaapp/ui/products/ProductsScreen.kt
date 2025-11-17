@@ -96,7 +96,6 @@ fun ProductsScreen(
         }
     }
 
-    // Error dialog (standardized)
     uiState.error?.let {
         AppMessageDialog(
             type = AppDialogType.Error,
@@ -105,7 +104,6 @@ fun ProductsScreen(
         )
     }
 
-    // Success snackbar (standardized)
     uiState.successMessage?.let { message ->
         val localizedMessage = message.asString()
         LaunchedEffect(message) {
@@ -116,7 +114,6 @@ fun ProductsScreen(
         }
     }
 
-    // Delete confirmation dialog (standardized)
     showDeleteDialog?.let { product ->
         AppConfirmDialog(
             message = stringResource(R.string.confirm_delete_product),
@@ -129,7 +126,6 @@ fun ProductsScreen(
         )
     }
 
-    // Edit product dialog
     editingProduct?.let { product ->
         EditProductDialog(
             product = product,
@@ -158,7 +154,6 @@ fun ProductsScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Search bar
             val horizontalPadding = 16.dp
 
             if (windowSize.width == WindowSizeClass.Compact && !landscape) {
@@ -172,7 +167,6 @@ fun ProductsScreen(
                 )
             }
 
-            // Loading indicator
             if (uiState.isLoading && uiState.products.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -181,7 +175,6 @@ fun ProductsScreen(
                     CircularProgressIndicator()
                 }
             } else if (uiState.products.isEmpty()) {
-                // Empty state
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -204,7 +197,6 @@ fun ProductsScreen(
                     }
                 }
             } else {
-                // Products list (uses filtered products if search query exists)
                 ProductsList(
                     products = uiState.products,
                     listState = listState,
@@ -222,7 +214,6 @@ fun ProductsScreen(
         }
     }
 
-    // Search button overlay for tablet/landscape mode (positioned above FAB)
     if (showSearchButton) {
         Box(
             modifier = Modifier
@@ -237,7 +228,6 @@ fun ProductsScreen(
         }
     }
 
-    // Search dialog for tablet/landscape mode
     if (showSearchDialog) {
         AppFormDialog(
             title = stringResource(R.string.search),
@@ -254,12 +244,11 @@ fun ProductsScreen(
         }
     }
 
-    // Options popup menu for products
     OptionsPopupMenu(
         expanded = showOptions && selectedProduct != null,
         onDismissRequest = { showOptions = false },
         anchorBounds = anchorBounds,
-        headerButtons = null, // No header buttons for products
+        headerButtons = null,
         actions = listOf(
             PopupMenuAction(
                 text = stringResource(R.string.edit),

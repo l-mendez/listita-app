@@ -21,12 +21,6 @@ interface ApiService {
     @POST("api/users/send-verification")
     suspend fun resendVerification(@Query("email") email: String): Response<ResendVerificationResponse>
 
-    @POST("api/users/forgot-password")
-    suspend fun forgotPassword(@Body request: PasswordRecoveryRequest): Response<Unit>
-
-    @POST("api/users/reset-password")
-    suspend fun resetPassword(@Body request: PasswordResetRequest): Response<Unit>
-
     @POST("api/users/change-password")
     suspend fun changePassword(@Body request: ChangePasswordRequest): Response<Unit>
 
@@ -49,18 +43,6 @@ interface ApiService {
     @POST("api/categories")
     suspend fun createCategory(@Body request: CreateCategoryRequest): Response<Category>
 
-    @GET("api/categories/{id}")
-    suspend fun getCategoryById(@Path("id") id: Long): Response<Category>
-
-    @PUT("api/categories/{id}")
-    suspend fun updateCategory(
-        @Path("id") id: Long,
-        @Body request: UpdateCategoryRequest
-    ): Response<Category>
-
-    @DELETE("api/categories/{id}")
-    suspend fun deleteCategory(@Path("id") id: Long): Response<Unit>
-
     // ========== Product Endpoints ==========
 
     @GET("api/products")
@@ -75,9 +57,6 @@ interface ApiService {
 
     @POST("api/products")
     suspend fun createProduct(@Body request: CreateProductRequest): Response<Product>
-
-    @GET("api/products/{id}")
-    suspend fun getProductById(@Path("id") id: Long): Response<Product>
 
     @PUT("api/products/{id}")
     suspend fun updateProduct(
@@ -117,13 +96,6 @@ interface ApiService {
     suspend fun deleteShoppingList(@Path("id") id: Long): Response<Unit>
 
     @POST("api/shopping-lists/{id}/share")
-    suspend fun shareShoppingList(
-        @Path("id") id: Long,
-        @Body request: ShareListRequest
-    ): Response<Unit>
-
-    // Alternative share endpoint accepting an email in the body
-    @POST("api/shopping-lists/{id}/share")
     suspend fun shareShoppingListByEmail(
         @Path("id") id: Long,
         @Body request: ShareByEmailRequest
@@ -137,12 +109,6 @@ interface ApiService {
         @Path("id") id: Long,
         @Path("user_id") userId: Long
     ): Response<Unit>
-
-    @POST("api/shopping-lists/{id}/purchase")
-    suspend fun purchaseShoppingList(@Path("id") id: Long): Response<Unit>
-
-    @POST("api/shopping-lists/{id}/reset")
-    suspend fun resetShoppingList(@Path("id") id: Long): Response<Unit>
 
     // ========== List Item Endpoints ==========
 
@@ -194,9 +160,6 @@ interface ApiService {
         @Query("sort_by") sortBy: String = "createdAt",
         @Query("order") order: String = "DESC"
     ): Response<PaginatedResponse<Purchase>>
-
-    @GET("api/purchases/{id}")
-    suspend fun getPurchaseById(@Path("id") id: Long): Response<Purchase>
 
     @POST("api/purchases/{id}/restore")
     suspend fun restorePurchase(@Path("id") id: Long): Response<RestorePurchaseResponse>

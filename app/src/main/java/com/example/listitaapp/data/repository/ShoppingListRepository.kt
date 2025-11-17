@@ -17,14 +17,10 @@ class ShoppingListRepository @Inject constructor(
 
     suspend fun getShoppingLists(
         name: String? = null,
-        owner: Boolean? = null,
-        recurring: Boolean? = null,
         page: Int = 1,
-        perPage: Int = 10,
-        sortBy: String = "name",
-        order: String = "ASC"
+        perPage: Int = 10
     ): Result<PaginatedResult<ShoppingList>> = runCatching {
-        val response = shoppingListRemoteDataSource.getShoppingLists(name, owner, recurring, page, perPage, sortBy, order)
+        val response = shoppingListRemoteDataSource.getShoppingLists(name, owner = null, recurring = null, page, perPage, sortBy = "createdAt", order = "DESC")
         response.mapPaginated { it.toDomain() }
     }
 
@@ -72,25 +68,19 @@ class ShoppingListRepository @Inject constructor(
 
     suspend fun getListItems(
         listId: Long,
-        purchased: Boolean? = null,
         page: Int = 1,
-        perPage: Int = 10,
-        sortBy: String = "createdAt",
-        order: String = "DESC",
-        pantryId: Long? = null,
-        categoryId: Long? = null,
-        search: String? = null
+        perPage: Int = 10
     ): Result<PaginatedResult<ListItem>> = runCatching {
         val response = listItemRemoteDataSource.getListItems(
             listId = listId,
-            purchased = purchased,
+            purchased = null,
             page = page,
             perPage = perPage,
-            sortBy = sortBy,
-            order = order,
-            pantryId = pantryId,
-            categoryId = categoryId,
-            search = search
+            sortBy = "createdAt",
+            order = "DESC",
+            pantryId = null,
+            categoryId = null,
+            search = null
         )
         response.mapPaginated { it.toDomain() }
     }

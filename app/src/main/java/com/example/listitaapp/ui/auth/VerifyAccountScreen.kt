@@ -22,9 +22,7 @@ import com.example.listitaapp.ui.components.AppMessageDialog
 import com.example.listitaapp.ui.components.AppTextField
 import com.example.listitaapp.ui.components.AppButton
 import com.example.listitaapp.ui.components.AppTextButton
-import com.example.listitaapp.ui.components.WindowSizeClass
 import com.example.listitaapp.ui.components.isLandscape
-import com.example.listitaapp.ui.components.rememberWindowSize
 import com.example.listitaapp.ui.common.asString
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,9 +41,7 @@ fun VerifyAccountScreen(
 
     val focusManager = LocalFocusManager.current
     val configuration = LocalConfiguration.current
-    val screenWidthDp = configuration.screenWidthDp
     val screenHeightDp = configuration.screenHeightDp
-    val windowSize = rememberWindowSize()
 
     val isMobileHorizontal = isLandscape() && screenHeightDp < 500
     val isTabletLandscape = isLandscape() && screenHeightDp >= 500
@@ -65,10 +61,6 @@ fun VerifyAccountScreen(
     val codeRequiredMessage = stringResource(R.string.code_required)
     val codeInvalidMessage = stringResource(R.string.code_invalid)
 
-    // Navigation handled by MainActivity based on auth state
-    // When isAuthenticated becomes true, NavHost will automatically navigate to main screen
-
-    // Show error dialog (standardized)
     uiState.error?.let {
         AppMessageDialog(
             type = AppDialogType.Error,
@@ -77,7 +69,6 @@ fun VerifyAccountScreen(
         )
     }
 
-    // Show success dialog (standardized, for resend)
     uiState.successMessage?.let { msg ->
         val localizedMessage = msg.asString()
         AppMessageDialog(
@@ -230,9 +221,8 @@ fun VerifyAccountScreen(
                         .then(formWidthModifier)
                         .fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(verticalSpacing, Alignment.CenterVertically)
+                    verticalArrangement = Arrangement.spacedBy(verticalSpacing, Alignment.CenterVertically                    )
                 ) {
-                    // Icon
                     Icon(
                         imageVector = Icons.Default.Email,
                         contentDescription = null,
@@ -246,7 +236,6 @@ fun VerifyAccountScreen(
                         color = MaterialTheme.colorScheme.primary
                     )
 
-                    // Info text
                     Text(
                         text = stringResource(R.string.verification_info),
                         style = MaterialTheme.typography.bodyMedium,
@@ -270,7 +259,6 @@ fun VerifyAccountScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     Spacer(modifier = Modifier.height(headerSpacerHeight))
 
-                    // Verification code field
                     AppTextField(
                         value = code,
                         onValueChange = {
@@ -305,7 +293,6 @@ fun VerifyAccountScreen(
 
                     Spacer(modifier = Modifier.height(fieldSpacerHeight))
 
-                    // Verify button
                     AppButton(
                         onClick = {
                             if (validateCode(
@@ -325,14 +312,12 @@ fun VerifyAccountScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    // Resend code button
                     AppTextButton(
                         onClick = onResendCode,
                         text = stringResource(R.string.resend_code),
                         enabled = !uiState.isLoading
                     )
 
-                    // Back to login
                     AppTextButton(
                         onClick = onNavigateToLogin,
                         text = stringResource(R.string.back_to_login),
@@ -344,7 +329,6 @@ fun VerifyAccountScreen(
     }
 }
 
-// Code validation
 private fun validateCode(
     code: String,
     codeRequiredMessage: String,

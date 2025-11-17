@@ -10,7 +10,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -52,7 +51,6 @@ fun ProfileScreen(
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
 
-    // Error dialog (standardized)
     uiState.error?.let {
         AppMessageDialog(
             type = AppDialogType.Error,
@@ -61,7 +59,6 @@ fun ProfileScreen(
         )
     }
 
-    // Success snackbar (standardized)
     uiState.successMessage?.let { message ->
         val localizedMessage = message.asString()
         LaunchedEffect(message) {
@@ -72,7 +69,6 @@ fun ProfileScreen(
         }
     }
 
-    // Logout confirmation dialog (standardized, non-destructive style)
     if (showLogoutDialog) {
         AppConfirmDialog(
             message = stringResource(R.string.confirm_logout),

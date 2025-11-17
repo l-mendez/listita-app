@@ -21,9 +21,7 @@ data class AuthUiState(
     val successMessage: UiMessage? = null,
     val email: String = "",
     val password: String = "",
-    val registrationComplete: Boolean = false,
-    val verificationComplete: Boolean = false,
-    val currentUserEmail: String? = null
+    val registrationComplete: Boolean = false
 )
 
 @HiltViewModel
@@ -55,17 +53,6 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             repository.authState().collect { isAuth ->
                 _uiState.update { it.copy(isAuthenticated = isAuth) }
-                if (isAuth) {
-                    // Refresh current user email when authenticated
-                    repository.getProfile().fold(
-                        onSuccess = { user ->
-                            _uiState.update { state -> state.copy(currentUserEmail = user.email) }
-                        },
-                        onFailure = { _ -> }
-                    )
-                } else {
-                    _uiState.update { it.copy(currentUserEmail = null) }
-                }
             }
         }
     }
@@ -75,14 +62,10 @@ class AuthViewModel @Inject constructor(
 
             repository.login(email, password).fold(
                 onSuccess = {
-                    // Fetch profile to ensure UI reflects the authenticated account
-                    val profileResult = repository.getProfile()
                     _uiState.update { state ->
                         state.copy(
                             isLoading = false,
-                            isAuthenticated = true,
-                            currentUserEmail = profileResult.getOrNull()?.email,
-                            error = profileResult.exceptionOrNull()?.message
+                            isAuthenticated = true
                         )
                     }
                 },
@@ -104,8 +87,6 @@ class AuthViewModel @Inject constructor(
 
             repository.register(email, password, name, surname).fold(
                 onSuccess = { user ->
-                    // Registration successful - verification code sent via email
-                    // Store email and password temporarily for auto-login after verification
                     _uiState.update {
                         it.copy(
                             isLoading = false,
@@ -134,42 +115,35 @@ class AuthViewModel @Inject constructor(
 
             repository.verifyAccount(code).fold(
                 onSuccess = { user ->
-                    // Verification successful - now automatically login
                     val email = _uiState.value.email
                     val password = _uiState.value.password
 
                     if (email.isNotBlank() && password.isNotBlank()) {
-                        // Auto-login after successful verification
                         repository.login(email, password).fold(
                             onSuccess = { token ->
                                 _uiState.update {
                                     it.copy(
                                         isLoading = false,
                                         isAuthenticated = true,
-                                        verificationComplete = true,
-                                        password = "", // Clear password after successful login
+                                        password = "",
                                         error = null
                                     )
                                 }
                             },
                             onFailure = { loginException ->
-                                // Verification succeeded but auto-login failed
                                 _uiState.update {
                                     it.copy(
                                         isLoading = false,
-                                        verificationComplete = true,
-                                        password = "", // Clear password
+                                        password = "",
                                         error = "Account verified but login failed: ${loginException.message}"
                                     )
                                 }
                             }
                         )
                     } else {
-                        // No credentials stored, just mark as verified
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
-                                verificationComplete = true,
                                 successMessage = UiMessage(resId = R.string.account_verified_login),
                                 error = null
                             )
@@ -232,10 +206,8 @@ class AuthViewModel @Inject constructor(
                 it.copy(
                     isAuthenticated = false,
                     email = "",
-                    password = "", // Clear stored credentials
-                    registrationComplete = false,
-                    verificationComplete = false,
-                    currentUserEmail = null
+                    password = "",
+                    registrationComplete = false
                 )
             }
         }
@@ -253,7 +225,6 @@ class AuthViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 registrationComplete = false,
-                verificationComplete = false,
                 error = null,
                 successMessage = null
             )

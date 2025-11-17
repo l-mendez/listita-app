@@ -25,18 +25,15 @@ fun AddProductDialog(
         }
     }
 
-    // Handle smooth transition back to product dialog after category creation
     LaunchedEffect(pendingCategoryId) {
         if (pendingCategoryId != null) {
             selectedCategoryId = pendingCategoryId
-            // Small delay to ensure state updates complete and UI is ready
             delay(150)
             pendingCategoryId = null
             showCreateCategoryDialog = false
         }
     }
 
-    // Use AnimatedVisibility for smooth transitions between dialogs
     AnimatedVisibility(
         visible = !showCreateCategoryDialog,
         enter = fadeIn(animationSpec = tween(200)) + scaleIn(
@@ -65,7 +62,6 @@ fun AddProductDialog(
                 selectedCategoryId = null
             },
             onRequestCreateCategory = {
-                // Reset any pending category to ensure clean state
                 pendingCategoryId = null
                 showCreateCategoryDialog = true
             }
@@ -85,18 +81,16 @@ fun AddProductDialog(
     ) {
         CreateCategoryDialog(
             onDismiss = {
-                // Only allow dismissal if category is not pending
                 if (pendingCategoryId == null) {
                     showCreateCategoryDialog = false
                 }
             },
             onCreate = { name ->
                 onCreateCategory(name) { category ->
-                    // Set pending category ID to trigger smooth transition
                     pendingCategoryId = category.id
                 }
             },
-            autoDismiss = false // We control dismissal timing for smooth transitions
+            autoDismiss = false
         )
     }
 }

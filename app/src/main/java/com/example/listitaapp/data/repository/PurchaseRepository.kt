@@ -14,11 +14,7 @@ class PurchaseRepository @Inject constructor(
         page: Int = 1,
         perPage: Int = 20
     ): Result<List<Purchase>> = runCatching {
-        remoteDataSource.getPurchases(page, perPage).data.map { it.toDomain() }
-    }
-
-    suspend fun getPurchaseById(id: Long): Result<Purchase> = runCatching {
-        remoteDataSource.getPurchaseById(id).toDomain()
+        remoteDataSource.getPurchases(page, perPage, sortBy = "createdAt", order = "DESC").data.map { it.toDomain() }
     }
 
     suspend fun restorePurchase(id: Long): Result<ShoppingList> = runCatching {

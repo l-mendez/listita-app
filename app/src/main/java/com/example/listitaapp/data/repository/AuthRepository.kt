@@ -42,14 +42,6 @@ class AuthRepository @Inject constructor(
         authRemoteDataSource.changePassword(currentPassword, newPassword)
     }
 
-    suspend fun forgotPassword(email: String): Result<Unit> = runCatching {
-        authRemoteDataSource.forgotPassword(email)
-    }
-
-    suspend fun resetPassword(code: String, newPassword: String): Result<Unit> = runCatching {
-        authRemoteDataSource.resetPassword(code, newPassword)
-    }
-
     suspend fun getProfile(): Result<User> = runCatching {
         userRemoteDataSource.getProfile().toDomain()
     }

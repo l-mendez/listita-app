@@ -27,7 +27,6 @@ import android.content.res.Configuration
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.listitaapp.ui.auth.AuthViewModel
@@ -119,7 +118,6 @@ fun AppNavigation(
         color = MaterialTheme.colorScheme.background
     ) {
         if (!authUiState.isInitialAuthCheckComplete) {
-            // Show loading screen while checking authentication
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -489,7 +487,6 @@ fun ShoppingListsScreenWrapper(
     val uiState by viewModel.uiState.collectAsState()
     var showCreateDialog by remember { mutableStateOf(false) }
 
-    // Reload lists whenever this screen is displayed (e.g., after restoring from history)
     LaunchedEffect(Unit) {
         viewModel.loadShoppingLists()
     }
@@ -646,7 +643,6 @@ fun ShoppingListDetailScreenWrapper(
         viewModel.loadListDetails(listId)
     }
 
-    // Handle navigation back when list is completed
     LaunchedEffect(uiState.shouldNavigateBack) {
         if (uiState.shouldNavigateBack) {
             viewModel.clearNavigateBack()
@@ -760,7 +756,6 @@ fun PurchaseHistoryScreenWrapper(
 ) {
     val uiState by purchaseHistoryViewModel.uiState.collectAsState()
 
-    // Reload purchase history whenever this screen is displayed
     LaunchedEffect(Unit) {
         purchaseHistoryViewModel.loadPurchaseHistory()
     }

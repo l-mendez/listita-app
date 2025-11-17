@@ -70,9 +70,7 @@ class PurchaseHistoryViewModel @Inject constructor(
                             successMessage = UiMessage(resId = R.string.list_restored)
                         )
                     }
-                    // Add the restored list to the shopping lists state
                     shoppingListViewModel.addListToListState(shoppingList)
-                    // Reload history to refresh the list
                     loadPurchaseHistory()
                 },
                 onFailure = { exception ->

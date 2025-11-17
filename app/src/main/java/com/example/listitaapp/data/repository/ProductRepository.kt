@@ -16,14 +16,11 @@ class ProductRepository @Inject constructor(
 
     suspend fun getProducts(
         name: String? = null,
-        categoryId: Long? = null,
         page: Int = 1,
-        perPage: Int = 10,
-        sortBy: String = "name",
-        order: String = "ASC"
+        perPage: Int = 10
     ): Result<PaginatedResult<Product>> = runCatching {
         val response = productRemoteDataSource
-            .getProducts(name, categoryId, page, perPage, sortBy, order)
+            .getProducts(name, categoryId = null, page, perPage, sortBy = "createdAt", order = "DESC")
         response.mapPaginated { it.toDomain() }
     }
 
@@ -49,13 +46,5 @@ class ProductRepository @Inject constructor(
 
     suspend fun createCategory(name: String): Result<Category> = runCatching {
         categoryRemoteDataSource.createCategory(name).toDomain()
-    }
-
-    suspend fun updateCategory(id: Long, name: String): Result<Category> = runCatching {
-        categoryRemoteDataSource.updateCategory(id, name).toDomain()
-    }
-
-    suspend fun deleteCategory(id: Long): Result<Unit> = runCatching {
-        categoryRemoteDataSource.deleteCategory(id)
     }
 }

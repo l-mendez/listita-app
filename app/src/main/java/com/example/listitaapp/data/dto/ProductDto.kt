@@ -43,11 +43,3 @@ data class CreateCategoryRequest(
     @SerialName("metadata")
     val metadata: Map<String, String>? = null
 )
-
-@Serializable
-data class UpdateCategoryRequest(
-    @SerialName("name")
-    val name: String? = null,
-    @SerialName("metadata")
-    val metadata: Map<String, String>? = null
-)

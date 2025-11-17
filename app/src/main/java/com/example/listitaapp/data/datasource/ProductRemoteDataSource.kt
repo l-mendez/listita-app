@@ -33,11 +33,6 @@ class ProductRemoteDataSource @Inject constructor(
         return handleResponse(response, "Failed to create product")
     }
 
-    suspend fun getProductById(id: Long): Product {
-        val response = apiService.getProductById(id)
-        return handleResponse(response, "Failed to get product")
-    }
-
     suspend fun updateProduct(id: Long, name: String?, categoryId: Long?): UpdateProductResponse {
         val request = UpdateProductRequest(
             name = name,

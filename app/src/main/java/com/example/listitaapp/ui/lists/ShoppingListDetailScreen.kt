@@ -92,7 +92,6 @@ fun ShoppingListDetailScreen(
         }
     }
 
-    // Error dialog (standardized)
     uiState.error?.let {
         AppMessageDialog(
             type = AppDialogType.Error,
@@ -101,7 +100,6 @@ fun ShoppingListDetailScreen(
         )
     }
 
-    // Success snackbar (standardized)
     uiState.successMessage?.let { message ->
         val localizedMessage = message.asString()
         LaunchedEffect(message) {
@@ -112,7 +110,6 @@ fun ShoppingListDetailScreen(
         }
     }
 
-    // Delete item confirmation dialog
     showDeleteDialog?.let { item ->
         val productName = item.product?.name ?: stringResource(R.string.this_item)
         AppConfirmDialog(
@@ -126,21 +123,19 @@ fun ShoppingListDetailScreen(
         )
     }
 
-    // Delete list confirmation dialog
     if (showDeleteListDialog) {
         AppConfirmDialog(
             message = stringResource(R.string.confirm_delete_list),
             onConfirm = {
                 onDeleteList(listId)
                 showDeleteListDialog = false
-                onBack() // Navigate back after deleting list
+                onBack()
             },
             onDismiss = { showDeleteListDialog = false },
             destructive = true
         )
     }
 
-    // Edit list dialog (name + description)
     if (showEditListDialog && uiState.currentList != null) {
         var newName by remember { mutableStateOf(uiState.currentList!!.name) }
         var newDescription by remember { mutableStateOf(uiState.currentList!!.description ?: "") }
@@ -223,7 +218,6 @@ fun ShoppingListDetailScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // Description (if available) - always show at top
             if (!uiState.currentList?.description.isNullOrBlank()) {
                 StandardCard(
                     modifier = Modifier
@@ -247,7 +241,6 @@ fun ShoppingListDetailScreen(
                     CircularProgressIndicator()
                 }
             } else if (uiState.currentListItems.isEmpty()) {
-                // Empty state
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -275,7 +268,6 @@ fun ShoppingListDetailScreen(
                     }
                 }
             } else {
-                // Progress summary card
                 val purchasedCount = uiState.currentListItems.count { it.purchased }
                 val totalCount = uiState.currentListItems.size
 
@@ -299,16 +291,15 @@ fun ShoppingListDetailScreen(
                     }
                 }
 
-                // Items list
                 LazyColumn(
                     state = listState,
                     modifier = Modifier.weight(1f),
                     contentPadding = PaddingValues(
                         start = 16.dp,
                         end = 16.dp,
-                        top = 8.dp,
-                        bottom = 96.dp // Extra bottom padding to avoid FAB overlap
-                    ),
+                    top = 8.dp,
+                    bottom = 96.dp
+                ),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(uiState.currentListItems, key = { it.id }) { item ->
@@ -340,7 +331,6 @@ fun ShoppingListDetailScreen(
         }
     }
 
-    // Options popup menu for the list
     OptionsPopupMenu(
         expanded = showOptions && uiState.currentList != null,
         onDismissRequest = { showOptions = false },
@@ -393,7 +383,6 @@ fun ShoppingListDetailScreen(
         )
     )
 
-    // Share dialog
     if (showShareDialog && uiState.currentList != null) {
         ShareListDialog(
             sharedUsers = uiState.sharedUsers,
@@ -566,7 +555,6 @@ fun AddItemToListDialog(
             }
         }
     ) {
-        // Show message if no products available
         if (products.isEmpty()) {
             Card(
                 colors = CardDefaults.cardColors(
@@ -582,7 +570,6 @@ fun AddItemToListDialog(
             }
         }
 
-        // Product selector
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = { expanded = if (products.isNotEmpty()) it else false }
