@@ -1,11 +1,13 @@
 package com.example.listitaapp.ui.profile
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,6 +23,7 @@ import com.example.listitaapp.ui.components.AppConfirmDialog
 import com.example.listitaapp.ui.components.AppDialogType
 import com.example.listitaapp.ui.components.AppMessageDialog
 import com.example.listitaapp.ui.components.AppFormDialog
+import com.example.listitaapp.domain.model.ThemePreference
 import com.example.listitaapp.ui.components.AppSnackbarHost
 import com.example.listitaapp.ui.components.rememberAppSnackbarState
 import com.example.listitaapp.ui.components.appSnackTypeFromMessage
@@ -37,11 +40,14 @@ fun ProfileScreen(
     onEditProfile: () -> Unit,
     onChangePassword: () -> Unit,
     onLogout: () -> Unit,
+    themePreference: ThemePreference,
+    onThemePreferenceSelected: (ThemePreference) -> Unit,
     onClearError: () -> Unit,
     onClearSuccess: () -> Unit
 ) {
     val appSnackbar = rememberAppSnackbarState()
     var showLogoutDialog by remember { mutableStateOf(false) }
+    var showThemeDialog by remember { mutableStateOf(false) }
 
     // Error dialog (standardized)
     uiState.error?.let {
@@ -136,6 +142,8 @@ fun ProfileScreen(
                             }
                         }
 
+                        val themeSubtitle = themePreferenceLabel(themePreference)
+
                         Column(
                             modifier = Modifier
                                 .weight(0.5f)
@@ -158,6 +166,15 @@ fun ProfileScreen(
                                 title = stringResource(R.string.change_password),
                                 subtitle = stringResource(R.string.profile_password_description),
                                 onClick = onChangePassword,
+                                isLandscape = true
+                            )
+
+                            SettingsItem(
+                                modifier = Modifier.weight(1f),
+                                icon = Icons.Default.DarkMode,
+                                title = stringResource(R.string.theme),
+                                subtitle = themeSubtitle,
+                                onClick = { showThemeDialog = true },
                                 isLandscape = true
                             )
 
@@ -211,6 +228,8 @@ fun ProfileScreen(
                             }
                         }
 
+                        val themeSubtitle = themePreferenceLabel(themePreference)
+
                         Text(
                             text = stringResource(R.string.settings),
                             style = MaterialTheme.typography.titleMedium,
@@ -232,6 +251,13 @@ fun ProfileScreen(
                         )
 
                         SettingsItem(
+                            icon = Icons.Default.DarkMode,
+                            title = stringResource(R.string.theme),
+                            subtitle = themeSubtitle,
+                            onClick = { showThemeDialog = true }
+                        )
+
+                        SettingsItem(
                             icon = Icons.AutoMirrored.Filled.ExitToApp,
                             title = stringResource(R.string.logout),
                             subtitle = stringResource(R.string.profile_logout_description),
@@ -242,6 +268,17 @@ fun ProfileScreen(
                 }
             }
         }
+    }
+
+    if (showThemeDialog) {
+        ThemePreferenceDialog(
+            currentPreference = themePreference,
+            onSelect = {
+                onThemePreferenceSelected(it)
+                showThemeDialog = false
+            },
+            onDismiss = { showThemeDialog = false }
+        )
     }
 }
 
@@ -302,6 +339,51 @@ private fun SettingsItem(
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.outline
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun themePreferenceLabel(preference: ThemePreference): String =
+    when (preference) {
+        ThemePreference.SYSTEM -> stringResource(R.string.theme_option_system)
+        ThemePreference.LIGHT -> stringResource(R.string.theme_option_light)
+        ThemePreference.DARK -> stringResource(R.string.theme_option_dark)
+    }
+
+@Composable
+private fun ThemePreferenceDialog(
+    currentPreference: ThemePreference,
+    onSelect: (ThemePreference) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var selectedPreference by remember { mutableStateOf(currentPreference) }
+
+    AppFormDialog(
+        title = stringResource(R.string.theme),
+        onDismiss = onDismiss,
+        confirmLabel = stringResource(R.string.save),
+        onConfirm = { onSelect(selectedPreference) }
+    ) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        ThemePreference.values().forEach { preference ->
+                val label = themePreferenceLabel(preference)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { selectedPreference = preference },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = selectedPreference == preference,
+                        onClick = { selectedPreference = preference }
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(text = label, style = MaterialTheme.typography.bodyLarge)
+                    }
+                }
             }
         }
     }

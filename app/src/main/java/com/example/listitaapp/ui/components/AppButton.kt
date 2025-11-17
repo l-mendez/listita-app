@@ -76,7 +76,7 @@ fun AppTextButton(
         enabled = enabled,
         shape = RoundedCornerShape(AppComponentDefaults.UnifiedCornerRadius),
         colors = ButtonDefaults.textButtonColors(
-            contentColor = contentColor ?: AppComponentDefaults.ButtonEnabledColor,
+            contentColor = contentColor ?: MaterialTheme.colorScheme.primary,
             disabledContentColor = AppComponentDefaults.ButtonDisabledColor
         ),
         contentPadding = contentPadding,

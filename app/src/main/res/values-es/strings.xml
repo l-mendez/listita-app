@@ -46,6 +46,11 @@
   <string name="profile_edit_description">Actualiza tu nombre e información</string>
   <string name="profile_password_description">Cambia la contraseña de tu cuenta</string>
   <string name="profile_logout_description">Cierra sesión de tu cuenta</string>
+  <string name="theme">Tema</string>
+  <string name="theme_description">Claro, oscuro o igual al sistema</string>
+  <string name="theme_option_system">Predeterminado del sistema</string>
+  <string name="theme_option_light">Claro</string>
+  <string name="theme_option_dark">Oscuro</string>
   <string name="back">Atrás</string>
   <string name="unknown_list">Lista desconocida</string>
   <string name="purchase_history">Historial de compras</string>

@@ -1,6 +1,10 @@
 package com.example.listitaapp.di
 
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStoreFile
 import com.example.listitaapp.BuildConfig
 import com.example.listitaapp.data.api.ApiService
 import com.example.listitaapp.data.api.AuthInterceptor
@@ -13,6 +17,7 @@ import com.example.listitaapp.data.datasource.ProductRemoteDataSource
 import com.example.listitaapp.data.datasource.PurchaseRemoteDataSource
 import com.example.listitaapp.data.datasource.ShoppingListRemoteDataSource
 import com.example.listitaapp.data.datasource.UserRemoteDataSource
+import com.example.listitaapp.data.repository.ThemePreferencesRepository
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import dagger.Module
@@ -97,6 +102,24 @@ object AppModule {
     @Singleton
     fun provideApiService(retrofit: Retrofit): ApiService {
         return retrofit.create(ApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun providePreferencesDataStore(
+        @ApplicationContext context: Context
+    ): DataStore<Preferences> {
+        return PreferenceDataStoreFactory.create(
+            produceFile = { context.preferencesDataStoreFile("settings_preferences") }
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideThemePreferencesRepository(
+        dataStore: DataStore<Preferences>
+    ): ThemePreferencesRepository {
+        return ThemePreferencesRepository(dataStore)
     }
 
     @Provides

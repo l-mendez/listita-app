@@ -47,6 +47,7 @@ import com.example.listitaapp.ui.navigation.ShoppingListsRoute
 import com.example.listitaapp.ui.navigation.VerifyAccountRoute
 import com.example.listitaapp.ui.products.*
 import com.example.listitaapp.ui.profile.*
+import com.example.listitaapp.ui.settings.ThemeViewModel
 import com.example.listitaapp.ui.theme.ListitaAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -59,19 +60,22 @@ class MainActivity : ComponentActivity() {
     private val shoppingListViewModel: ShoppingListViewModel by viewModels()
     private val profileViewModel: ProfileViewModel by viewModels()
     private val purchaseHistoryViewModel: com.example.listitaapp.ui.purchases.PurchaseHistoryViewModel by viewModels()
+    private val themeViewModel: ThemeViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
         setContent {
-            ListitaAppTheme {
+            val themeUiState by themeViewModel.uiState.collectAsState()
+            ListitaAppTheme(themePreference = themeUiState.preference) {
                 AppNavigation(
                     authViewModel = authViewModel,
                     productViewModel = productViewModel,
                     categoryViewModel = categoryViewModel,
                     shoppingListViewModel = shoppingListViewModel,
                     profileViewModel = profileViewModel,
+                    themeViewModel = themeViewModel,
                     purchaseHistoryViewModel = purchaseHistoryViewModel
                 )
             }
@@ -86,6 +90,7 @@ fun AppNavigation(
     categoryViewModel: CategoryViewModel,
     shoppingListViewModel: ShoppingListViewModel,
     profileViewModel: ProfileViewModel,
+    themeViewModel: ThemeViewModel,
     purchaseHistoryViewModel: com.example.listitaapp.ui.purchases.PurchaseHistoryViewModel
 ) {
     val navController = rememberNavController()
@@ -229,7 +234,8 @@ fun AppNavigation(
                     ProfileScreenWrapper(
                         viewModel = profileViewModel,
                         authViewModel = authViewModel,
-                        navController = navController
+                        navController = navController,
+                        themeViewModel = themeViewModel
                     )
                 }
             }
@@ -574,9 +580,11 @@ fun ProductsScreenWrapper(
 fun ProfileScreenWrapper(
     viewModel: ProfileViewModel,
     authViewModel: AuthViewModel,
-    navController: NavHostController
+    navController: NavHostController,
+    themeViewModel: ThemeViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val themeUiState by themeViewModel.uiState.collectAsState()
     var showEditDialog by remember { mutableStateOf(false) }
     var showChangePasswordDialog by remember { mutableStateOf(false) }
 
@@ -590,6 +598,8 @@ fun ProfileScreenWrapper(
                 popUpTo(0) { inclusive = true }
             }
         },
+        themePreference = themeUiState.preference,
+        onThemePreferenceSelected = { themeViewModel.updatePreference(it) },
         onClearError = { viewModel.clearError() },
         onClearSuccess = { viewModel.clearSuccess() }
     )

@@ -46,6 +46,11 @@
     <string name="profile_edit_description">Update your name and information</string>
     <string name="profile_password_description">Change your account password</string>
     <string name="profile_logout_description">Sign out of your account</string>
+    <string name="theme">Theme</string>
+    <string name="theme_description">Light, dark, or follow system</string>
+    <string name="theme_option_system">System default</string>
+    <string name="theme_option_light">Light</string>
+    <string name="theme_option_dark">Dark</string>
     <string name="back">Back</string>
     <string name="unknown_list">Unknown List</string>
 
