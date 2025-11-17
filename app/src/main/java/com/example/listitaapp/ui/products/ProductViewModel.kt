@@ -220,7 +220,7 @@ class ProductViewModel @Inject constructor(
 
     fun searchProducts() {
         val query = _uiState.value.searchQuery.trim()
-        loadProducts(query.takeIf { it.isNotEmpty() })
+        loadProducts(query)
     }
 
     fun clearError() {

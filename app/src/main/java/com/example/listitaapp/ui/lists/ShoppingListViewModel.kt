@@ -617,7 +617,7 @@ class ShoppingListViewModel @Inject constructor(
 
     fun searchShoppingLists() {
         val query = _uiState.value.searchQuery.trim()
-        loadShoppingLists(query.takeIf { it.isNotEmpty() })
+        loadShoppingLists(query)
     }
 
 }

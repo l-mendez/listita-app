@@ -239,7 +239,8 @@ fun ProductsScreen(
             AppSearchField(
                 value = uiState.searchQuery,
                 onValueChange = onSearchQueryChange,
-                placeholder = stringResource(R.string.search)
+                placeholder = stringResource(R.string.search),
+                onClear = onSearch
             )
         }
     }
@@ -283,6 +284,11 @@ private fun SearchBar(
         value = query,
         onValueChange = onQueryChange,
         placeholder = stringResource(R.string.search),
+        onClear = {
+            ignoreNextBlur = true
+            focusManager.clearFocus()
+            onSearch()
+        },
         modifier = modifier.onFocusChanged { state ->
             if (hadFocus && !state.isFocused) {
                 if (ignoreNextBlur) {

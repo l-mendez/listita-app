@@ -393,6 +393,11 @@ fun ShoppingListsScreen(
                 value = localQuery,
                 onValueChange = { localQuery = it },
                 placeholder = stringResource(R.string.search),
+                onClear = {
+                    localQuery = ""
+                    onSearchQueryChange("")
+                    onSearch()
+                },
                 keyboardActions = KeyboardActions(
                     onSearch = {
                         onSearchQueryChange(localQuery)
@@ -753,6 +758,11 @@ private fun SearchBar(
         value = query,
         onValueChange = onQueryChange,
         placeholder = stringResource(R.string.search),
+        onClear = {
+            ignoreNextBlur = true
+            focusManager.clearFocus()
+            onSearch()
+        },
         modifier = modifier.onFocusChanged { state ->
             if (hadFocus && !state.isFocused) {
                 if (ignoreNextBlur) {

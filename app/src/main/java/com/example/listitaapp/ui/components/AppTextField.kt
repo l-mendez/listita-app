@@ -105,6 +105,7 @@ fun AppSearchField(
     modifier: Modifier = Modifier,
     placeholder: String = "Search",
     enabled: Boolean = true,
+    onClear: (() -> Unit)? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions(
         keyboardType = KeyboardType.Text,
         imeAction = ImeAction.Search
@@ -120,7 +121,10 @@ fun AppSearchField(
         leadingIcon = Icons.Default.Search,
         trailingIcon = if (value.isNotEmpty()) {
             {
-                IconButton(onClick = { onValueChange("") }) {
+                IconButton(onClick = {
+                    onValueChange("")
+                    onClear?.invoke()
+                }) {
                     Icon(Icons.Default.Clear, contentDescription = "Clear search")
                 }
             }
